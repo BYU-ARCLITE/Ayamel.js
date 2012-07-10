@@ -135,7 +135,7 @@
 		Apply the Unicode Bidirectional Algorithm's Paragraph Level steps to the text to determine
 		the paragraph embedding level of the first Unicode paragraph. [http://www.unicode.org/reports/tr9/]
 		If the paragraph embedding level is even, let direction be 'ltr', otherwise, let it be 'rtl'.
-		The current regexes do not include 40-bit characters
+		The current regexes do not include >16-bit characters
 		*/
 		var k, i = text.search(r_exp);
 		if(i < 0){
