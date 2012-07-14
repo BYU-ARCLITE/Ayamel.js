@@ -44,11 +44,11 @@
 				action(e);
 				action.done = true;
 			}
-		});
+		},false);
 		global.addEventListener('keyup',function(e){
 			var action = Ayamel.keybindings[e.key || e.keyCode];
 			action && (action.done = false);
-		});
+		},false);
 		
 		global.Ayamel = {
 			Stage:		function(){throw "Ayamel.Stage Uninitialized";},

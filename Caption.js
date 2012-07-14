@@ -6,138 +6,139 @@
 	
 	function caption_menu(){
 		var selection;
-		return Object.create(Object,{
-				element: {value: document.createElement('span')},
-				selection: {
-					set: function(s){
-						selection = s;
-						this.element.innerText = s.toString();
-					},
-					get: function(){return selection;}
-				}
-			});
+		return {
+			element: document.createElement('span'),
+			set selection(s){
+				selection = s;
+				this.element.innerText = s.toString();
+			},
+			get selection(){return selection;}
+		};
 	}
 	
 	function Caption(params){
-		Ayamel.Text.call(this,params);
-		this.start = params.start;
-		this.stop = params.stop;
+		if(params.cue instanceof Cue){
+			this.text = new Ayamel.Text({
+				wrapper:params.wrapper,
+				menu:caption_menu(),
+				processor:params.processor,
+				text:params.cue.text
+			});
+			this.cue = params.cue;
+		}else{
+			this.text = new Ayamel.Text(params);
+			this.cue = new Cue("",params.startTime,params.endTime,params.text);
+		}
 	};
 	
-	Caption.prototype.Update = function(cue){
-		var style = this.el.style,
-			self = this,
-			size,l,alr,
-			indent,
-			direction,
-			position = cue.position;
-			
-		style.position = 'absolute';
-		this.start = cue.startTime;
-		this.stop = cue.endTime;
-		this.id = cue.id;
-		this.text = cue.text;
+	Object.defineProperties(Caption.prototype,{
+		start: { get: function(){ return this.cue.startTime; }, enumerable: true },
+		stop: { get: function(){ return this.cue.endTime; }, enumerable: true },
+		el: { get: function(){ return this.text.displayElement; }, enumerable: true },
+		displayed: { get: function(){ return this.text.displayed; }, enumerable: true }
+	});
+	
+	Caption.prototype.display = function(target){
+		var text = this.text,
+			el = text.displayElement,
+			style = el.style,
+			cue = this.cue,
+			position = cue.position,
+			direction = Ayamel.Text.getDirection(cue.text),
+			size, indent,
+			pos,lh;
 		
-		direction = Ayamel.Text.getDirection(cue.text);
+		if(!target){ target = text.parent; }
+		
+		text.hide();
+		text.text = cue.text;
+		style.position = 'absolute';
 		
 		/*
 		A WebVTT vertical text cue setting configures the defines the ordering of lines, not the direction of symbols.
 		*/
 		
-		//Determine the maximum possible size based on alignment
+		//Determine the size & position based on alignment & direction
 		switch(cue.align){
 			case 'start':
-				style.textAlign = 'left';
-				size = (cue.vertical !== '' || direction !== 'rtl')?100-position:position;
+				style.textAlign = direction === 'ltr'?'left':'right';
+				size = Math.min(cue.size,100-position);
+				indent = position;
 				break;
 			case 'end':
-				style.textAlign = 'right';
-				size = (cue.vertical !== '' || direction !== 'rtl')?position:100-position;
+				style.textAlign = direction === 'rtl'?'left':'right';
+				size = Math.min(cue.size,position);
+				indent = position-size;
 				break;
 			case 'middle':
 				style.textAlign = 'center';
-				size = 2*(position>50?100-position:position);
+				size = Math.min(cue.size,2*(position>50?100-position:position));
+				indent = position-size/2;
 				break;
 			default:
 				throw "Invalid Alignment Value";
 		}
-		if(cue.size<size){size=cue.size;}
 		
-		//Determine the writing direction and actual size and position
-		style.width = "auto";
-		style.height = "auto";
+		//Determine the writing direction and assign size & position
 		style.top = "";
 		style.bottom = "";
 		style.left = "";
 		style.right = "";
-		style.lineHeight = 1;
 		if(cue.vertical === ''){
 			style.writingMode = "horizontal-tb";
-			lineOffset('top','bottom');
+			style.height = "auto";
 			style.width = size+"%";
-			switch(cue.align){
-				case 'start': indent = direction==='ltr'?position:(100-position-size);
-					break;
-				case 'end': indent = direction==='ltr'?(position-size):(100-position);
-					break;
-				default: indent = (direction==='ltr'?position:100-position)-size/2;
-			}
-			style.left = indent+"%";
+			style[direction==='ltr'?'left':'right'] = indent+"%";
+			
+			if(cue.rawLine === 'auto'){
+				style.bottom = 0;
+				text.display(target);
+			}else{
+				text.display(target);
+				if(cue.snapToLines){
+					lh = text.lineBoxHeight;
+					pos = cue.rawLine*lh;
+					if(pos < 0){ style.bottom = (-pos-lh)+"px"; }
+					else{ style.top = pos+"px"; }
+				}else{
+					style.top = cue.rawLine*(target.clientHeight-el.clientHeight)/100+"px";
+				}
+			}			
 		}else{
+			throw new Error("Vertical Text Not Supported");
+			/*
+			style.height = size+"%";
+			style.width = "auto";
+			style.top = indent+"%";
 			switch(cue.vertical){
 				case 'rl':
 					style.writingMode = "tb-rl";
 					style.webkitWritingMode = "vertical-rl";
-					lineOffset('right','left');
+					start = 'right'
+					bottom = 'left';
 					break;
 				case 'lr':
 					style.writingMode = "tb-lr";
 					style.webkitWritingMode = "vertical-lr";
-					lineOffset('left','right');
+					start = 'left';
+					end = 'right';
 					break;
 				default:
 					throw "Invalid Writing Direction";
 			}
-			style.height = size+"%";
-			switch(cue.align){
-				case 'start': indent = position;
-					break;
-				case 'end': indent = position-size;
-					break;
-				default: indent = position-size/2;
-			}
-			style.top = indent+"%";
-		}
-		
-		function lineOffset(top,bottom){
-			var pos,unit,lh;
-			if(cue.rawLine === 'auto'){
-				style[bottom] = 0;
-			}else{
-				if(cue.snapToLines){
-					lh = parseInt(getComputedStyle(self.el).lineHeight,10);
-					pos = cue.rawLine*lh;
-					if(pos < 0){ style[bottom] = (-pos-lh)+"px"; }
-					else{ style[top] = pos+"px"; }
-				}else{
-					style[top] = cue.rawLine+"%";
-				}
-			}
+			*/
 		}
 	};
 	
+	Caption.prototype.hide = function(){ this.text.hide(); };
+	
 	Caption.FromCue = function(wrapper,processor,cue){
-		var cap = new Caption({
-				wrapper:wrapper,
-				menu:caption_menu(),
-				processor:processor,
-				text:cue.text,
-				start:cue.startTime,
-				stop:cue.endTime
-			});
-			
-		cap.Update(cue);		
-		return cap;
+		return new Caption({
+			wrapper:wrapper,
+			menu:caption_menu(),
+			processor:processor,
+			cue:cue
+		});
 	};
 
 	Caption.Track = function(clist, smode, stime){

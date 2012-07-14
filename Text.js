@@ -29,21 +29,27 @@
 			element.parentNode.removeChild(element);
 		}
 		element.style.position = "absolute";
-		Object.defineProperties(this,{
-			open: {
-				value: function(x,y,s){
-					element.style.top = y+"px";
-					element.style.left = x+"px";
-					this.selection = s;
-					(Ayamel.FSElement()||document.body).appendChild(element);
-				},enumerable: true
-			},
-			close: {
-				value: function(){
-					element.parentNode.removeChild(element);
-				},enumerable: true			
-			}
-		});
+		this.open = function(x,y,s){
+			element.style.top = y+"px";
+			element.style.left = x+"px";
+			this.selection = s;
+			(Ayamel.FSElement()||document.body).appendChild(element);
+		};
+		this.close = function(){ element.parentNode.removeChild(element); };
+		Object.freeze(this);
+	}
+	
+	function textMouseup(e){
+		var st = getSelection();
+		activeMenu && activeMenu.close();
+		if(!st.isCollapsed){
+			this.menu.open(	document.body.scrollLeft+e.clientX,
+						document.body.scrollTop+e.clientY,
+						st, this.displayElement);
+			activeMenu = this.menu;
+		}else{activeMenu = null;}
+		e.stopPropagation();
+		e.preventDefault();
 	}
 	
 	function Text(params){
@@ -54,81 +60,77 @@
 			menu: the highlight menu associated with this text
 			text: initial content,
 		}*/
-		var raw,c_el,d_el,
-			menu = new TextMenu(params.menu),
+		var raw, d_el, c_el,
 			processor = (typeof params.processor === 'function')
 				?params.processor
 				:function(x){
 					var el = document.createElement("span");
 					el.innerHTML = x;
 					return el.childNodes.length===1?el.firstChild:el;
-				},
-			wrapper = params.wrapper,
-			parent = params.parent || document.body,
-			text = params.text,
-			displayed = false;
+				};
 		
-		if(!(parent instanceof HTMLElement)){throw "Invalid Parent Node";}
+		this.displayed = false;
+		this.menu = new TextMenu(params.menu);
+		this.parent = params.parent || document.body;
+		if(!(this.parent instanceof HTMLElement)){throw "Invalid Parent Node";}
 		
 		c_el = document.createElement('span');
-		d_el = (typeof wrapper == 'function')?wrapper(c_el):c_el;
-		d_el.addEventListener("mouseup",function(e){
-			var st = getSelection();
-			activeMenu && activeMenu.close();
-			if(!st.isCollapsed){
-				menu.open(	document.body.scrollLeft+e.clientX,
-							document.body.scrollTop+e.clientY,
-							st, d_el);
-				activeMenu = menu;
-			}else{activeMenu = null;}
-			e.stopPropagation();
-			e.preventDefault();
-		});
 		c_el.innerHTML = "loading...";
+		
+		d_el = (typeof params.wrapper == 'function')?params.wrapper(c_el):c_el;
+		d_el.addEventListener("mouseup",textMouseup.bind(this),false);
+		
 		Object.defineProperties(this,{
 			text: {
-				set: (c_el === d_el)
-					?function(t){
+				set: (c_el === d_el)?
+					function(t){
 						d_el.replaceChild(processor(t),d_el.firstChild);
 						return raw = t;
-					}
-					:function(t){
+					}:
+					function(t){
 						var nn = processor(t);
 						c_el.parentNode.replaceChild(nn,c_el);
 						c_el = nn;
+						this.contentElement = c_el;
 						return raw = t;
 					},
 				get: function(){return raw;},
 				enumerable: true
 			},
-			displayed: {get: function(){return displayed;}},
-			display: {
-				value: function(p){
-					var dp = (p||parent);
-					if(dp != d_el.parentNode){
-						this.hide();
-						dp.appendChild(d_el);
-					}
-					displayed = true;
-				},enumerable: true
-			},
-			hide: {
-				value: function(){
-					if(displayed){
-						d_el.parentNode.removeChild(d_el);
-						displayed = false;
-						if(menu === activeMenu){
-							menu.close();
-							activeMenu = null;
-						}
-					}
-				},enumerable: true
+			lineBoxHeight: {
+				//TODO: this should be sensitive to orientation
+				get: function(){
+					if(!this.displayed){return 0;}
+					var cs = c_el.parentNode.getClientRects();
+					return cs.length?cs[0].bottom-cs[0].top:c_el.parentNode.clientHeight;
+				}
 			}
 		});
 		
-		this.el = d_el;
-		if(text){this.text = text;}
+		this.displayElement = d_el;
+		this.contentElement = c_el;
+		if(params.text){this.text = params.text;}
 	}
+	
+	Text.prototype.display = function(p){
+		var dp = (p||this.parent);
+		if(dp != this.displayElement.parentNode){
+			this.hide();
+			dp.appendChild(this.displayElement);
+		}
+		this.displayed = true;
+	};
+	
+	Text.prototype.hide = function(){
+		if(this.displayed){
+			this.displayElement.parentNode.removeChild(this.displayElement);
+			this.displayed = false;
+			if(this.menu === activeMenu){
+				this.menu.close();
+				activeMenu = null;
+			}
+		}
+	};	
 	
 	Text.getDirection = function(text){
 		/*
@@ -153,7 +155,7 @@
 			activeMenu.close();
 			activeMenu = null;
 		}
-	});
+	},false);
 
 	Ayamel.Text = Text;
 }(Ayamel));
