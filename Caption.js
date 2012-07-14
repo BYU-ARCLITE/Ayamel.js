@@ -16,10 +16,55 @@
 		};
 	}
 	
+	function caption_wrapper(params){
+		var shell = document.createElement('div'),
+			padding = document.createElement('div'),
+			tstyle = document.createElement('span'),
+			bg	= document.createElement('span');
+		
+		{
+			padding.style.paddingLeft = params.paddingLeft || "3px";
+			padding.style.paddingRight = params.paddingRight || "3px";
+			padding.style.paddingTop = params.paddingTop || "";
+			padding.style.paddingBottom = params.paddingBottom || "";
+		}
+		{
+			shell.style.position = "relative";
+			shell.style.width = "auto";
+			shell.style.display = "inline-block";
+			shell.style.overflow = "hidden";
+		}
+		{
+			tstyle.style.position = "relative";
+			tstyle.style.width = "auto";
+			tstyle.style.color = params.color || "white";
+		}
+		{
+			bg.style.position = "absolute";
+			bg.style.top = 0;
+			bg.style.bottom = 0;
+			bg.style.left = 0;
+			bg.style.right = 0;
+			bg.style.border = params.border || "1px solid black";
+			bg.style.background = params.background || "rgba(0,0,0,.5)";
+			bg.style.opacity = .5;
+		}
+		
+		shell.appendChild(bg);
+		shell.appendChild(padding);
+		padding.appendChild(tstyle);
+		
+		return function(el){
+			var s = shell.cloneNode(true);
+			s.childNodes[1].firstChild.appendChild(el);
+			return s;
+		}
+	}
+	
 	function Caption(params){
 		if(params.cue instanceof Cue){
 			this.text = new Ayamel.Text({
-				wrapper:params.wrapper,
+				wrapper:caption_wrapper(params.wrapper||{}),
 				menu:caption_menu(),
 				processor:params.processor,
 				text:params.cue.text
@@ -85,7 +130,6 @@
 		style.left = "";
 		style.right = "";
 		if(cue.vertical === ''){
-			style.writingMode = "horizontal-tb";
 			style.height = "auto";
 			style.width = size+"%";
 			style[direction==='ltr'?'left':'right'] = indent+"%";
@@ -106,11 +150,17 @@
 			}			
 		}else{
 			throw new Error("Vertical Text Not Supported");
-			/*
+			/** plan:
+				split on <br/>s and enclose in inline-block wrappers
+				insert a new <br/> after every character
+				stack the wrappers left-to-right or right-to-left
+				Find some way to do line wrapping properly.
+			**/
+			
 			style.height = size+"%";
 			style.width = "auto";
 			style.top = indent+"%";
-			switch(cue.vertical){
+			/*switch(cue.vertical){
 				case 'rl':
 					style.writingMode = "tb-rl";
 					style.webkitWritingMode = "vertical-rl";
