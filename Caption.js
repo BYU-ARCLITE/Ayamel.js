@@ -89,7 +89,7 @@
 			style = el.style,
 			cue = this.cue,
 			position = cue.position,
-			direction = Ayamel.Text.getDirection(cue.text),
+			direction = Ayamel.Text.getDirection(Ayamel.Text.stripHTML(cue.text)),
 			size, indent,
 			pos,lh;
 		

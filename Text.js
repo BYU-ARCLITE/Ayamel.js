@@ -150,6 +150,12 @@
 		return text.substring(0,i).search(l_exp) >= 0 ? 'ltr' : 'rtl';
 	};
 	
+	var t_el = document.createElement('span');
+	Text.stripHTML = function(text){
+		t_el.innerHTML = text;
+		return t_el.innerText || t_el.textContent || "";
+	};
+	
 	document.addEventListener("mouseup", function(){
 		if(activeMenu){
 			activeMenu.close();
