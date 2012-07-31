@@ -62,7 +62,7 @@
 	}
 	
 	function Caption(params){
-		if(params.cue instanceof Cue){
+		if(params.cue instanceof TimedText.Cue){
 			this.text = new Ayamel.Text({
 				wrapper:caption_wrapper(params.wrapper||{}),
 				menu:caption_menu(),
@@ -72,7 +72,7 @@
 			this.cue = params.cue;
 		}else{
 			this.text = new Ayamel.Text(params);
-			this.cue = new Cue("",params.startTime,params.endTime,params.text);
+			this.cue = new TimedText.Cue("",params.startTime,params.endTime,params.text);
 		}
 	};
 	
