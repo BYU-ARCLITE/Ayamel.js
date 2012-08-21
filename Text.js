@@ -24,10 +24,9 @@
 				get: function(){return menu.selection;},
 				set: function(s){return menu.selection = s;}
 			});
-		}else{ throw "Menu Not Displayable"; }
-		if(element.parentNode){
-			element.parentNode.removeChild(element);
-		}
+		}else{ throw new Error("Menu Not Displayable"); }
+		
+		element.parentNode && element.parentNode.removeChild(element);
 		element.style.position = "absolute";
 		this.open = function(x,y,s){
 			element.style.top = y+"px";
@@ -71,7 +70,7 @@
 				};
 		
 		this.displayed = false;
-		this.menu = new TextMenu(params.menu);
+		this.menu = new TextMenu(params.menu, params.filter);
 		this.parent = params.parent || document.body;
 		if(!(this.parent instanceof HTMLElement)){throw "Invalid Parent Node";}
 		
@@ -115,7 +114,7 @@
 	
 	Text.prototype.display = function(p){
 		var dp = (p||this.parent);
-		if(dp != this.displayElement.parentNode){
+		if(dp !== this.displayElement.parentNode){
 			this.hide();
 			dp.appendChild(this.displayElement);
 		}
