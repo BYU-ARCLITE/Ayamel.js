@@ -38,6 +38,7 @@
 			tstyle.style.position = "relative";
 			tstyle.style.width = "auto";
 			tstyle.style.color = params.color || "white";
+			tstyle.style.fontSize = params.fontSize || "1em";
 		}
 		{
 			bg.style.position = "absolute";
@@ -65,7 +66,7 @@
 		if(params.cue instanceof TimedText.Cue){
 			this.text = new Ayamel.Text({
 				wrapper:caption_wrapper(params.wrapper||{}),
-				menu:caption_menu(),
+				menu:params.menu||(caption_menu()),
 				processor:params.processor,
 				text:params.cue.text
 			});
@@ -182,10 +183,10 @@
 	
 	Caption.prototype.hide = function(){ this.text.hide(); };
 	
-	Caption.FromCue = function(wrapper,processor,cue){
+	Caption.FromCue = function(wrapper,processor,menu,cue){
 		return new Caption({
 			wrapper:wrapper,
-			menu:caption_menu(),
+			menu:menu,
 			processor:processor,
 			cue:cue
 		});

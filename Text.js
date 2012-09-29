@@ -27,6 +27,7 @@
 		}else{ throw new Error("Menu Not Displayable"); }
 		
 		element.parentNode && element.parentNode.removeChild(element);
+		element.addEventListener("mouseup",function(e){e.stopPropagation();},false);
 		element.style.position = "absolute";
 		this.open = function(x,y,s){
 			element.style.top = y+"px";
@@ -35,7 +36,7 @@
 			(Ayamel.FSElement()||document.body).appendChild(element);
 		};
 		this.close = function(){ element.parentNode.removeChild(element); };
-		this.filter = (typeof filter === 'function')?filter:function(){};
+		this.filter = (typeof filter === 'function')?filter:function(s){return s;};
 		Object.freeze(this);
 	}
 	
@@ -43,10 +44,10 @@
 		var st = this.filter(getSelection());
 		activeMenu && activeMenu.close();
 		if(!st.isCollapsed){
-			this.menu.open(	document.body.scrollLeft+e.clientX,
+			this.open(	document.body.scrollLeft+e.clientX,
 						document.body.scrollTop+e.clientY,
 						st, this.displayElement);
-			activeMenu = this.menu;
+			activeMenu = this;
 		}else{activeMenu = null;}
 		e.stopPropagation();
 		e.preventDefault();
@@ -78,7 +79,7 @@
 		c_el.innerHTML = "loading...";
 		
 		d_el = (typeof params.wrapper == 'function')?params.wrapper(c_el):c_el;
-		d_el.addEventListener("mouseup",textMouseup.bind(this),false);
+		d_el.addEventListener("mouseup",textMouseup.bind(this.menu),false);
 		
 		Object.defineProperties(this,{
 			text: {
