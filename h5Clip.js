@@ -26,21 +26,23 @@ var h5PlayerInstall = function(host,global,callback){
 	};
 	
 	function h5Clip(src,start,stop){
-		var cb, e, v_el = genVid.cloneNode(false),
+		var self = this,
+			v_el = genVid.cloneNode(false),
 			evt_cb = evt_dispatcher.bind(this);
-		v_el.src = src+"#t="+start+","+stop;
+		v_el.src = (typeof start === 'number'?(src+"#t="+start+(typeof stop === 'number'?","+stop:"")):src);
 		v_el.load();
+		Object.keys(h5Events).forEach(function(e){
+			v_el.addEventListener(e,evt_cb,false);
+		});
 		this.media = this.media_el = v_el;
 		this.attrs = {currentTime:0};
-		for(e in h5Events) if(h5Events.hasOwnProperty(e)){
-			this.media.addEventListener(e,evt_cb,false);
+		this.media.addEventListener('loadedmetadata',metadata_cb,false);
+		function metadata_cb(){
+			self.media.currentTime = self.attrs.currentTime;
+			self.media.removeEventListener('loadedmetadata',metadata_cb);
 		}
-		cb = function(){
-			this.media.currentTime = this.attrs.currentTime;
-			this.media.removeEventListener('loadedmetadata',cb);
-		}.bind(this);
-		this.media.addEventListener('loadedmetadata',cb,false);
 	}
+	
 	h5Clip.prototype = Object.create(host.VideoClipPrototype,{
 		Play: {value: function() {
 			var ct = this.media.currentTime;

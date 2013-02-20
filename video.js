@@ -4,7 +4,13 @@
 		throw new Error("Ayamel Uninitialized");
 	}
 	
-	var VCons = [];
+	var VCons = [],
+		gen_div = document.createElement('div');
+	
+	gen_div.style.position = "absolute";
+	gen_div.style.visibility = "hidden";
+	gen_div.style.height = "100%";
+	gen_div.style.width = "100%";
 	
 	function auto_pause(event){
 		if(this.currentTime >= this.duration){
@@ -13,45 +19,45 @@
 		}
 	}
 			
-	function Video(resource,start,stop){
-		var self = this;
+	function Video(parent,resource,start,stop){
+		var xhr, self = this;
 		if(!(this instanceof Video)){return new Video(resource,start,stop);}
-		Ayamel.Actor.Dynamic.call(this);
+		Ayamel.TimedMedia.call(this,{
+			element: gen_div.cloneNode(false),
+			attrs: parent.attrs||{
+				muted: false,
+				volume: 100,
+				playing: false,
+				playbackRate: 1,
+				time: 0
+			},
+			events: parent.events||{
+				play: [function(){self.attrs.playing = true;}],
+				pause: [function(){self.attrs.playing = false;}],
+				ended: [function(){self.attrs.playing = false;}]
+			}
+		});
 		
-		this.element = document.createElement('div');
-		this.media = null;
-		this.attrs = {
-			muted: false,
-			volume: 100,
-			playing: false,
-			playbackRate: 1,
-			time: 0
-		};
-		
-		this.events = {
-			timeupdate: [
-				function(){
-					//updateDisplay.call(self,self.clip.currentTime);
-				}
-			],
-			play: [function(){self.attrs.playing = true;}],
-			pause: [function(){self.attrs.playing = false;}],
-			ended: [function(){self.attrs.playing = false;}]
-		};
+		this.parent = parent;
+		parent.contentElement.appendChild(this.element);
 		
 		if(typeof resource === 'string'){
-			$.ajax({
-				type: "GET",
-				url: resource,
-				dataType: "json",
-				success: function(response){
-					resource = response.data;
-					generate_clip();
+			xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function(){
+				if(this.readyState == 4){
+					((this.status >= 200 && this.status < 400)?
+					function(response){
+						generate_clip(JSON.parse(response).data);
+					}:function(response){
+						alert("An error was encountered retrieving the video resource: " + response);
+					})(this.responseText);
 				}
-			});
-		}else{ generate_clip(); }
+			};
+			xhr.open("GET",resource,true);
+			xhr.send();
+		}else{ generate_clip(resource); }
 		
-		function generate_clip(){
+		function generate_clip(resource){
 			var i, clip;
 			if(!start){start=0;}
 			for(i = VCons.length-1;i>=0;i--){
@@ -82,7 +88,7 @@
 		}
 	}
 	
-	Video.prototype = Object.create(Ayamel.Actor.Dynamic.prototype,{
+	Video.prototype = Object.create(Ayamel.TimedMedia.prototype,{
 		bindKeys: {
 			value: function(){
 				var self=this,
@@ -93,6 +99,24 @@
 					32:	spacebinding,
 					' ':spacebinding,
 				};
+			}
+		},
+		Activate: {
+			value: function(time){
+				var media = this.media;
+				if(media){
+					media.volume = this.attrs.volume;
+					media.muted = this.attrs.muted;
+					media.playbackRate = this.attrs.playbackRate;
+				}
+				this.currentTime = time||0;
+				this.element.style.visibility = "visible";
+			}
+		},
+		Deactivate: {
+			value: function(){
+				this.media && this.media.Pause();
+				this.element.style.visibility = "hidden";
 			}
 		}
 	});

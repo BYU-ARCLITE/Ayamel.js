@@ -50,7 +50,8 @@
 		},false);
 		
 		global.Ayamel = {
-			Actor:		function(){throw "Ayamel.Actor Uninitialized";},
+			TimedMedia:		function(){throw "Ayamel.TimedMedia Uninitialized";},
+			VideoPlayer:	function(){throw "Ayamel.VideoPlayer Uninitialized";},
 			Video:		function(){throw "Ayamel.Video Uninitialized";},
 			Text:		function(){throw "Ayamel.Text Uninitialized";},
 			AyamelElement: {
@@ -63,8 +64,5 @@
 			keybindings:{},
 			genFrame:genFrame
 		};
-		
-		Ayamel.Actor.Dynamic = Ayamel.Actor;
-		Ayamel.Actor.Static = Ayamel.Actor;
 	}
 }(window));

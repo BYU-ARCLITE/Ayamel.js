@@ -10,6 +10,8 @@
 			content = document.createElement('div'),
 			self = this;
 		
+		content.style.height = "100%";
+		content.style.width = "100%";
 		aspect_control.style.marginTop = ar?(+ar)+"%":"50%";
 		aspect_element.className = "aspect_element";
 		aspect_element.appendChild(content);

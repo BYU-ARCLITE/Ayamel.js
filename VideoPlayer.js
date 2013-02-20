@@ -4,22 +4,22 @@
 		throw new Error("Ayamel Uninitialized");
 	}
 	
-	function VideoPlayer(element,ar){
-		if(!(this instanceof VideoPlayer)){return new VideoPlayer(element,ar);}
-		Ayamel.UniformAspectRatio.call(this,element,ar);
+	function VideoPlayer(params){
+		if(!(this instanceof VideoPlayer)){return new VideoPlayer(params);}
+		if(!(params.element instanceof HTMLElement)){
+			params.element = document.createElement('div');
+		}
+		Ayamel.UniformAspectRatio.call(this,params.element,params.aspectRatio);
 		Ayamel.MediaController.call(this,this.aspectElement);
-		var self = this, time = 0, controls = this.controls;
-		
-		this.index = -1;
-		this.actor = null;
+		var self = this, time = 0, controls = this.controls,
+			video, cb;
 		
 		this.events = {
 			timeupdate: [
 				function(){
-					time = self.actor.currentTime;
+					time = self.currentClip.currentTime;
 					if(time >= controls.loopEnd){self.currentTime = controls.loopStart;}
 					else{controls.progress = time;}
-					console.log(time);
 				}
 			],
 			play: [function(){
@@ -33,6 +33,22 @@
 				self.currentTime = 0;
 			}]
 		};
+		
+		video = new Ayamel.Video(this,params.resource)
+		this.currentClip = video;
+		
+		if(video.readyState){
+			this.controls.duration = video.duration;
+			video.Activate();
+		}else{
+			cb = function(){
+				self.controls.duration = video.duration;
+				video.Activate();
+				video.removeEventListener('durationchange',cb,false);
+			};
+			video.addEventListener('durationchange',cb,false);
+		}
+		
 		Object.defineProperty(this,'currentTime',{
 			get: function(){return time;},
 			set: function(val){ //only takes care of external seeking
@@ -40,7 +56,7 @@
 				if(time > this.duration){time = this.duration;}
 				else if(time < 0){time=0;}
 				this.controls.progress = time;
-				if(this.actor){ this.actor.currentTime = time; }
+				this.currentClip.currentTime = time;
 			},enumerable: true
 		});
 		Object.seal(this);
@@ -49,18 +65,14 @@
 	VideoPlayer.prototype = Object.create(Ayamel.AyamelElement,{
 		Play: {
 			value: function(){
-				if(this.actor && this.actor.dynamic){
-					this.controls.playing = this.attrs.playing = true;
-					this.actor.Play();
-				}
+				this.controls.playing = this.attrs.playing = true;
+				this.currentClip.Play();
 			}
 		},
 		Pause: {
 			value: function() {
-				if(this.actor && this.actor.dynamic){
-					this.controls.playing = this.attrs.playing = false;
-					this.actor.Pause();
-				}
+				this.controls.playing = this.attrs.playing = false;
+				this.currentClip.Pause();
 			}
 		},
 		bindKeys: {
@@ -116,14 +128,14 @@
 			}
 		},
 		duration: {
-			get: function(){return this.actor.duration;},
+			get: function(){return this.currentClip.duration;},
 			enumerable: true
 		},
 		muted: {
 			get: function() {return this.attrs.muted;},
 			set: function(mute) {
-				this.controls.muted = this.attrs.muted = mute;
-				this.actor && (this.actor.muted = mute);
+				this.attrs.muted = this.controls.muted = mute;
+				this.currentClip.muted = this.attrs.muted;
 				return mute;
 			},enumerable: true
 		},
@@ -131,7 +143,7 @@
 			get: function(){return this.attrs.volume;},
 			set: function(val) { //The volume as a percentage
 				this.attrs.volume = this.controls.volume = val;
-				this.actor && (this.actor.volume = this.attrs.volume);
+				this.currentClip.volume = this.attrs.volume;
 				return val;
 			},enumerable: true
 		},
@@ -140,33 +152,9 @@
 			set: function(val) {
 				val = +val || 0;
 				this.attrs.playbackRate = this.controls.playbackRate = val;
-				this.actor && (this.actor.playbackRate = this.attrs.playbackRate);
+				this.currentClip.playbackRate = this.attrs.playbackRate;
 				return val;
 			},enumerable: true
-		},
-		AttachActor: {
-			value: function(video){
-				var cb;
-				video.Attach(this);
-				if(video.readyState){
-					this.controls.duration = video.duration;
-				}else{
-					cb = function(){
-						this.controls.duration = video.duration;
-						video.removeEventListener('durationchange',cb,false);
-					}.bind(this);
-					video.addEventListener('durationchange',cb,false);
-				}
-			}
-		},
-		DetachActor: {
-			value: function(){
-				var video = this.actor;
-				if(video){
-					video.dynamic && video.Pause();
-					video.Detach();
-				}
-			}
 		}
 	});
 	
