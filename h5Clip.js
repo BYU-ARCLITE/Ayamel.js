@@ -22,16 +22,15 @@ var h5PlayerInstall = function(host,global,callback){
 	genVid.style.position = "absolute";
 	
 	function evt_dispatcher(event){	//translate h5 media event into Video event
-		this.v && this.v.callHandlers(h5Events[event.type]);
+		this.wrapper.callHandlers(h5Events[event.type]);
 	};
 	
-	function h5Clip(res,start,stop){
+	function h5Clip(src,start,stop){
 		var cb, e, v_el = genVid.cloneNode(false),
 			evt_cb = evt_dispatcher.bind(this);
-		v_el.src = res; //+"#t="+start+","+stop;
+		v_el.src = src+"#t="+start+","+stop;
 		v_el.load();
 		this.media = this.media_el = v_el;
-		this.events = null;
 		this.attrs = {currentTime:0};
 		for(e in h5Events) if(h5Events.hasOwnProperty(e)){
 			this.media.addEventListener(e,evt_cb,false);
@@ -42,7 +41,7 @@ var h5PlayerInstall = function(host,global,callback){
 		}.bind(this);
 		this.media.addEventListener('loadedmetadata',cb,false);
 	}
-	h5Clip.prototype = Object.create(host.Clip.prototype,{
+	h5Clip.prototype = Object.create(host.VideoClipPrototype,{
 		Play: {value: function() {
 			var ct = this.media.currentTime;
 			if(ct < this.stop){
@@ -78,32 +77,21 @@ var h5PlayerInstall = function(host,global,callback){
 		}, readyState: {
 			get: function(){ return this.media.readyState; },
 			enumerable: true
-		},
-		Attach: {
-			value: function(v){
-				v.media = this;
-				v.element.appendChild(this.media_el);
-				this.v = v;
-				this.events = v.events;
-				this.currentTime = (v.attrs.time||0)+this.start;
-				this.media.volume = v.attrs.volume/100;
-				this.media.muted = v.attrs.muted;
-				this.media.playbackRate = v.attrs.playbackRate;
-				this.media.addEventListener('timeupdate',this.auto_pause,false);
-			}
 		}
 	});
 	
-	callback(function(res,start,stop){
-		var i, files = res.content.files;
-		for(i = files.length-1; i >= 0; i--){
-			if(genVid.canPlayType(files[i].mime)==='probably'){
-				var src = files[i].download || files[i].stream;
-				if(/^https?:\/\//.test(src)){
-					return new h5Clip(src,start,stop);
+	callback(function(resource,start,stop){
+		var i, j, src, check, file, files = resource.content.files;
+		for(j = 0; check=['probably','maybe'][j]; j++){
+			for(i = 0; file=files[i]; i++){
+				if(genVid.canPlayType(files[i].mime)===check){
+					src = files[i].download || files[i].stream;
+					if(/^https?:\/\//.test(src)){
+						return new h5Clip(src,start,stop);
+					}
 				}
 			}
 		}
-		return false;
+		return null;
 	});
 };

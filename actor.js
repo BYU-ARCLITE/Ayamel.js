@@ -67,7 +67,7 @@
 				this.currentTime = time||0;
 				stage.DetachActor();
 				stage.actor = this;
-				stage.element.appendChild(this.element);
+				stage.contentElement.appendChild(this.element);
 			}
 		},
 		Detach: {

@@ -1,7 +1,5 @@
 var ControlBar = (function(global){
 
-	loadCSS("./css/controls.css");
-
 	function ProgBar(color){
 		var bar_c = document.createElement('div'),
 			bar_m = bar_c.cloneNode(false),
