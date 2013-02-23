@@ -75,6 +75,35 @@
 				this.currentClip.Pause();
 			}
 		},
+		duration: {
+			get: function(){return this.currentClip.duration;},
+			enumerable: true
+		},
+		muted: {
+			get: function() {return this.attrs.muted;},
+			set: function(mute) {
+				this.attrs.muted = this.controls.muted = mute;
+				this.currentClip.muted = this.attrs.muted;
+				return mute;
+			},enumerable: true
+		},
+		volume: {
+			get: function(){return this.attrs.volume;},
+			set: function(val) { //The volume as a percentage
+				this.attrs.volume = this.controls.volume = val;
+				this.currentClip.volume = this.attrs.volume;
+				return val;
+			},enumerable: true
+		},
+		playbackRate: {
+			get: function(){return this.attrs.playbackRate;},
+			set: function(val) {
+				val = +val || 0;
+				this.attrs.playbackRate = this.controls.playbackRate = val;
+				this.currentClip.playbackRate = this.attrs.playbackRate;
+				return val;
+			},enumerable: true
+		},
 		bindKeys: {
 			value: function(){
 				var self=this,
@@ -126,35 +155,6 @@
 					DOM_VK_DELETE:	delbinding
 				};
 			}
-		},
-		duration: {
-			get: function(){return this.currentClip.duration;},
-			enumerable: true
-		},
-		muted: {
-			get: function() {return this.attrs.muted;},
-			set: function(mute) {
-				this.attrs.muted = this.controls.muted = mute;
-				this.currentClip.muted = this.attrs.muted;
-				return mute;
-			},enumerable: true
-		},
-		volume: {
-			get: function(){return this.attrs.volume;},
-			set: function(val) { //The volume as a percentage
-				this.attrs.volume = this.controls.volume = val;
-				this.currentClip.volume = this.attrs.volume;
-				return val;
-			},enumerable: true
-		},
-		playbackRate: {
-			get: function(){return this.attrs.playbackRate;},
-			set: function(val) {
-				val = +val || 0;
-				this.attrs.playbackRate = this.controls.playbackRate = val;
-				this.currentClip.playbackRate = this.attrs.playbackRate;
-				return val;
-			},enumerable: true
 		}
 	});
 	

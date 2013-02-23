@@ -15,7 +15,7 @@
 	function auto_pause(event){
 		if(this.currentTime >= this.duration){
 			this.Pause();
-			this.fireEvent('ended');
+			this.callHandlers('ended');
 		}
 	}
 			
@@ -124,7 +124,7 @@
 	Ayamel.VideoClipPrototype = Object.create(Ayamel.AyamelElement,{
 		addEventListener: {value:function(){}},
 		removeEventListener: {value:function(){}},
-		fireEvent: {value:function(evt){ this.wrapper.fireEvent(evt); }}
+		callHandlers: {value:function(evt){ this.wrapper.callHandlers(evt); }}
 	});
 	
 	Ayamel.InstallVideoPlayers = function(installers,cb){

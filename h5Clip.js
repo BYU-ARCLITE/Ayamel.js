@@ -14,6 +14,7 @@ var h5PlayerInstall = function(host,global,callback){
 			ended:'ended',// Video has ended
 			ratechange:'ratechange',// Playback rate has changed
 			durationchange:'durationchange',// Duration has changed (for streams)
+			loadedmetadata:'loadedmetadata',// Metadata (including duration) is fully loaded
 			volumechange:'volumechange'// Volume has changed
 		},genVid = document.createElement('video');
 		

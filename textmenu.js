@@ -30,7 +30,7 @@ var TextMenu = (function(){
 			element.style.top = y+"px";
 			element.style.left = x+"px";
 			this.selection = s;
-			(Ayamel.FSElement()||document.body).appendChild(element);
+			(Ayamel.FSElement||document.body).appendChild(element);
 		};
 		this.close = function(){
 			if(activeMenu === this){

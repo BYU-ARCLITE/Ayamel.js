@@ -54,13 +54,36 @@
 			VideoPlayer:	function(){throw "Ayamel.VideoPlayer Uninitialized";},
 			Video:		function(){throw "Ayamel.Video Uninitialized";},
 			Text:		function(){throw "Ayamel.Text Uninitialized";},
+			get FSElement(){ return isFS()?FSEl:null; },
 			AyamelElement: {
-				get supportsFullscreen() {return fs;},
-				get isFullScreen() {return document.fullScreenElement === this.element || isFS();},
-				EnterFullScreen:function() {fs && reqFS(this.element);},
-				LeaveFullScreen:function() {fs && exitFS();},
+				get supportsFullscreen(){ return fs; },
+				get isFullScreen(){ return document.fullScreenElement === this.element || isFS(); },
+				EnterFullScreen: function(){ fs && reqFS(this.element); },
+				LeaveFullScreen: function(){ (FSEl === this.element) && exitFS(); },
+				addEventListener: function(event,cb){
+					var cblist = this.events[event];
+					if(cblist){ cblist.push(cb); }
+					else {this.events[event] = [cb];}
+				},
+				removeEventListener: function(event,cb){
+					var index,
+						cblist = this.events[event];
+					if(cblist && (index = cblist.indexOf(cb))!==-1){
+						if(cblist.length===1){delete this.events[event];}
+						else{cblist.splice(index,1);}
+					}
+				},
+				callHandlers: function(ename){
+					var evt, self = this;
+					if(this.events.hasOwnProperty(ename)){
+						evt = document.createEvent("HTMLEvents");
+						evt.initEvent(ename, true, true ); // event type,bubbling,cancelable
+						this.events[ename].forEach(function(handler){
+							handler.call(self,evt);
+						});
+					}
+				}
 			},
-			FSElement: function(){return isFS() && FSEl;},
 			keybindings:{},
 			genFrame:genFrame
 		};

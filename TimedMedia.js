@@ -12,37 +12,6 @@
 	}
 	
 	TimedMedia.prototype = Object.create(Ayamel.AyamelElement,{
-		addEventListener: {
-			value: function(event,cb){
-				var cblist = this.events[event];
-				if(cblist) {cblist.push(cb);}
-				else {this.events[event] = [cb];}
-				this.media && this.media.addEventListener(event,cb,false);
-			}
-		},
-		removeEventListener: {
-			value: function(event,cb){
-				var index,
-					cblist = this.events[event];
-				if(cblist && (index = cblist.indexOf(cb))!==-1){
-					if(cblist.length===1){delete this.events[event];}
-					else{cblist.splice(index,1);}
-				}
-				this.media && this.media.removeEventListener(event,cb);
-			}
-		},
-		callHandlers: {
-			value: function(ename){
-				var evt, self = this;
-				if(this.events.hasOwnProperty(ename)){
-					evt = document.createEvent("HTMLEvents");
-					evt.initEvent(ename, true, true ); // event type,bubbling,cancelable
-					this.events[ename].forEach(function(handler){
-						handler.call(self,evt);
-					});
-				}
-			}
-		},
 		Play: {
 			value: function(){
 				this.attrs.playing = true;
