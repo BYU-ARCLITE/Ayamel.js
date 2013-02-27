@@ -88,7 +88,7 @@ var h5PlayerInstall = function(host,global,callback){
 		for(j = 0; check=['probably','maybe'][j]; j++){
 			for(i = 0; file=files[i]; i++){
 				if(genVid.canPlayType(files[i].mime)===check){
-					src = files[i].download || files[i].stream;
+					src = files[i].downloadUri || files[i].streamUri;
 					if(/^https?:\/\//.test(src)){
 						return new h5Clip(src,start,stop);
 					}
