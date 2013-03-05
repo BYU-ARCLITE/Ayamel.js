@@ -4,13 +4,14 @@
 		throw new Error("Ayamel Uninitialized");
 	}
 	
-	function MediaController(element){
+	function MediaController(element, components){
 		var self = this,
 			attrs = {
 				muted: false,
 				volume: 100,
 				playing: false,
-				playbackRate: 1
+				playbackRate: 1,
+                componentNames: components
 			},
 			controls = new ControlBar(attrs);
 		

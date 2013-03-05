@@ -10,7 +10,7 @@
 			params.element = document.createElement('div');
 		}
 		Ayamel.UniformAspectRatio.call(this,params.element,params.aspectRatio);
-		Ayamel.MediaController.call(this,this.aspectElement);
+		Ayamel.MediaController.call(this, this.aspectElement, params.components);
 		var self = this, time = 0, controls = this.controls,
 			video, cb;
 		
