@@ -36,18 +36,13 @@ var ControlBar = (function () {
      * @constructor
      */
     function ControlBar(attributes) {
-        var self = this,
+        var _this = this,
 
             // The progress bar object
-            progressBar = new ProgressBar(self),
+            progressBar = new ProgressBar(this),
 
             // If no components are defined, then use a default set
             componentNames = attributes.componentNames || ["play", "volume"],
-
-            // Turn the list of names into actual components
-            components = componentNames.map(function (name) {
-                return ControlBarComponents[name](self, attributes);
-            }),
 
             // Create the element
             $element = $(template),
@@ -55,26 +50,22 @@ var ControlBar = (function () {
             // Create the component holder
             $componentHolder = $(componentHolderTemplate);
 
+        // Turn the list of names into actual components
+        this.components = componentNames.map(function (name) {
+            return ControlBarComponents[name](_this, attributes);
+        });
+
         // Add the progress bar
         $element.append(progressBar.element);
 
         // Add the components
         $element.append($componentHolder);
-        components.forEach(function (component) {
+        this.components.forEach(function (component) {
             $componentHolder.append(component.element);
         });
 
         //Define properties for this object
         Object.defineProperties(this, {
-            captionElement: {
-                get: function () {
-                    var captions = getComponent(components, "captions");
-                    if (captions) {
-                        return captions.element;
-                    }
-                    return null;
-                }
-            },
             duration: {
                 set: function (value) {
                     progressBar.duration = value;
@@ -90,13 +81,13 @@ var ControlBar = (function () {
             },
             muted: {
                 set: function (value) {
-                    var volume = getComponent(components, "volume");
+                    var volume = getComponent(_this.components, "volume");
                     if (volume) {
                         volume.muted = value;
                     }
                 },
                 get: function () {
-                    var volume = getComponent(components, "volume");
+                    var volume = getComponent(_this.components, "volume");
                     if (volume) {
                         return volume.muted;
                     }
@@ -105,14 +96,14 @@ var ControlBar = (function () {
             },
             playing: {
                 get: function () {
-                    var play = getComponent(components, "play");
+                    var play = getComponent(_this.components, "play");
                     if (play) {
                         return play.playing;
                     }
                     return false;
                 },
                 set: function (value) {
-                    var play = getComponent(components, "play");
+                    var play = getComponent(_this.components, "play");
                     if (play) {
                         play.playing = value;
                     }
@@ -128,13 +119,13 @@ var ControlBar = (function () {
             },
             volume: {
                 set: function (value) {
-                    var volume = getComponent(components, "volume");
+                    var volume = getComponent(_this.components, "volume");
                     if (volume) {
                         volume.volume = value;
                     }
                 },
                 get: function () {
-                    var volume = getComponent(components, "volume");
+                    var volume = getComponent(_this.components, "volume");
                     if (volume) {
                         return volume.volume;
                     }
@@ -144,14 +135,14 @@ var ControlBar = (function () {
         });
     }
 
-    // Define the prototype with event adders/removers
-    ControlBar.prototype = {
-        addEventListener: function (eventName, callback) {
-            this.element.addEventListener(eventName, callback, false);
-        },
-        removeEventListener: function (eventName, callback) {
-            this.element.removeEventListener(eventName, callback, false);
-        }
+    ControlBar.prototype.addEventListener = function (eventName, callback) {
+        this.element.addEventListener(eventName, callback, false);
+    };
+    ControlBar.prototype.removeEventListener = function (eventName, callback) {
+        this.element.removeEventListener(eventName, callback, false);
+    };
+    ControlBar.prototype.getComponent = function(name) {
+        return getComponent(this.components, name);
     };
 
     return ControlBar;

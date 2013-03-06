@@ -28,10 +28,44 @@ var ProgressBar = (function () {
     function ProgressBar(controlBar) {
         var duration = 0,
             progress = 0,
-            $element = $(template); // Create the HTML element
+            $element = $(template), // Create the HTML element
+            $knob = $element.children(".progressKnob"),
+            moving = false;
 
         // Add click functionality
-        $element.click(function (event) {
+        $knob.bind("touchstart mousedown", function (event) {
+            moving = true;
+            event.stopPropagation();
+        });
+
+        $(document)
+            .bind("touchmove mousemove", function (event) {
+                if (moving) {
+                    var width = event.pageX - $element.offset().left;
+                    $element.children(".progressBar").width(width);
+                }
+            }).bind("touchend mouseup", function (event) {
+                if (moving) {
+                    moving = false;
+
+                    var percentage = $element.children(".progressBar").width() / $element.width(),
+                        newEvent;
+
+                    // Create a new event and dispatch it through the control bar
+                    newEvent = document.createEvent('HTMLEvents');
+                    newEvent.initEvent('progressupdate',true,true);
+                    newEvent.progress = progress = percentage * duration;
+                    controlBar.element.dispatchEvent(newEvent);
+
+                    console.log(progress);
+
+                    // Prevent the parent element from handling the event
+                    event.stopPropagation();
+                }
+            });
+
+        $element.bind("touchend mouseup", function (event) {
+            console.log("click");
             var mouseX = event.offsetX || event.layerX,
                 percentage,
                 newEvent;
@@ -74,9 +108,11 @@ var ProgressBar = (function () {
                     // Set the progress bounding it between 0 and the duration
                     progress = Math.max(Math.min(value, duration), 0);
 
-                    // Set the width of the progress bar
-                    width = (duration ? progress / duration : 0) * 100;
-                    $element.find(".progressBar").width(width + "%");
+                    // Set the width of the progress bar if not dragging it
+                    if (!moving) {
+                        width = (duration ? progress / duration : 0) * 100;
+                        $element.find(".progressBar").width(width + "%");
+                    }
                 }
             }
         });

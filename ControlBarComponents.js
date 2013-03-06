@@ -12,7 +12,15 @@ var ControlBarComponents = (function () {
 
     // Define all the templates in one place
     var templates = {
-        captions:   '<div class="captions"></div>',
+        captions:   '<div class="captions">' +
+                    '    <div class="captionsIcon"></div>' +
+                    '    <div class="captionsMenu">' +
+                    '        <div class="captionsMenuTipDark"></div>' +
+                    '        <div class="captionsMenuTip"></div>' +
+                    '    </div>' +
+                    '</div>',
+        captionMenuEntry:   '<div class="captionsMenuEntry"></div>',
+
         fullScreen: '<div class="fullScreen"></div>',
         play:       '<div class="play"></div>',
         volume:     '<div class="volume">' +
@@ -36,6 +44,13 @@ var ControlBarComponents = (function () {
         var $element = $(templates.captions),
             name = "captions";
 
+        this.tracks = [];
+
+        // Set up the menu
+        $element.children(".captionsIcon").click(function () {
+            $element.children(".captionsMenu").toggle();
+        });
+
         Object.defineProperties(this, {
             element: {
                 get: function () {
@@ -49,6 +64,35 @@ var ControlBarComponents = (function () {
             }
         });
     }
+    CaptionsComponent.prototype.addTrack = function addTrack(track) {
+        var _this = this,
+            $element = $(this.element),
+            $entry;
+
+        this.tracks.push(track);
+
+        // Add an entry
+        $element.children(".captionsMenu").append(templates.captionMenuEntry);
+
+        // Add the text and set as active if applicable
+        $entry = $element.find(".captionsMenuEntry:last-child").append(track.label);
+        if (track.mode === "showing") {
+            $entry.addClass("active");
+        }
+
+        // Add click functionality
+        $entry.click(function () {
+
+            // Toggle this track
+            if (track.mode === "showing") {
+                track.mode  = "disabled";
+                $entry.removeClass("active");
+            } else {
+                track.mode  = "showing";
+                $entry.addClass("active");
+            }
+        });
+    };
 
     /**
      * The FullScreen component
