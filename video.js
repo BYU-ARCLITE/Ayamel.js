@@ -126,7 +126,12 @@
 		removeEventListener: {value:function(){}},
 		callHandlers: {value:function(evt){ this.wrapper.callHandlers(evt); }}
 	});
-	
+
+    /**
+     * Installs multiple video players.
+     * @param installers An array of video installers. The order is the priority
+     * @param cb A callback function
+     */
 	Ayamel.InstallVideoPlayers = function(installers,cb){
 		var done = false,
 			waitcount = 0;
@@ -140,7 +145,13 @@
 		if(waitcount===0 && cb){cb();}
 		else{done = true;}
 	};
-	
+
+    /**
+     * Installs a video player
+     * @param installer The video installer.
+     * @param priority The priority of the player. Lower the number the more preferred the player
+     * @param cb A callback function
+     */
 	Ayamel.AddVideoPlayer = function(installer,priority,cb){
 		installer(Ayamel,global,function(cons){
 			VCons.splice(priority,0,cons);
