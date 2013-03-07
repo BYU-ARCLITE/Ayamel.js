@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <title>Example 2</title>
+        
+        <!-- Styling for the stage and control bar -->
+        <link href="../css/stage.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="../css/controlBar.css" media="screen" rel="stylesheet" type="text/css" />
+        
+        <!-- jQuery -->
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        
+        <!-- Ayamel.js scripts -->
+        <script type="text/javascript" src="../js/ytClip.js"></script>
+        <script type="text/javascript" src="../js/Ayamel.js"></script>
+        <script type="text/javascript" src="../js/ControlBar.js"></script>
+        <script type="text/javascript" src="../js/ControlBarComponents.js"></script>
+        <script type="text/javascript" src="../js/MediaController.js"></script>
+        <script type="text/javascript" src="../js/ProgressBar.js"></script>
+        <script type="text/javascript" src="../js/Resource.js"></script>
+        <script type="text/javascript" src="../js/swfobject.js"></script>
+        <script type="text/javascript" src="../js/TimedMedia.js"></script>
+        <script type="text/javascript" src="../js/UniformAspectRatio.js"></script>
+        <script type="text/javascript" src="../js/video.js"></script>
+        <script type="text/javascript" src="../js/VideoPlayer.js"></script>
+        
+        
+        <script type="text/javascript">
+            var resource = {
+                "id": "someId",
+                "status": "normal",
+                "content": {
+                    "files": [
+                        {
+                            "streamUri": "youtube:\/\/-b7u3WqTtRc",
+                            "representation":"original",
+                            "quality":1,
+                            "mime":"video\/mp4"
+                        },
+                    ]
+                }
+            };
+            $(function() {
+                 
+                // Install the YouTube player
+                Ayamel.AddVideoPlayer(ytPlayerInstall, 1, function() {
+                    
+                    // Create the player
+                    var videoPlayer = new Ayamel.VideoPlayer({
+                        element: document.getElementById('player'),
+                        aspectRatio: 45,
+                        resource: resource
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Example 2 - Video Player</h1>
+        
+        <div style="width: 600px">
+            <div id="player"></div>
+        </div>
+        
+    </body>
+</html>

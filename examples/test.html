@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <title>Example 2</title>
+        
+        <!-- jQuery -->
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        
+    </head>
+    <body>
+        <h1>Test</h1>
+        
+        <script type="text/javascript" src="../js/swfobject.js"></script>    
+        <div id="ytapiplayer">
+            You need Flash player 8+ and JavaScript enabled to view this video.
+        </div>
+        
+        <script type="text/javascript">
+        
+            var params = { allowScriptAccess: "always" };
+            var atts = { id: "myytplayer" };
+            swfobject.embedSWF("http://www.youtube.com/apiplayer?enablejsapi=1&version=3",
+                "ytapiplayer", "425", "356", "8", null, null, params, atts);
+                
+            function onYouTubePlayerReady() {
+                var player = $("#myytplayer").get(0);
+                player.loadVideoById("-b7u3WqTtRc");
+                player.playVideo()
+            }
+        
+        </script>
+        
+    </body>
+</html>

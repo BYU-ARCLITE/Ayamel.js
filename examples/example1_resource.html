@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <title>Example 1</title>
+        
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="../js/Resource.js"></script>
+        
+        <script type="text/javascript">
+            var url = "proxy.php?url=" + encodeURI("http://ayamel.americancouncils.org/api/v1/resources/512e70d735e544b612000001");
+            $(function() {
+                new Resource(url, function (resource) {
+                    $("code").append(JSON.stringify(resource));
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Example 1 - Loading a Resource</h1>
+        
+        <code></code>
+        
+    </body>
+</html>

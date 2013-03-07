@@ -29,11 +29,11 @@ var ytPlayerInstall = function(host,global,callback){
 		setTimeout(ytEvtWatcher.bind(this),50);
 	}
 	
-	function ytClip(res,start,stop){
+	function ytClip(id,start,stop){
 		var f = host.genFrame.cloneNode(false),
 			playing = false;
 		f.src = "http://www.youtube.com/embed/"
-				+res.match(/.*\/(.*)(\?|$)/)[1]+"?wmode=transparent&enablejsapi=1&controls=0&start="+start;
+				+id+"?wmode=transparent&enablejsapi=1&controls=0&start="+start;
 		this.media_el = f;
 		//to test: labeled break out of a function
 		this.media = new YT.Player(f,{
@@ -70,7 +70,7 @@ var ytPlayerInstall = function(host,global,callback){
 		this._timelatch = 0;
 	}
 	
-	ytClip.prototype = Object.create(Ayamel.Clip.prototype,{
+	ytClip.prototype = Object.create(host.VideoClipPrototype, {
 		addEventListener: {
 			value: function(event,cb){
 				if(	event === 'timeupdate' &&
@@ -162,7 +162,18 @@ var ytPlayerInstall = function(host,global,callback){
 	global.onYouTubePlayerAPIReady = function() {
 		delete global.onYouTubePlayerAPIReady;
 		callback(function(res,start,stop){
-			return /youtube\.com\/|youtu\.be/.test(res) && (new ytClip(res,start,stop));
+            
+            // Check the stream uris in the resource files for a youtube video
+            res.content.files.forEach(function (file) {
+                
+                // Check that there is a youtube uri
+                if (file.streamUri && /youtube:\/\//.test(file.streamUri)) {
+                    
+                    // Attempt to make the clip
+                    return new ytClip(file.streamUri.substr(10),start,stop);
+                }
+            });
+            return false;
 		});
 	};
 	
