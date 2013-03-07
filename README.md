@@ -2,15 +2,37 @@
 
 Client-side services and display elements for the Flagship Media Library interface.
 
-##Scripts, purposes, and usage
+Scripts, purposes, and usage.
 
-###actor.js
+Table of Contents:
+ + [actor.js](#actor)
+ + [annotator.js](#annotator)
+ + [async.js](#async)
+ + [Ayamel.js](#ayamel)
+ + [ControlBar.js](#controlBar)
+ + [ControlBarComponents.js](#controlBarComponents)
+ + [h5Clip.js](#h5Clip)
+ + [language_modules.js](#languageModules)
+ + [h5Clip.js](#h5Clip)
+ + [MediaController.js](#mediaController)
+ + [MediaControls.js](#mediaControls)
+ + [ProgressBar.js](#progressBar)
+ + [swfobject.js](#swfobject)
+ + [Text.js](#text)
+ + [textmenu.js](#textmenu)
+ + [TimedMedia.js](#timedMedia)
+ + [UniformAspectRatio.js](#uniformAspectRatio)
+ + [video.js](#video)
+ + [VideoPlayer.js](#videoPlayer)
+ + [ytClip.js](#ytClip)
+
+## <a id="actor"></a>actor.js
 Um... I'm not sure how this fits in.
 
 **Dependencies:**
  + `Ayamel.js`
 
-###annotator.js
+## <a id="annotator"></a>annotator.js
 Used for annotating stuff. You can call it with one of the following:
 
 ```javascript
@@ -40,13 +62,13 @@ content | String? | The content to annotate
 **Dependencies:**
  + *None*
 
-###async.js
+## <a id="async"></a>async.js
 Don't know.
 
 **Dependencies:**
  + *None*
 
-###Ayamel.js
+## <a id="ayamel"></a>Ayamel.js
 This is the starting point of the Ayamel scripts. This defines a namespace contained within the `Ayamel` object. It also defines an AyamelElement which is used as the prototype for other elements. You'll never call just the Ayamel object, but one of the sub objects which each require a separate script to work properly. These include:
  + TimedMedia
  + VideoPlayer
@@ -65,7 +87,7 @@ This is the starting point of the Ayamel scripts. This defines a namespace conta
  + `video.js`
  + `VideoPlayer.js`
 
-###ControlBar.js
+## <a id="controlBar"></a>ControlBar.js
 This is the control bar for media controller. This creates a graphical interface that can be used to control media playback. This is a customizable alternative to `MediaControls.js`.
 
 **Dependencies:**
@@ -88,7 +110,7 @@ This defines a bunch of components that can be added to the control bar. You sho
 **Used by:**
  + `ControlBar.js`
  
-### h5Clip.js
+## <a id="h5Clip"></a>h5Clip.js
 This script defines the video player installer which can be used to support HTML5 video.
 
 **Dependencies:**
@@ -104,13 +126,13 @@ Ayamel.InstallVideoPlayers([h5PlayerInstall, ...], callback)
     
 For a description of these functions, see `video.js`
 
-### language_modules.js
+## <a id="languageModules"></a>language_modules.js
 Something to do with languages.
 
 **Dependencies:**
  + *None*
 
-### MediaController.js
+## <a id="mediaController"></a>MediaController.js
 
 As the name suggests, this is a controller for media. This connects the media player with the controls.
 
@@ -121,7 +143,7 @@ As the name suggests, this is a controller for media. This connects the media pl
 **Used by:**
  + `VideoPlayer.js`
 
-### MediaControls.js
+## <a id="mediaControls"></a>MediaControls.js
 Provides a graphical interface for controlling media. Can use `ControlBar.js` instead.
 
 **Dependencies:**
@@ -130,7 +152,7 @@ Provides a graphical interface for controlling media. Can use `ControlBar.js` in
 **Used by:**
  + `MediaController.js`
 
-### ProgressBar.js
+## <a id="progressBar"></a>ProgressBar.js
 
 The progress bar used by the control bar.
 
@@ -140,7 +162,7 @@ The progress bar used by the control bar.
 **Used by:**
  + `ControlBar.js`
 
-### swfobject.js
+## <a id="swfobject"></a>swfobject.js
 Used to load flash objects onto the page.
 
 **Dependencies:**
@@ -149,20 +171,20 @@ Used to load flash objects onto the page.
 **Used by:**
  + `ytClip.js`
 
-### Text.js
+## <a id="text"></a>Text.js
 Has to do with text somehow.
 
 **Dependencies:**
  + `Ayamel.js`
  + `TextMenu.js`
 
-### textmenu.js
+## <a id="textmenu"></a>textmenu.js
 A menu for text?
 
 **Used by:**
  + `TextMenu.js`
 
-### TimedMedia.js
+## <a id="timedMedia"></a>TimedMedia.js
 An abstract layer for working with timed media (video, audio).
 
 **Dependencies:**
@@ -171,7 +193,7 @@ An abstract layer for working with timed media (video, audio).
 **Used by:**
  + `video.js`
 
-### UniformAspectRatio.js
+## <a id="uniformAspectRatio"></a>UniformAspectRatio.js
 This helps maniuplate DOM Elements such that a certain aspect ratio can be maintained.
 
 **Dependencies:**
@@ -180,7 +202,7 @@ This helps maniuplate DOM Elements such that a certain aspect ratio can be maint
 **Used by:**
  + `VideoPlayer.js`
 
-### video.js
+## <a id="video"></a>video.js
 This adds video support. Provides video player installers.
 
 **Dependencies:**
@@ -213,7 +235,7 @@ Parameter | Type | Description
 installers | Array of player installers | The list of video players to install. The order is the priority.
 callback | function | A callback function
 
-### VideoPlayer.js
+## <a id="videoPlayer"></a>VideoPlayer.js
 
 An interface for creating video players on the page.
 
@@ -245,7 +267,7 @@ Valid components include:
  + `captions` Caption track selection. For more information, see `ControlBar.js`
  + More coming soon!
 
-### ytClipjs
+## <a id="ytClip"></a>ytClip.js
 
 This script defines the video player installer which can be used to support YouTube videos.
 
