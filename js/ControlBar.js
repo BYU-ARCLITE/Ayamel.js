@@ -42,7 +42,7 @@ var ControlBar = (function () {
             progressBar = new ProgressBar(this),
 
             // If no components are defined, then use a default set
-            componentNames = attributes.componentNames || ["play", "volume"],
+            componentNames = attributes.componentNames || ["play", "volume", "fullScreen"],
 
             // Create the element
             $element = $(template),

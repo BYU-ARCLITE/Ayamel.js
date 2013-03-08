@@ -6,7 +6,8 @@
         eventFullScreen,
         isFullScreen,
         FullScreenElement,
-        genFrame;
+        genFrame,
+        pseduoFullScreen;
 
     // Setup the fullscreen functions
     if (!!document.mozCancelFullScreen) {
@@ -34,7 +35,21 @@
         };
         eventFullScreen = "webkitfullscreenchange";
     } else {
-        fullScreen = false;
+        // Pseudo fullscreen
+        exitFullScreen = function () {
+            pseduoFullScreen = false;
+            $(FullScreenElement).removeClass("pseudoFullScreen");
+        };
+        requestFullScreen = function (element) {
+            pseduoFullScreen = true;
+            FullScreenElement = element;
+            $(element).addClass("pseudoFullScreen");
+        };
+        isFullScreen = function () {
+            return pseduoFullScreen;
+        };
+        
+        pseduoFullScreen = false;
     }
 
     // Create the Ayamel object, If not already defined

@@ -3,6 +3,39 @@
     position: relative;
     width: 100%;
 }
+
+/* Repeat the vendor fullscreen modifiers. Cannot list. See http://www.sitepoint.com/html5-full-screen-api/ */
+.aspect_container:-webkit-full-screen {
+    display: block;
+    height: 100%;
+}
+.aspect_container:-moz-full-screen {
+    display: block;
+    height: 100%;
+}
+.aspect_container:-o-full-screen {
+    display: block;
+    height: 100%;
+}
+.aspect_container:-ms-full-screen {
+    display: block;
+    height: 100%;
+}
+.aspect_container:full-screen {
+    display: block;
+    height: 100%;
+}
+
+/* Pseudo fullscreen */
+.aspect_container.pseudoFullScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
 .aspect_element {
     position: absolute;
     top: 0;

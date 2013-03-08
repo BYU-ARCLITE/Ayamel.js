@@ -11,6 +11,94 @@
 .controlBar {
     background: rgba(0,0,0,0.9);
     border-radius: 0 0 5px 5px;
+    padding-top: 5px;
+}
+
+/* When in fullscreen, overlay the video */
+.aspect_container:-webkit-full-screen .controlBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transition: opacity ease 0.3s;
+    -moz-transition: opacity ease 0.3s;
+    -webkit-transition: opacity ease 0.3s;
+    -o-transition: opacity ease 0.3s;
+    -ms-transition: opacity ease 0.3s;
+}
+.aspect_container:-moz-full-screen .controlBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transition: opacity ease 0.3s;
+    -moz-transition: opacity ease 0.3s;
+    -webkit-transition: opacity ease 0.3s;
+    -o-transition: opacity ease 0.3s;
+    -ms-transition: opacity ease 0.3s;
+}
+.aspect_container:-o-full-screen .controlBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transition: opacity ease 0.3s;
+    -moz-transition: opacity ease 0.3s;
+    -webkit-transition: opacity ease 0.3s;
+    -o-transition: opacity ease 0.3s;
+    -ms-transition: opacity ease 0.3s;
+}
+.aspect_container:-ms-full-screen .controlBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transition: opacity ease 0.3s;
+    -moz-transition: opacity ease 0.3s;
+    -webkit-transition: opacity ease 0.3s;
+    -o-transition: opacity ease 0.3s;
+    -ms-transition: opacity ease 0.3s;
+}
+.aspect_container:full-screen .controlBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transition: opacity ease 0.3s;
+    -moz-transition: opacity ease 0.3s;
+    -webkit-transition: opacity ease 0.3s;
+    -o-transition: opacity ease 0.3s;
+    -ms-transition: opacity ease 0.3s;
+}
+
+.aspect_container:-webkit-full-screen .controlBar:hover {
+    opacity: 1;
+}
+.aspect_container:-moz-full-screen .controlBar:hover {
+    opacity: 1;
+}
+.aspect_container:-o-full-screen .controlBar:hover {
+    opacity: 1;
+}
+.aspect_container:-ms-full-screen .controlBar:hover {
+    opacity: 1;
+}
+.aspect_container:full-screen .controlBar:hover {
+    opacity: 1;
+}
+
+/* Also allow for pseudo fullscreen */
+.aspect_container.pseudoFullScreen .controlBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: 1; /* No hiding for we may be on an iPad/iPod */
 }
 
 .timeBar {
@@ -160,6 +248,10 @@
 
 .captionsMenuEntry:hover {
     background: #2184AE;
+}
+
+.fullScreen:before {
+    content: "\f0b2";
 }
 
 .play {

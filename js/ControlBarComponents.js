@@ -106,6 +106,17 @@ var ControlBarComponents = (function () {
     function FullScreenComponent(controlBar, attributes) {
         var $element = $(templates.fullScreen),
             name = "fullScreen";
+            
+        $element.click(function (event) {
+            if (event.button !== 0) {
+                return;
+            }
+            
+            // Create a new event and dispatch it through the control bar
+			var newEvent = document.createEvent('HTMLEvents');
+			newEvent.initEvent("fullscreen", true, true);
+			controlBar.element.dispatchEvent(newEvent);
+        });
 
         Object.defineProperties(this, {
             element: {
