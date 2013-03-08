@@ -45,3 +45,18 @@
     background-color: black; /* show me! */
     /*overflow: hidden;*/
 }
+
+/* Caption Styling */
+.aspect_container .captionHolder {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.captionator-cue-canvas {
+    z-index: 99;
+}
+
+.captionator-cue {
+    z-index: 101;
+}

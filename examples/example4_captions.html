@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <title>Example 4</title>
+        
+        <!-- Styling for the stage and control bar -->
+        <link href="../css/stage.css" media="screen" rel="stylesheet" type="text/css" />
+        <link href="../css/controlBar.css" media="screen" rel="stylesheet" type="text/css" />
+        
+        <!-- jQuery -->
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        
+        <!-- Ayamel.js scripts -->
+        <script type="text/javascript" src="../js/Ayamel.js"></script>
+        <script type="text/javascript" src="../js/ControlBar.js"></script>
+        <script type="text/javascript" src="../js/ControlBarComponents.js"></script>
+        <script type="text/javascript" src="../js/wrappers/h5Clip.js"></script>
+        <script type="text/javascript" src="../js/MediaController.js"></script>
+        <script type="text/javascript" src="../js/ProgressBar.js"></script>
+        <script type="text/javascript" src="../js/Resource.js"></script>
+        <script type="text/javascript" src="../js/TimedMedia.js"></script>
+        <script type="text/javascript" src="../js/UniformAspectRatio.js"></script>
+        <script type="text/javascript" src="../js/video.js"></script>
+        <script type="text/javascript" src="../js/VideoPlayer.js"></script>
+        
+        <script type="text/javascript" src="../js/wrappers/h5Clip.js"></script>
+        <script type="text/javascript" src="../js/captions/CaptionRenderer.js"></script>
+        <script type="text/javascript" src="../js/captions/TimedText/TimedText.js"></script>
+        <script type="text/javascript" src="../js/captions/TimedText/TextTrack.js"></script>
+        <script type="text/javascript" src="../js/captions/TimedText/TextTrackCue.js"></script>
+        <script type="text/javascript" src="../js/captions/TimedText/WebVTT.js"></script>
+        
+        <script type="text/javascript">
+            var videoUrl = "proxy.php?url=" + encodeURI("http://ayamel.americancouncils.org/api/v1/resources/512cfb8b35e544210c000001");
+            var captionTrackUrl = "proxy.php?url=" + encodeURI("http://ayamel.americancouncils.org/api/v1/resources/512e6d6935e544230c000003");
+            var videoPlayer;
+            
+            $(function() {
+                
+                // Load the video resource
+                new Resource(videoUrl, function (videoResource) {
+                    
+                    // Load the caption track
+                    new Resource(captionTrackUrl, function (captionTrackResource) {
+                    
+                        // Install the HTML 5 player
+                        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+                            
+                            var $player = $("#player");
+                            
+                            // Create the player
+                            videoPlayer = new Ayamel.VideoPlayer({
+                                element: $player.get(0),
+                                aspectRatio: 45,
+                                resource: videoResource,
+                                components: ["play", "volume", "fullScreen", "captions"],
+                                captions: [captionTrackResource]
+                            });
+                        });
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Example 4 - Captions</h1>
+        
+        <div style="width: 600px">
+            <div id="player"></div>
+        </div>
+        
+    </body>
+</html>

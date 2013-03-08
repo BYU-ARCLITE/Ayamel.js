@@ -48,6 +48,59 @@
 			};
 			video.addEventListener('durationchange',cb,false);
 		}
+        
+        // Add the caption renderer
+        if (params.captions && params.captions.length) {
+            
+            // Create a container for the captions
+            this.captionHolder = $(params.element).append('<div class="captionHolder"></div>').children(".captionHolder").get(0);
+            
+            this.captionRenderer = new CaptionRenderer(this.currentClip.media.media_el, {
+                appendCueCanvasTo: this.captionHolder,
+                styleCue: function(DOMNode, track){
+                    return DOMNode;
+                }
+            });
+            
+            // Bind the caption renderer to the video element
+            this.captionRenderer.bindMediaElement(this.currentClip.media.media_el);
+            
+            // Add the captions to the caption renderer
+            var captionComponent = this.controls.getComponent("captions");
+            params.captions.forEach(function (captionTrackResource) {
+                if (captionTrackResource instanceof TextTrack) {
+                    self.captionRenderer.addTextTrack(captionTrackResource);
+                    
+                    // Add the track to the selection menu
+                    if (captionComponent) {
+                        captionComponent.addTrack(track);
+                    }
+                } else {
+                    // A resource
+                    // Scan the files
+                    captionTrackResource.content.files.forEach(function (file) {
+                        if (file.mime === "text/vtt") {
+                            TextTrack.get({
+                                kind: "subtitles",
+                                label: captionTrackResource.title || "Unnamed",
+                                lang: captionTrackResource.language || "en",
+                                url: file.downloadUri,
+                                success: function(){
+                                    var track = this;
+                                    self.captionRenderer.addTextTrack(track);
+                                    track.mode = 'showing';
+            
+                                    // Add the track to the selection menu
+                                    if (captionComponent) {
+                                        captionComponent.addTrack(track);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
 		
 		Object.defineProperty(this,'currentTime',{
 			get: function(){return time;},

@@ -47,8 +47,15 @@ var ControlBarComponents = (function () {
         this.tracks = [];
 
         // Set up the menu
-        $element.children(".captionsIcon").click(function () {
+        $element.children(".captionsIcon").click(function (event) {
             $element.children(".captionsMenu").toggle();
+            event.stopPropagation();
+        });
+        $element.click(function (event) {
+            event.stopPropagation();
+        });
+        $(document).click(function () {
+            $element.children(".captionsMenu").hide();
         });
 
         Object.defineProperties(this, {
