@@ -73,7 +73,7 @@ var Annotator = (function(){
 		config.index += content.length;
 		return (matchers.length
 				?anString(matchers,config.filter,modnode,content,offset)
-				:filter(document.createTextNode(content)));
+				:config.filter(document.createTextNode(content)));
 	}
 	
 	function anHTML(config,content){
@@ -97,6 +97,7 @@ var Annotator = (function(){
 		len = matchers.length;
 		nodes = [root];
 		while(n = nodes.shift()) switch(n.nodeType){
+			case Node.DOCUMENT_FRAGMENT_NODE:
 			case Node.ELEMENT_NODE:
 				Array.prototype.push.apply(nodes,n.childNodes);
 				continue;

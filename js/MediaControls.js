@@ -11,6 +11,7 @@ var ControlBar = (function(global){
 		bar_m.appendChild(bar_p);
 		bar_c.className = "container_tiny";
 		bar_c.appendChild(bar_m);
+		bar_c.style.pointerEvents = "auto";
 		this.element = bar_c;
 		Object.defineProperty(this,"width",{
 			set: function(val){bar_p.style.width = val;},
@@ -40,6 +41,7 @@ var ControlBar = (function(global){
 		c_speed.className = "playrate";
 		c_speed.appendChild(s_icon);
 		c_speed.appendChild(s_bar.element);
+		c_speed.style.pointerEvents = "auto";
 		
 		s_icon.addEventListener('click',function(e){
 			if(e.button !== 0){return;}
@@ -80,6 +82,7 @@ var ControlBar = (function(global){
 		c_volume.className = "volume";
 		c_volume.appendChild(v_icon);
 		c_volume.appendChild(v_bar.element);
+		c_volume.style.pointerEvents = "auto";
 	
 		v_icon.addEventListener('click',function(e){
 			if(e.button !== 0){return;}
@@ -216,6 +219,7 @@ var ControlBar = (function(global){
 		if(attrs.cc !== false){
 			ccb = container.cloneNode(false);
 			ccb.className = "control cc";
+			ccb.style.pointerEvents = "auto";
 		}
 		if(attrs.fs !== false && window.top === window.self){
 			fullscreen = container.cloneNode(false);
@@ -224,8 +228,11 @@ var ControlBar = (function(global){
 		
 		//Left Section
 		playpause.className = "control play";
+		playpause.style.pointerEvents = "auto";
 		backb.className = "control rw";
+		backb.style.pointerEvents = "auto";
 		nextb.className = "control ff";
+		nextb.style.pointerEvents = "auto";
 		
 		prog_text.innerText = "00:00";
 		dur_text.innerText = "00:00";
@@ -256,6 +263,7 @@ var ControlBar = (function(global){
 		c_buttons.appendChild(c_right);
 		
 		container.className = "control_bar";
+		container.style.pointerEvents = "none";
 		container.appendChild(c_buttons);
 		container.appendChild(prog_bar.element);
 
