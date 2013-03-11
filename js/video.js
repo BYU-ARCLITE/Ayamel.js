@@ -84,7 +84,7 @@
 					return;
 				}
 			}
-			throw new Error("Could not play resource at " + res);
+			throw new Error("Could not play resource at " + resource);
 		}
 	}
 	

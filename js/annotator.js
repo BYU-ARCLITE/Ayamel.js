@@ -40,7 +40,19 @@ var Annotator = (function(){
 		if(typeof config.index !== 'number'){config.index=0;}
 		if(typeof config.filter !== 'function'){config.filter = defaultFilter;}
 		if(typeof config.attach !== 'function' && typeof config.attach !== 'object'){config.attach = identity;}
-		if(!(config.regexes instanceof Array)){config.regexes = [];}
+		if(config.regexes instanceof Array){
+			config.regexes = config.regexes.map(function(matcher){
+				var flags = "g";
+				if((matcher instanceof RegExp) && !matcher.global){
+					if(matcher.multiline){ flags+="m"; }
+					if(matcher.ignoreCase){ flags+="i"; }
+					return new RegExp(matcher.source,flags);
+				}
+				return matcher;
+			});
+		}else{
+			config.regexes = [];
+		}
 	}
 	
 	function gen_mod(attach,handler){
