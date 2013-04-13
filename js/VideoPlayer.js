@@ -54,12 +54,10 @@
             
             // Create a container for the captions
             this.captionHolder = $(params.element).append('<div class="captionHolder"></div>').children(".captionHolder").get(0);
-            
+
             this.captionRenderer = new CaptionRenderer(this.currentClip.media.media_el, {
                 appendCueCanvasTo: this.captionHolder,
-                styleCue: function(DOMNode, track){
-                    return DOMNode;
-                }
+                renderCue: params.renderCue
             });
             
             // Bind the caption renderer to the video element
@@ -67,6 +65,7 @@
             
             // Add the captions to the caption renderer
             var captionComponent = this.controls.getComponent("captions");
+            var trackEnabled = false;
             params.captions.forEach(function (captionTrackResource) {
                 if (captionTrackResource instanceof TextTrack) {
                     self.captionRenderer.addTextTrack(captionTrackResource);
@@ -83,12 +82,17 @@
                             TextTrack.get({
                                 kind: "subtitles",
                                 label: captionTrackResource.title || "Unnamed",
-                                lang: captionTrackResource.language || "en",
+                                lang: captionTrackResource.language || "en", // TODO: Incorporate L2 data
                                 url: file.downloadUri,
                                 success: function(){
                                     var track = this;
                                     self.captionRenderer.addTextTrack(track);
-                                    track.mode = 'showing';
+
+                                    if (!trackEnabled) {
+                                        track.mode = 'showing';
+                                        trackEnabled = true;
+                                    } else
+                                        track.mode = 'disabled';
             
                                     // Add the track to the selection menu
                                     if (captionComponent) {
