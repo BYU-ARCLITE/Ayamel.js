@@ -29,6 +29,10 @@ var ResourceLibrary = (function() {
                         return relation.type == "transcriptOf" && relation.objectId == _this.id;
                     });
 
+                    if (transcripts.length === 0) {
+                        callback([]);
+                    }
+
                     // Get all the resources associated with the transcript relations
                     // We will use an asynchronous functional combinator to get the job done cleanly.
                     var baseUrl = _this.url.substring(0, _this.url.lastIndexOf("/")+1);
