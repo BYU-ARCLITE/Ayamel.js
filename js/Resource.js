@@ -29,10 +29,6 @@ var ResourceLibrary = (function() {
                         return relation.type == "transcriptOf" && relation.objectId == _this.id;
                     });
 
-                    if (transcripts.length === 0) {
-                        callback([]);
-                    }
-
                     // Get all the resources associated with the transcript relations
                     // We will use an asynchronous functional combinator to get the job done cleanly.
                     var baseUrl = _this.url.substring(0, _this.url.lastIndexOf("/")+1);
@@ -40,6 +36,36 @@ var ResourceLibrary = (function() {
 
                         // We have a relation. Get the resource
                         $.ajax(baseUrl + transcriptRelation.subjectId, {
+                            dataType: "json",
+                            success: function(data) {
+                                asyncCallback(null, data.resource);
+                            }
+                        });
+                    }, function (err, results) {
+                        callback(results);
+                    });
+                }
+            }
+        });
+    };
+
+    Resource.prototype.getAnnotations = function(callback) {
+        var _this = this;
+        $.ajax(this.url + "/relations", {
+            dataType: "json",
+            success: function(data) {
+                if (callback) {
+                    var annotations = data.relations.filter(function (relation) {
+                        return relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "simple annotations";
+                    });
+
+                    // Get all the resources associated with the transcript relations
+                    // We will use an asynchronous functional combinator to get the job done cleanly.
+                    var baseUrl = _this.url.substring(0, _this.url.lastIndexOf("/")+1);
+                    async.map(annotations, function(annotationsRelation, asyncCallback) {
+
+                        // We have a relation. Get the resource
+                        $.ajax(baseUrl + annotationsRelation.subjectId, {
                             dataType: "json",
                             success: function(data) {
                                 asyncCallback(null, data.resource);
