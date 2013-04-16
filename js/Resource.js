@@ -19,23 +19,20 @@ var ResourceLibrary = (function() {
         return null;
     };
 
-    Resource.prototype.getTranscripts = function(callback) {
-        var _this = this;
-        $.ajax(this.url + "/relations", {
+    function getRelations(resource, test, callback, relationRole) {
+        $.ajax(resource.url + "/relations", {
             dataType: "json",
             success: function(data) {
                 if (callback) {
-                    var transcripts = data.relations.filter(function (relation) {
-                        return relation.type == "transcriptOf" && relation.objectId == _this.id;
-                    });
+                    var relations = data.relations.filter(test);
 
                     // Get all the resources associated with the transcript relations
                     // We will use an asynchronous functional combinator to get the job done cleanly.
-                    var baseUrl = _this.url.substring(0, _this.url.lastIndexOf("/")+1);
-                    async.map(transcripts, function(transcriptRelation, asyncCallback) {
+                    var baseUrl = resource.url.substring(0, resource.url.lastIndexOf("/")+1);
+                    async.map(relations, function(relation, asyncCallback) {
 
                         // We have a relation. Get the resource
-                        $.ajax(baseUrl + transcriptRelation.subjectId, {
+                        $.ajax(baseUrl + relation[relationRole], {
                             dataType: "json",
                             success: function(data) {
                                 asyncCallback(null, data.resource);
@@ -47,36 +44,22 @@ var ResourceLibrary = (function() {
                 }
             }
         });
+    }
+
+    Resource.prototype.getTranscripts = function(callback) {
+        var _this = this;
+        var test = function (relation) {
+            return relation.type == "transcriptOf" && relation.objectId == _this.id;
+        };
+        getRelations(this, test, callback, "subjectId");
     };
 
     Resource.prototype.getAnnotations = function(callback) {
         var _this = this;
-        $.ajax(this.url + "/relations", {
-            dataType: "json",
-            success: function(data) {
-                if (callback) {
-                    var annotations = data.relations.filter(function (relation) {
-                        return relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations";
-                    });
-
-                    // Get all the resources associated with the transcript relations
-                    // We will use an asynchronous functional combinator to get the job done cleanly.
-                    var baseUrl = _this.url.substring(0, _this.url.lastIndexOf("/")+1);
-                    async.map(annotations, function(annotationsRelation, asyncCallback) {
-
-                        // We have a relation. Get the resource
-                        $.ajax(baseUrl + annotationsRelation.subjectId, {
-                            dataType: "json",
-                            success: function(data) {
-                                asyncCallback(null, data.resource);
-                            }
-                        });
-                    }, function (err, results) {
-                        callback(results);
-                    });
-                }
-            }
-        });
+        var test = function (relation) {
+            return relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations";
+        };
+        getRelations(this, test, callback, "subjectId");
     };
     
     return {
