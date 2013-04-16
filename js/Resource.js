@@ -56,7 +56,7 @@ var ResourceLibrary = (function() {
             success: function(data) {
                 if (callback) {
                     var annotations = data.relations.filter(function (relation) {
-                        return relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "simple annotations";
+                        return relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations";
                     });
 
                     // Get all the resources associated with the transcript relations
