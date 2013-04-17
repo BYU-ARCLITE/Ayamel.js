@@ -199,7 +199,7 @@
     box-shadow: 1px 1px 6px black;
     border-radius: 8px;
     border: 1px solid #000;
-    z-index: 29;
+    z-index: 150;
     display: none;
 }
 
@@ -210,7 +210,7 @@
     position: absolute;
     left: 50px;
     bottom: -11px;
-    z-index: 30;
+    z-index: 151;
 }
 
 .captionsMenuTip {
@@ -220,7 +220,7 @@
     position: absolute;
     left: 50px;
     bottom: -10px;
-    z-index: 31;
+    z-index: 152;
 }
 
 .captionsMenuEntry {
