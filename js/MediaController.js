@@ -24,7 +24,7 @@
 		controls.addEventListener('progressupdate',function(){
 			self.currentTime = controls.progress;
 		},false);
-		
+
 		controls.addEventListener('play',this.Play.bind(this),false);
 		controls.addEventListener('pause',this.Pause.bind(this),false);
 		controls.addEventListener('mutechange',function(e){
