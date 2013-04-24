@@ -1,8 +1,14 @@
 var ResourceLibrary = (function() {
     "use strict";
+
+    /**
+     * This is a cache of resources to reduce the number of calls that need to be made.
+     */
+    var cache = {};
     
     function Resource(data, url) {
         this.url = url;
+        this.relations = null;
         if (data) {
             $.extend(this, data);
         }
@@ -19,39 +25,49 @@ var ResourceLibrary = (function() {
         return null;
     };
 
-    function getRelations(resource, test, callback, relationRole) {
-        $.ajax(resource.url + "/relations", {
-            dataType: "json",
-            success: function(data) {
-                if (callback) {
-                    var relations = data.relations.filter(test);
+    Resource.prototype.getRelations = function(callback) {
+        var _this = this;
 
-                    // Get all the resources associated with the transcript relations
-                    // We will use an asynchronous functional combinator to get the job done cleanly.
-                    var baseUrl = resource.url.substring(0, resource.url.lastIndexOf("/")+1);
-                    async.map(relations, function(relation, asyncCallback) {
-
-                        // We have a relation. Get the resource
-                        $.ajax(baseUrl + relation[relationRole], {
-                            dataType: "json",
-                            success: function(data) {
-                                asyncCallback(null, data.resource);
-                            }
-                        });
-                    }, function (err, results) {
-                        callback(results);
-                    });
+        if (this.relations) {
+            callback();
+        } else {
+            $.ajax(this.url + "/relations", {
+                dataType: "json",
+                success: function(data) {
+                    _this.relations = data.relations;
+                    callback();
                 }
-            }
+            });
+        }
+    };
+
+    Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback) {
+        test = test || function (resource) { return true; };
+
+        var filteredRelations = this.relations.filter(test);
+
+        var baseUrl = this.url.substring(0, this.url.lastIndexOf("/")+1);
+        async.map(filteredRelations, function(relation, asyncCallback) {
+
+            // We have a relation. Get the resource
+            var url = baseUrl + relation[relationRole];
+            ResourceLibrary.load(url, function (resource) {
+                asyncCallback(null, resource);
+            });
+        }, function (err, results) {
+            callback(results);
         });
-    }
+    };
 
     Resource.prototype.getTranscripts = function(callback) {
         var _this = this;
         var test = function (relation) {
             return relation.type == "transcriptOf" && relation.objectId == _this.id;
         };
-        getRelations(this, test, callback, "subjectId");
+        this.getRelations(function () {
+            _this.loadResourcesFromRelations("subjectId", test, callback);
+        });
+//        getRelations(this, test, callback, "subjectId");
     };
 
     Resource.prototype.getAnnotations = function(callback) {
@@ -59,20 +75,28 @@ var ResourceLibrary = (function() {
         var test = function (relation) {
             return relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations";
         };
-        getRelations(this, test, callback, "subjectId");
+        this.getRelations(function () {
+            _this.loadResourcesFromRelations("subjectId", test, callback);
+        });
+//        getRelations(this, test, callback, "subjectId");
     };
     
     return {
         load: function (url, callback) {
-            $.ajax(url, {
-                dataType: "json",
-                success: function(data) {
-                    if (callback) {
-                        var resource = new Resource(data.resource, url);
-                        callback(resource);
+            if (cache[url]) {
+                callback(cache[url]);
+            } else {
+                $.ajax(url, {
+                    dataType: "json",
+                    success: function(data) {
+                        if (callback) {
+                            var resource = new Resource(data.resource, url);
+                            cache[url] = resource;
+                            callback(resource);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     };
 }());
