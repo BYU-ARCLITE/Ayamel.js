@@ -67,7 +67,6 @@ var ResourceLibrary = (function() {
         this.getRelations(function () {
             _this.loadResourcesFromRelations("subjectId", test, callback);
         });
-//        getRelations(this, test, callback, "subjectId");
     };
 
     Resource.prototype.getAnnotations = function(callback) {
@@ -78,7 +77,6 @@ var ResourceLibrary = (function() {
         this.getRelations(function () {
             _this.loadResourcesFromRelations("subjectId", test, callback);
         });
-//        getRelations(this, test, callback, "subjectId");
     };
     
     return {
