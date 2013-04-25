@@ -59,20 +59,28 @@ var ResourceLibrary = (function() {
         });
     };
 
-    Resource.prototype.getTranscripts = function(callback) {
+    Resource.prototype.getTranscripts = function(callback, additionalTest) {
         var _this = this;
         var test = function (relation) {
-            return relation.type == "transcriptOf" && relation.objectId == _this.id;
+            var isTranscript = relation.type == "transcriptOf" && relation.objectId == _this.id;
+            var passesAdditionalTest = true;
+            if (additionalTest)
+                passesAdditionalTest = additionalTest(relation);
+            return isTranscript && passesAdditionalTest;
         };
         this.getRelations(function () {
             _this.loadResourcesFromRelations("subjectId", test, callback);
         });
     };
 
-    Resource.prototype.getAnnotations = function(callback) {
+    Resource.prototype.getAnnotations = function(callback, additionalTest) {
         var _this = this;
         var test = function (relation) {
-            return relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations";
+            var isAnnotations = relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations";
+            var passesAdditionalTest = true;
+            if (additionalTest)
+                passesAdditionalTest = additionalTest(relation);
+            return isAnnotations && passesAdditionalTest;
         };
         this.getRelations(function () {
             _this.loadResourcesFromRelations("subjectId", test, callback);
