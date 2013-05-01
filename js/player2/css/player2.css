@@ -563,6 +563,13 @@
     border-radius: 0;
 }
 
+.ayamelPlayer.pseudoFullScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
 /* Plugins */
 
 .ayamelPlayer .videoBox {
