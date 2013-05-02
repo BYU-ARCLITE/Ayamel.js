@@ -23,7 +23,9 @@
         this.mediaPlayer = new Ayamel.classes.MediaPlayer({
             $holder: this.$element,
             resource: args.resource,
-            aspectRatio: args.aspectRatio
+            aspectRatio: args.aspectRatio,
+            startTime: args.startTime,
+            endTime: args.endTime
         });
 
         // Create the ProgressBar

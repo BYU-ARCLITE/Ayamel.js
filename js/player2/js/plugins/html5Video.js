@@ -71,15 +71,30 @@
             });
         });
 
+        // Set up the duration
+        var startTime = args.startTime || 0;
+        var stopTime = args.endTime || -1;
+        this.$element[0].addEventListener("timeupdate", function(event) {
+            if (_this.$video[0].currentTime < startTime)
+                _this.$video[0].currentTime = startTime;
+
+            if (stopTime != -1 && _this.$video[0].currentTime > stopTime) {
+                _this.$video[0].pause();
+                _this.$video[0].currentTime = startTime;
+            }
+        });
+
         Object.defineProperties(this, {
             duration: {
                 get: function () {
-                    return this.$video[0].duration;
+                    var videoDuration = this.$video[0].duration;
+                    var stop = stopTime === -1 ? videoDuration : stopTime;
+                    return stop - startTime;
                 }
             },
             currentTime: {
                 get: function () {
-                    return this.$video[0].currentTime;
+                    return this.$video[0].currentTime - startTime;
                 },
                 set: function (time) {
                     time = Math.floor(Number(time)* 100) / 100;

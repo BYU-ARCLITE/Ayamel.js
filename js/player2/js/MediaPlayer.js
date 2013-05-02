@@ -22,7 +22,9 @@
                 _this.plugin = plugin.install({
                     $holder: _this.$element,
                     resource: args.resource,
-                    aspectRatio: args.aspectRatio
+                    aspectRatio: args.aspectRatio,
+                    startTime: args.startTime,
+                    endTime: args.endTime
                 });
             }
         });
