@@ -41,12 +41,10 @@
 			this.controls.duration = video.duration;
 			video.Activate();
 		}else{
-			cb = function(){
+			video.addEventListener('durationchange',function(){
 				self.controls.duration = video.duration;
 				video.Activate();
-				video.removeEventListener('durationchange',cb,false);
-			};
-			video.addEventListener('durationchange',cb,false);
+			},false);
 		}
         
         // Add the caption renderer

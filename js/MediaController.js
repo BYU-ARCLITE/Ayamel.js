@@ -10,10 +10,9 @@
 				muted: false,
 				volume: 100,
 				playing: false,
-				playbackRate: 1,
-                componentNames: components
+				playbackRate: 1
 			},
-			controls = new ControlBar(attrs);
+			controls = new ControlBar(attrs,components);
 		
 		this.attrs = attrs;
 		this.controls = controls;

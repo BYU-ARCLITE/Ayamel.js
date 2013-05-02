@@ -20,15 +20,8 @@ var ControlBarComponents = (function () {
                     '    </div>' +
                     '</div>',
         captionMenuEntry:   '<div class="captionsMenuEntry"></div>',
-
         fullScreen: '<div class="fullScreen"></div>',
         play:       '<div class="play"></div>',
-        volume:     '<div class="volume">' +
-                    '    <div class="icon"></div>' +
-                    '    <div class="volumeSlider">' +
-                    '        <div class="volumeLevel"></div>' +
-                    '    </div>' +
-                    '</div>'
     };
 
     /**
@@ -41,9 +34,10 @@ var ControlBarComponents = (function () {
      * @constructor
      */
     function CaptionsComponent(controlBar, attributes) {
-        var $element = $(templates.captions),
-            name = "captions";
-
+        var $element = $(templates.captions);
+		
+		this.name = "captions";
+		this.element = $element.get(0);
         this.tracks = [];
 
         // Set up the menu
@@ -56,19 +50,6 @@ var ControlBarComponents = (function () {
         });
         $(document).click(function () {
             $element.children(".captionsMenu").hide();
-        });
-
-        Object.defineProperties(this, {
-            element: {
-                get: function () {
-                    return $element.get(0);
-                }
-            },
-            name: {
-                get: function () {
-                    return name;
-                }
-            }
         });
     }
     CaptionsComponent.prototype.addTrack = function addTrack(track) {
@@ -111,9 +92,10 @@ var ControlBarComponents = (function () {
      * @constructor
      */
     function FullScreenComponent(controlBar, attributes) {
-        var $element = $(templates.fullScreen),
-            name = "fullScreen";
-            
+        var $element = $(templates.fullScreen);
+		
+		this.name = "fullScreen";
+        this.element = $element.get(0);
         $element.click(function (event) {
             if (event.button !== 0) {
                 return;
@@ -123,19 +105,6 @@ var ControlBarComponents = (function () {
 			var newEvent = document.createEvent('HTMLEvents');
 			newEvent.initEvent("fullscreen", true, true);
 			controlBar.element.dispatchEvent(newEvent);
-        });
-
-        Object.defineProperties(this, {
-            element: {
-                get: function () {
-                    return $element.get(0);
-                }
-            },
-            name: {
-                get: function () {
-                    return name;
-                }
-            }
         });
     }
 
@@ -151,9 +120,11 @@ var ControlBarComponents = (function () {
      */
     function PlayComponent(controlBar, attributes) {
         var $element = $(templates.play),
-            name = "play",
             playing = attributes.playing || false;
 
+		this.name = "play";
+        this.element = $element.get(0);
+		
         // Set up the click functionality
         $element.click(function (event) {
             if (event.button !== 0) {
@@ -167,16 +138,6 @@ var ControlBarComponents = (function () {
         });
 
         Object.defineProperties(this, {
-            element: {
-                get: function () {
-                    return $element.get(0);
-                }
-            },
-            name: {
-                get: function () {
-                    return name;
-                }
-            },
             playing: {
                 get: function () {
                     return playing;
@@ -194,6 +155,37 @@ var ControlBarComponents = (function () {
         });
     }
 
+	function ProgBar(color){
+		var bar_c = document.createElement('div'),
+			bar_m = bar_c.cloneNode(false),
+			bar_p = bar_c.cloneNode(false);
+		
+		bar_p.className = "progress_tiny "+color;
+		bar_p.style.width = "0%";
+		bar_m.className = "mortice_tiny";
+		bar_m.appendChild(bar_p);
+		bar_c.className = "container_tiny";
+		bar_c.appendChild(bar_m);
+		bar_c.style.pointerEvents = "auto";
+		this.element = bar_c;
+		Object.defineProperty(this,"width",{
+			set: function(val){bar_p.style.width = val;},
+			get: function(){return bar_p.style.width;}
+		});
+	}
+	
+	ProgBar.prototype = {
+		addEventListener: function(ename,cb){
+			this.element.addEventListener(ename,cb,false);
+		},
+		removeEventListener: function(ename,cb){
+			this.element.removeEventListener(ename,cb,false);
+		},
+		percent: function(pixels){
+			return pixels / parseInt(this.element.offsetWidth,10);
+		}
+	};
+	
     /**
      * The Volume/Mute component
      * This contains the following properties:
@@ -204,80 +196,108 @@ var ControlBarComponents = (function () {
      * @constructor
      */
     function VolumeComponent(controlBar, attributes) {
-        var $element = $(templates.volume),
-            name = "volume",
-            volume = attributes.volume || 100,
-            muted = attributes.muted || false;
-
-        // Add click functionality
-        $element.children(".icon").click(function (event) {
-            if (event.button !== 0) {
-                return;
-            }
-
+        var element = document.createElement('div'),
+			icon = document.createElement('div'),
+			slider = new ProgBar("green"),
+            volume, muted;
+		
+		element.className = "volume";
+		icon.className = "icon";
+		element.appendChild(icon);
+		element.appendChild(slider.element);
+		element.style.pointerEvents = "auto";
+		
+        icon.addEventListener('click',function(event){
+            if (event.button !== 0) { return; }
             // Create a new event and dispatch it through the control bar
             var newEvent = document.createEvent('HTMLEvents');
             newEvent.initEvent("mutechange", true, true);
             newEvent.muted = !muted;
             controlBar.element.dispatchEvent(newEvent);
-        });
-
-        $element.children(".volumeSlider").click(function (event) {
-            var mouseX = event.offsetX || event.layerX,
-                percentage,
-                newEvent;
-
-            if (event.button !== 0) {
-                return;
-            }
-
-            // Figure out the new volume level
-            percentage = mouseX / $(this).width();
-
-            // Create a new event and dispatch it through the control bar
-            newEvent = document.createEvent('HTMLEvents');
-            newEvent.initEvent('volumechange',true,true);
-            newEvent.volume = 100 * percentage;
-            controlBar.element.dispatchEvent(newEvent);
-        });
+        },false);
+		
+		slider.addEventListener('click',function(e){
+			if(e.button !== 0){return;}
+			var pc = slider.percent(e.offsetX || e.layerX),
+				newe = document.createEvent('HTMLEvents');
+			slider.width = (100 * pc) + "%";
+			newe.initEvent('volumechange',true,true);
+			newe.volume = 100 * pc;
+			controlBar.element.dispatchEvent(newe);
+		},false);
 
         Object.defineProperties(this, {
-            element: {
-                get: function () {
-                    return $element.get(0);
-                }
-            },
+			element: { value: element },
+			name: { value: "volume" },
             muted: {
-                get: function () {
-                    return muted;
-                },
+                get: function () { return muted; },
                 set: function (value) {
                     muted = Boolean(value);
 
                     if (muted) {
-                        $element.addClass("muted");
+                        element.classList.add("muted");
                     } else {
-                        $element.removeClass("muted");
+                        element.classList.remove("muted");
                     }
                 }
             },
-            name: {
-                get: function () {
-                    return name;
-                }
-            },
             volume: {
-                get: function () {
-                    return volume;
-                },
+                get: function () { return volume; },
                 set: function (value) {
                     volume = Math.max(Math.min(Number(value), 100), 0);
-                    $element.find(".volumeLevel").width(value + "%");
+                    slider.width = volume + "%";
                 }
             }
         });
+		
+		this.volume = attributes.volume || 100;
+		this.muted = attributes.muted || false;
     }
+	
+	function SpeedComponent(controlBar, attributes){
+		var element = document.createElement('div'),
+			icon = document.createElement('div'),
+			slider = new ProgBar("green"),
+			rate;
+		
+		element.className = "playrate";
+		icon.className = "icon";
+		element.appendChild(icon);
+		element.appendChild(slider.element);
+		element.style.pointerEvents = "auto";
+		
+		icon.addEventListener('click',function(e){
+			if(e.button !== 0){return;}
+			var newe = document.createEvent('HTMLEvents');
+			newe.initEvent("ratereset",true,true);
+			controlBar.element.dispatchEvent(newe);
+		},false);
+		
+		slider.addEventListener('click',function(e){
+			if(e.button !== 0){return;}
+			var pc = slider.percent(e.offsetX || e.layerX),
+				newe = document.createEvent('HTMLEvents');
+			slider.width = (100 * pc) + "%";
+			newe.initEvent('ratechange',true,true);
+			newe.rate = pc * 2;
+			controlBar.element.dispatchEvent(newe);
+		},false);
+		
+		Object.defineProperties(this,{
+			element: {value: element},
+			name: {value: "speed"},
+			rate: {
+				get: function(){return rate;},
+				set: function(val){
+					rate = (val<=2?(val>=0?val:0):2);
+					slider.width = (100*rate/2)+'%';
+				}
+			}
+		});
+		this.rate = attributes.rate || 1;
+	}
 
+	
     return {
         captions: function (controlBar, attributes) {
             return new CaptionsComponent(controlBar, attributes);
@@ -290,6 +310,9 @@ var ControlBarComponents = (function () {
         },
         volume: function (controlBar, attributes) {
             return new VolumeComponent(controlBar, attributes);
+        },
+        speed: function (controlBar, attributes) {
+            return new SpeedComponent(controlBar, attributes);
         }
     };
 }());
