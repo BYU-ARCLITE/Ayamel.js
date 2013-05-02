@@ -10,10 +10,14 @@
 var ProgressBar = (function () {
     "use strict";
 
-    var template =
-        '<div class="timeBar">' +
-        '    <div class="progressBar"></div><div class="progressKnob"></div>' +
-        '</div>';
+    var template = document.createElement('div'),
+		prog = document.createElement('div'),
+		knob = document.createElement('div');
+	template.className = "timeBar";
+	prog.className = "progressBar";
+	knob.className = "progressKnob";
+	template.appendChild(prog);
+	template.appendChild(knob);
 
     /**
      * The Progress Bar object. This is used to keep track of the time progress.
@@ -84,6 +88,8 @@ var ProgressBar = (function () {
             controlBar.element.dispatchEvent(newEvent);
         });
 
+		this.element = $element.get(0);
+        
         Object.defineProperties(this, {
             duration: {
                 get: function () {
@@ -91,11 +97,6 @@ var ProgressBar = (function () {
                 },
                 set: function (value) {
                     duration = Number(value);
-                }
-            },
-            element: {
-                get: function () {
-                    return $element.get(0);
                 }
             },
             progress: {

@@ -101,6 +101,7 @@
 				};
 			}
 		},
+		readyState: {get: function(){ return this.media?this.media.readyState:0; }},
 		Activate: {
 			value: function(time){
 				var media = this.media;

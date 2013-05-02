@@ -1,5 +1,5 @@
 var ytPlayerInstall = function(host,global,callback){
-    
+    "use strict";
     var player;
     
 	function ytClip(id, start, stop) {
@@ -7,11 +7,12 @@ var ytPlayerInstall = function(host,global,callback){
         var template = '<div class="youtubeHolder"><div id="youtubePlayer"></div></div>',
             $element = $(template),
             _this = this,
-            lastTime = 0,
-            stateCount = 0;
+            lastTime = 0;
             
         this.media_el = $element.get(0);
-        
+        this.readyState = 0;
+		this.duration = 0;
+		
         // Set a timeout before initializing the youtube player so the container
         // will be added to the document (it needs to be otherwise the smf
         // embedding doesn't work).
@@ -35,16 +36,12 @@ var ytPlayerInstall = function(host,global,callback){
         }
         
         global.stateChangeHandler = function (state) {
-            if (state === 2) {
-                stateCount++;
-                
+			_this.readyState = state;
+            if (state === 2) {   
                 // Update the duration
-                _this.stop = player.getDuration();
-                _this.duration = _this.stop - _this.start;
-                _this.wrapper.parent.controls.duration = _this.duration;
-                
+				_this.wrapper.callHandlers("durationchange");
             }
-            console.log("State change: " + state);
+            //console.log("State change: " + state);
         }
         
         // Define the youtube player ready callback
@@ -58,11 +55,7 @@ var ytPlayerInstall = function(host,global,callback){
             // Adjust the size
             $(player).width("100%").height("100%");
             
-            timeUpdateWatcher();
-            
-            // Send a duration change event to tell things we're ready to go!
-            _this.wrapper.callHandlers("durationchange");
-            
+            timeUpdateWatcher();            
         };
         
         this.media = this;
@@ -132,10 +125,10 @@ var ytPlayerInstall = function(host,global,callback){
 		},
 		mediaDuration: {
 			get: function () {
-                if (player) {
-                    return player.getDuration();
-                }
-                return 0;
+				if (player) {
+					return player.getDuration();
+				}
+				return 0;
             },
 			enumerable: true
 		}

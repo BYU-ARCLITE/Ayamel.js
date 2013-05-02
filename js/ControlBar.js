@@ -17,123 +17,83 @@ var ControlBar = (function () {
     "use strict";
 
     // Templates for the control bar and component holder
-    var template = '<div class="controlBar"></div>',
-        componentHolderTemplate = '<div class="components"></div>';
+    var template = document.createElement('div'),
+        componentHolderTemplate = document.createElement('div');
 
-    // A helper function to help find and work with components
-    function getComponent(components, name) {
-        var validComponents = components.filter(function (component) {
-            return component.name === name;
-        });
-        if (validComponents.length > 0) {
-            return validComponents[0];
-        }
-        return null;
-    }
-
+	template.className = "controlBar";
+	componentHolderTemplate.className = "components";
+	
     /**
      * The Control Bar object.
      * @constructor
      */
-    function ControlBar(attributes) {
-        var _this = this,
-
-            // The progress bar object
-            progressBar = new ProgressBar(this),
-
-            // If no components are defined, then use a default set
-            componentNames = attributes.componentNames || ["play", "volume", "fullScreen"],
-
-            // Create the element
-            $element = $(template),
-
-            // Create the component holder
-            $componentHolder = $(componentHolderTemplate);
-
-        // Turn the list of names into actual components
-        this.components = componentNames.map(function (name) {
-            return ControlBarComponents[name](_this, attributes);
-        });
+    function ControlBar(attributes,componentNames) {
+        var _this = this, components = {},
+			progressBar = new ProgressBar(this),
+            element = template.cloneNode(false),
+            componentHolder = componentHolderTemplate.cloneNode(false),
+			clist = (componentNames || []) // Turn the list of names into actual components
+				.filter(function(name){ return typeof ControlBarComponents[name] === 'function'; })
+				.map(function(name){ return ControlBarComponents[name](_this, attributes); });
 
         // Add the progress bar
-        $element.append(progressBar.element);
+        element.appendChild(progressBar.element);
 
         // Add the components
-        $element.append($componentHolder);
-        this.components.forEach(function (component) {
-            $componentHolder.append(component.element);
+        element.appendChild(componentHolder);
+        clist.forEach(function(component){
+			components[component.name] = component;
+            componentHolder.appendChild(component.element);
         });
 
-        //Define properties for this object
-        Object.defineProperties(this, {
-            duration: {
-                set: function (value) {
-                    progressBar.duration = value;
-                },
-                get: function () {
-                    return progressBar.duration;
-                }
-            },
-            element: {
-                get: function () {
-                    return $element.get(0);
-                }
-            },
-            muted: {
-                set: function (value) {
-                    var volume = getComponent(_this.components, "volume");
-                    if (volume) {
-                        volume.muted = value;
-                    }
-                },
-                get: function () {
-                    var volume = getComponent(_this.components, "volume");
-                    if (volume) {
-                        return volume.muted;
-                    }
-                    return false;
-                }
-            },
-            playing: {
-                get: function () {
-                    var play = getComponent(_this.components, "play");
-                    if (play) {
-                        return play.playing;
-                    }
-                    return false;
-                },
-                set: function (value) {
-                    var play = getComponent(_this.components, "play");
-                    if (play) {
-                        play.playing = value;
-                    }
-                }
-            },
-            progress: {
-                set: function (value) {
-                    progressBar.progress = value;
-                },
-                get: function () {
-                    return progressBar.progress;
-                }
-            },
-            volume: {
-                set: function (value) {
-                    var volume = getComponent(_this.components, "volume");
-                    if (volume) {
-                        volume.volume = value;
-                    }
-                },
-                get: function () {
-                    var volume = getComponent(_this.components, "volume");
-                    if (volume) {
-                        return volume.volume;
-                    }
-                    return 100;
-                }
-            }
-        });
+		this.progressBar = progressBar;
+		this.components = components;
+		this.element = element;
     }
+	
+	Object.defineProperties(ControlBar.prototype, {
+		duration: {
+			set: function(value){ this.progressBar.duration = value; },
+			get: function(){ return this.progressBar.duration; }
+		},
+		muted: {
+			set: function(value){
+				var volume = this.components.volume;
+				if(volume){ return volume.muted = value; }
+				return false;
+			},
+			get: function(){
+				var volume = this.components.volume;
+				return volume?volume.muted:false;
+			}
+		},
+		playing: {
+			set: function(value){
+				var play = this.components.play;
+				if(play){ return play.playing = value; }
+				return false;
+			},
+			get: function(){
+				var play = this.components.play;
+				return play?play.playing:false;
+			}
+		},
+		progress: {
+			set: function(value){ return this.progressBar.progress = value; },
+			get: function(){ return this.progressBar.progress; }
+		},
+		volume: {
+			set: function (value) {
+				var volume = this.components.volume;
+				if(volume){ return volume.volume = value; }
+				return 100;
+			},
+			get: function () {
+				var volume = this.components.volume;
+				return volume?volume.volume:100;
+			}
+		}
+	});
 
     ControlBar.prototype.addEventListener = function (eventName, callback) {
         this.element.addEventListener(eventName, callback, false);
@@ -142,7 +102,7 @@ var ControlBar = (function () {
         this.element.removeEventListener(eventName, callback, false);
     };
     ControlBar.prototype.getComponent = function(name) {
-        return getComponent(this.components, name);
+        return this.components[name]||null;
     };
 
     return ControlBar;
