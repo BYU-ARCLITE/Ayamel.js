@@ -131,7 +131,7 @@
         this.$element.height(this.normalHeight);
     };
 
-    Ayamel.mediaPlugins.push({
+    Ayamel.mediaPlugins.html5Audio = {
         install: function(args) {
             return new Html5AudioPlayer(args);
         },
@@ -141,6 +141,6 @@
                 return prev || (resource.type === "audio" && supportsFile(audio, file));
             }, false);
         }
-    });
+    };
 
 }(Ayamel));

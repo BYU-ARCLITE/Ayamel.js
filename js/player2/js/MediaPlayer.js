@@ -16,7 +16,13 @@
         args.$holder.append(this.$element);
 
         // Load the resource
-        Ayamel.mediaPlugins.forEach(function (plugin) {
+        var plugins = Ayamel.prioritizedPlugins;
+        if(!plugins.length) {
+            Object.keys(Ayamel.mediaPlugins).forEach(function(plugin) {
+                plugins.push(Ayamel.mediaPlugins[plugin]);
+            });
+        }
+        plugins.forEach(function (plugin) {
             if (!playerRegistered && plugin.supports(args.resource)) {
                 playerRegistered = true;
                 _this.plugin = plugin.install({

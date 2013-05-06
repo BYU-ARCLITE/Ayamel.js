@@ -22,7 +22,10 @@ var Ayamel = (function() {
         },
 
         // Audio, video, and other players will be registered here
-        mediaPlugins: [],
+        mediaPlugins: {},
+        prioritizedPlugins: [],
+
+        path: "/assets/Ayamel.js/js/player2/",
 
         // Additional classes that will be defined will be contained here
         classes: {}

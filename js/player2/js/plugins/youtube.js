@@ -187,7 +187,7 @@
         this.$element.height(this.normalHeight);
     };
 
-    Ayamel.mediaPlugins.push({
+    Ayamel.mediaPlugins.youtube = {
         install: function(args) {
             var player;
             global.onYouTubePlayerReady = function() {
@@ -202,5 +202,5 @@
                 return prev || (resource.type === "video" && supportsFile(file));
             }, false);
         }
-    });
+    };
 }(Ayamel, window));
