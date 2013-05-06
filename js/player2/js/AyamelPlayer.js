@@ -40,11 +40,13 @@
         });
 
         // Create the caption renderer
-        this.captionRenderer = new CaptionRenderer(this.mediaPlayer.$captionsElement[0], {
-            appendCueCanvasTo: this.mediaPlayer.$captionsElement[0],
-            renderCue: args.renderCue
-        });
-        this.captionRenderer.bindMediaElement(this.mediaPlayer);
+        if (this.mediaPlayer.$captionsElement) {
+            this.captionRenderer = new CaptionRenderer(this.mediaPlayer.$captionsElement[0], {
+                appendCueCanvasTo: this.mediaPlayer.$captionsElement[0],
+                renderCue: args.renderCue
+            });
+            this.captionRenderer.bindMediaElement(this.mediaPlayer);
+        }
 
         // Load the caption tracks
         if (args.captionTracks) {
@@ -97,6 +99,16 @@
         // When the media ends, notify the control bar of this
         this.mediaPlayer.addEventListener("ended", function(event) {
             _this.controlBar.playing = false;
+        });
+
+        // When the media ends, notify the control bar of this
+        this.mediaPlayer.addEventListener("pause", function(event) {
+            _this.controlBar.playing = false;
+        });
+
+        // When the media ends, notify the control bar of this
+        this.mediaPlayer.addEventListener("play", function(event) {
+            _this.controlBar.playing = true;
         });
 
         //   Set up event listeners for the progress bar
