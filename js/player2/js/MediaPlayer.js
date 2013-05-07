@@ -3,10 +3,30 @@
 
     var template = '<div class="mediaPlayer"></div>';
 
+    function processTime(time) {
+        try {
+            if (typeof time === "number")
+                return time;
+            var parts = time.split(":");
+            if (parts.length === 3)
+                return Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[0]);
+            if (parts.length === 2)
+                return Number(parts[0] * 60) + Number(parts[1]);
+            if (parts.length === 1)
+                return Number(parts[0]);
+        } catch (e) {
+            console.log(e);
+        }
+        return 0;
+    }
+
     function MediaPlayer(args) {
         var _this = this,
 			plugins = Ayamel.prioritizedPlugins,
 			$element = $(template);
+
+        args.startTime = processTime(args.startTime || 0);
+        args.endTime = processTime(args.endTime || -1);
 
         // Set up the element
         this.$element = $element;
