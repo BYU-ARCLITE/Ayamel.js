@@ -11,36 +11,35 @@
     var template = '<div class="fullScreenButton"></div>';
 
     function FullScreenButton(args) {
-        var _this = this;
+        var fullScreen = false,
+			$element = $(template),
+			element = $element[0];
 
-        this.$element = $(template);
+        this.$element = $element;
+		this.element = element;
         args.$holder.append(this.$element);
 
         // Set up events
         this.$element.click(function (e) {
-            e.stopPropagation();
-
-            $(this).toggleClass("active");
-
             var event = document.createEvent("HTMLEvents");
-            if ($(this).hasClass("active")) {
-                event.initEvent("enterfullscreen", true, true);
-            } else {
-                event.initEvent("exitfullscreen", true, true);
-            }
+            event.initEvent(fullScreen?"exitfullscreen":"enterfullscreen", true, true);
+			fullScreen = !fullScreen;
+            this.classList.toggle("active");
             this.dispatchEvent(event);
+            e.stopPropagation();
         });
 
         // Be able to set the playing attribute
         Object.defineProperty(this, "fullScreen", {
+			enumerable: true,
             set: function (value) {
-                var fullScreen = !!value;
-                if (fullScreen) {
-                    this.$element.addClass("active");
-                } else {
-                    this.$element.removeClass("active");
-                }
-            }
+                fullScreen = !!value;
+                element.classList[fullScreen?'add':'remove']("active");
+				return fullScreen;
+            },
+			get: function () {
+				return fullScreen;
+			}
         });
     }
 

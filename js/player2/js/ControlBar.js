@@ -5,83 +5,79 @@
         '<div class="controlBar">' +
             '<div class="leftControls"></div>' +
             '<div class="rightControls"></div>' +
-        '</div>';
-
-    function createElement() {
-        return $(template);
-    }
+        '</div>',
+		componentConstructorMap = {
+			"play": "PlayButton",
+			"volume": "VolumeSlider",
+			"timeCode": "TimeCode",
+			"captions": "CaptionsMenu",
+			"fullScreen": "FullScreenButton"
+		};
 
     function ControlBar(args) {
-        var _this = this;
-        var $activeControls;
+        var _this = this,
+			$element = $(template);
 
         // Create the element
-        this.$element = createElement();
+        this.$element = $element;
+		this.element = $element[0];
         args.$holder.append(this.$element);
 
         // Create the control bar components
         args.components = args.components || [["play", "volume", "captions"], ["fullScreen", "timeCode"]];
         this.components = {};
-        function addComponent(component) {
-            if (component === "play") {
-                _this.components.play = new Ayamel.classes.PlayButton({
-                    $holder: $activeControls
-                });
-            }
-            if (component === "volume") {
-                _this.components.volume = new Ayamel.classes.VolumeSlider({
-                    $holder: $activeControls
-                });
-            }
-            if (component === "timeCode") {
-                _this.components.timeCode = new Ayamel.classes.TimeCode({
-                    $holder: $activeControls
-                });
-            }
-            if (component === "captions") {
-                _this.components.captions = new Ayamel.classes.CaptionsMenu({
-                    $holder: $activeControls
-                });
-            }
-            if (component === "fullScreen") {
-                _this.components.fullScreen = new Ayamel.classes.FullScreenButton({
-                    $holder: $activeControls
-                });
-            }
+        function addComponent($controls, component) {
+			_this.components[component] = new Ayamel.classes[componentConstructorMap[component]]({
+				$holder: $controls
+			});
         }
-        $activeControls = this.$element.children(".leftControls");
-        args.components[0].forEach(addComponent);
-        $activeControls = this.$element.children(".rightControls");
-        args.components[1].forEach(addComponent);
+        args.components[0].forEach(addComponent.bind(null,$element.children(".leftControls")));
+        args.components[1].forEach(addComponent.bind(null,$element.children(".rightControls")));
 
         Object.defineProperties(this, {
             currentTime: {
+				enumerable: true,
                 set: function (value) {
                     if (this.components.timeCode) {
                         this.components.timeCode.currentTime = value;
                     }
-                }
+                },
+				get: function () {
+					return this.components.timeCode?this.components.timeCode.currentTime:0;
+				}
             },
             duration: {
+				enumerable: true,
                 set: function (value) {
                     if (this.components.timeCode) {
                         this.components.timeCode.duration = value;
                     }
-                }
+                },
+				get: function () {
+					return this.components.timeCode?this.components.timeCode.duration:0;
+				}
             },
             fullScreen: {
+				enumerable: true,
                 set: function (value) {
                     if (this.components.fullScreen) {
-                        this.components.fullScreen.fullScreen = value;
+                        this.components.fullScreen.fullScreen = !!value;
                     }
-                }
+                },
+				get: function () {
+					return this.components.fullScreen?this.components.fullScreen.fullScreen:false;
+				}
             },
             playing: {
+				enumerable: true,
                 set: function (value) {
                     if (this.components.play) {
                         this.components.play.playing = !!value;
                     }
-                }
+                },
+				get: function () {
+					return this.components.play?this.components.play.playing:false;
+				}
             }
         });
     }
@@ -93,7 +89,11 @@
     };
 
     ControlBar.prototype.addEventListener = function(event, callback) {
-        this.$element[0].addEventListener(event, callback);
+        this.element.addEventListener(event, callback, false);
+    };
+	
+    ControlBar.prototype.removeEventListener = function(event, callback) {
+        this.element.removeEventListener(event, callback, false);
     };
 
     Ayamel.classes.ControlBar = ControlBar;

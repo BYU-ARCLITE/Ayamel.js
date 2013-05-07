@@ -3,37 +3,38 @@
 
     var template = '<div class="mediaPlayer"></div>';
 
-    function createElement() {
-        return $(template);
-    }
-
     function MediaPlayer(args) {
-        var _this = this;
-        var playerRegistered = false;
+        var _this = this,
+			plugins = Ayamel.prioritizedPlugins,
+			$element = $(template);
 
         // Set up the element
-        this.$element = createElement();
+        this.$element = $element;
+        this.element = $element[0];
         args.$holder.append(this.$element);
 
         // Load the resource
-        var plugins = Ayamel.prioritizedPlugins;
         if(!plugins.length) {
-            Object.keys(Ayamel.mediaPlugins).forEach(function(plugin) {
-                plugins.push(Ayamel.mediaPlugins[plugin]);
+            plugins = Object.keys(Ayamel.mediaPlugins).map(function(plugin) {
+                return Ayamel.mediaPlugins[plugin];
             });
         }
-        plugins.forEach(function (plugin) {
-            if (!playerRegistered && plugin.supports(args.resource)) {
-                playerRegistered = true;
-                _this.plugin = plugin.install({
-                    $holder: _this.$element,
-                    resource: args.resource,
-                    aspectRatio: args.aspectRatio,
-                    startTime: args.startTime,
-                    endTime: args.endTime
-                });
-            }
-        });
+		try {
+			plugins.forEach(function (plugin) {
+				if (plugin.supports(args.resource)) {
+					_this.plugin = plugin.install({
+						$holder: $element,
+						resource: args.resource,
+						aspectRatio: args.aspectRatio,
+						startTime: args.startTime,
+						endTime: args.endTime
+					});
+					throw 0;
+				}
+			});
+		}catch(e){
+			if(e !== 0){ throw e; }
+		}
 
         // There needs to be a place for captions
         if (this.plugin) {
@@ -54,12 +55,13 @@
                     if (this.plugin) {
                         return this.plugin.currentTime;
                     }
-                    return false;
+                    return 0;
                 },
                 set: function (time) {
                     if (this.plugin) {
-                        this.plugin.currentTime = time;
+                        return this.plugin.currentTime = time;
                     }
+					return 0;
                 }
             },
             muted: {
@@ -71,8 +73,9 @@
                 },
                 set: function (muted) {
                     if (this.plugin) {
-                        this.plugin.muted = muted;
+                        return this.plugin.muted = muted;
                     }
+					return false;
                 }
             },
             paused: {
@@ -92,8 +95,9 @@
                 },
                 set: function (playbackRate) {
                     if (this.plugin) {
-                        this.plugin.playbackRate = playbackRate;
+                        return this.plugin.playbackRate = playbackRate;
                     }
+					return 1;
                 }
             },
             readyState: {
@@ -113,8 +117,9 @@
                 },
                 set: function (volume) {
                     if (this.plugin) {
-                        this.plugin.volume = volume;
+                        return this.plugin.volume = volume;
                     }
+					return 1;
                 }
             }
         });
@@ -145,11 +150,11 @@
     };
 
     MediaPlayer.prototype.addEventListener = function(event, callback) {
-        this.$element[0].addEventListener(event, callback);
+        this.element.addEventListener(event, callback, false);
     };
 
     MediaPlayer.prototype.removeEventListener = function(event, callback) {
-        this.$element[0].removeEventListener(event, callback);
+        this.element.removeEventListener(event, callback, false);
     };
 
     Ayamel.classes.MediaPlayer = MediaPlayer;

@@ -18,9 +18,15 @@
             '</div>' +
         '</div>';
 
-    function createElement() {
-        var $element = $(template);
+    function CaptionsMenu(args) {
+		var $element = $(template),
+			element = $element[0],
+			$menu = $element.children(".captionsMenu");
 
+        this.$element = $element;
+		this.element = element;
+        args.$holder.append($element);
+			
         // Set up clicking to show the menu
         $element.click(function (event) {
             event.stopPropagation();
@@ -29,16 +35,18 @@
         $("body").click(function () {
             $element.removeClass("active");
         });
-        $element.children(".captionsMenu").click(function (event) {
+        $menu.click(function (event) {
             event.stopPropagation();
         });
-
-        return $element;
-    }
-
-    function CaptionsMenu(args) {
-        this.$element = createElement();
-        args.$holder.append(this.$element);
+		$menu.delegate('.captionsMenuEntry', 'click', function(e) {
+            // Send an event
+            var event = document.createEvent("HTMLEvents");
+            event.initEvent(this.classList.contains("active")?"enabletrack":"disabletrack", true, true);
+            event.track = track;
+			this.classList.toggle("active");
+            element.dispatchEvent(event);
+            e.stopPropagation();
+		});
     }
 
     CaptionsMenu.prototype.addTrack = function(track) {
@@ -49,23 +57,7 @@
         if (track.mode === "showing") {
             $track.addClass("active");
         }
-
-        // Set up clicking functionality
-        $track.click(function () {
-            $(this).toggleClass("active");
-
-            // Send an event
-            var event = document.createEvent("HTMLEvents");
-            if ($(this).hasClass("active")) {
-                event.initEvent("enabletrack", true, true);
-            } else {
-                event.initEvent("disabletrack", true, true);
-            }
-            event.track = track;
-            this.dispatchEvent(event);
-        });
     };
-
 
     Ayamel.classes.CaptionsMenu = CaptionsMenu
 }(Ayamel));
