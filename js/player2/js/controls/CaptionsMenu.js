@@ -38,25 +38,29 @@
         $menu.click(function (event) {
             event.stopPropagation();
         });
-		$menu.delegate('.captionsMenuEntry', 'click', function(e) {
-            // Send an event
-            var event = document.createEvent("HTMLEvents");
-            event.initEvent(this.classList.contains("active")?"enabletrack":"disabletrack", true, true);
-            event.track = track;
-			this.classList.toggle("active");
-            element.dispatchEvent(event);
-            e.stopPropagation();
-		});
     }
 
     CaptionsMenu.prototype.addTrack = function(track) {
         // Create the menu entry
+        var _this = this;
         var $track = $('<div class="captionsMenuEntry">' + track.label + ' (' + track.language + ')</div>');
         this.$element.find(".noCaptionTracks").remove();
         this.$element.children(".captionsMenu").append($track);
         if (track.mode === "showing") {
             $track.addClass("active");
         }
+
+        // Set up clicking here because we have the track in scope
+        $track.click(function (e) {
+
+            // Send an event
+            var event = document.createEvent("HTMLEvents");
+            event.initEvent(this.classList.contains("active")?"enabletrack":"disabletrack", true, true);
+            event.track = track;
+            this.classList.toggle("active");
+            _this.element.dispatchEvent(event);
+            e.stopPropagation();
+        });
     };
 
     Ayamel.classes.CaptionsMenu = CaptionsMenu
