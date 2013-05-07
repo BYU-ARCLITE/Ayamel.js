@@ -10,17 +10,14 @@
 
     var template = '<div class="playButton paused"></div>';
 
-    function createElement() {
-        return $(template);
-    }
-
     function PlayButton(args) {
 
-        var playing = false;
-        var _this = this;
+        var playing = false,
+			$element = $(template);
 
-        this.$element = createElement();
-        args.$holder.append(this.$element);
+        this.$element = $element;
+		this.element = $element[0];
+        args.$holder.append($element);
 
         // Set up events
         this.$element.click(function (e) {
@@ -30,27 +27,25 @@
             if (playing) {
                 event.initEvent("pause", true, true);
                 playing = false;
-                _this.$element.addClass("paused");
+                $element.addClass("paused");
             } else {
                 event.initEvent("play", true, true);
                 playing = true;
-                _this.$element.removeClass("paused");
+                $element.removeClass("paused");
             }
             this.dispatchEvent(event);
         });
 
         // Be able to set the playing attribute
         Object.defineProperty(this, "playing", {
+			enumerable: true,
             get: function () {
                 return playing;
             },
             set: function (value) {
                 playing = !!value;
-                if (playing) {
-                    _this.$element.removeClass("paused");
-                } else {
-                    _this.$element.addClass("paused");
-                }
+                $element[playing?'removeClass':'addClass']("paused");
+                return playing;
             }
         });
     }

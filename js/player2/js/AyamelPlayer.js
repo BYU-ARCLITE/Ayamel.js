@@ -3,14 +3,10 @@
 
     var template = '<div class="ayamelPlayer"></div>';
 
-    function createElement() {
-        return $(template);
-    }
-
     function AyamelPlayer(args) {
         var _this = this;
 
-        this.$element = createElement();
+        this.$element = $(template);
         args.$holder.append(this.$element);
 
         /*

@@ -19,49 +19,58 @@
             '</div>' +
         '</div>';
 
-    function createElement() {
-        var $element = $(template);
-        var muted = false;
+    function dispatchVolume(element,volume) {
+        var newEvent = document.createEvent("HTMLEvents");
+		newEvent.initEvent("volumechange", true, true);
+		newEvent.volume = volume;
+		element.dispatchEvent(newEvent);
+    }
 
-        // Allow knob sliding
-        var $level = $element.find(".volumeLevel");
-        var moving = false;
-        var levelPosition;
-
+    function VolumeSlider(args) {
+        var _this = this,
+			playing = false,
+			$element = $(template),
+			element = $element[0],
+			$level = $element.find(".volumeLevel"),
+			muted = false,
+			moving = false,
+			volume = 1,
+			levelPosition;
+			
+        this.$element = $element;
+		this.element = element;
+        args.$holder.append($element);
+			
         $element.children(".volumeSlider").mousedown(function (event) {
+			var width, newEvent;
             if (!moving) {
                 levelPosition = $level.offset().left;
                 moving = true;
 
-                var width = Math.min(Math.max(event.pageX - levelPosition, 0), 100);
+                width = Math.min(Math.max(event.pageX - levelPosition, 0), 100);
                 $level.width(width);
-
-                var newEvent = document.createEvent("HTMLEvents");
-                newEvent.initEvent("volumechange", true, true);
-                newEvent.volume = width / 100;
-                $element[0].dispatchEvent(newEvent);
+				
+				volume = width / 100;
+				dispatchVolume(element,volume);
             }
         });
         $("body")
             .mousemove(function (event) {
+				var width;
                 if (moving) {
-                    var width = Math.min(Math.max(event.pageX - levelPosition, 0), 100);
+                    width = Math.min(Math.max(event.pageX - levelPosition, 0), 100);
                     $level.width(width);
 
-                    var newEvent = document.createEvent("HTMLEvents");
-                    newEvent.initEvent("volumechange", true, true);
-                    newEvent.volume = width / 100;
-                    $element[0].dispatchEvent(newEvent);
+					volume = width / 100;
+					dispatchVolume(element,volume);
                 }
             }).mouseup(function (event) {
                 if (moving) {
                     moving = false;
                     event.stopPropagation();
 
-                    var newEvent = document.createEvent("HTMLEvents");
-                    newEvent.initEvent("volumechange", true, true);
-                    newEvent.volume = $level.width() / 100;
-                    $element[0].dispatchEvent(newEvent);
+					volume = $level.width() / 100;
+					dispatchVolume(element,volume);
                 }
             });
 
@@ -77,35 +86,33 @@
                 $element.addClass("muted");
                 newEvent.initEvent("mute", true, true);
             }
-            $element[0].dispatchEvent(newEvent);
+            element.dispatchEvent(newEvent);
         });
-
-        return $element;
-    }
-
-    function VolumeSlider(args) {
-
-        var playing = false;
-        var _this = this;
-
-        // Create the element
-        this.$element = createElement();
-        args.$holder.append(this.$element);
-
-
-        // Be able to set the playing attribute
-        Object.defineProperty(this, "playing", {
-            get: function () {
-                return playing;
-            },
-            set: function (value) {
-                playing = !!value;
-                if (playing) {
-                    _this.$element.removeClass("paused");
-                } else {
-                    _this.$element.addClass("paused");
-                }
-            }
+		
+        // Be able to set the muted & volume attributes
+        Object.defineProperties(this, {
+			muted: {
+				enumerable: true,
+				get: function () {
+					return muted;
+				},
+				set: function (value) {
+					muted = !!value;
+					$element[muted?'addClass':'removeClass']("muted");
+					return muted;
+				}
+			},
+			volume: {
+				enumerable: true,
+				get: function () {
+					return volume;
+				},
+				set: function (value) {
+					volume = +value;
+					$level.width(volume*100);
+					return volume;
+				}
+			}
         });
     }
 
