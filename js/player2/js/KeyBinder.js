@@ -10,29 +10,31 @@
 
     var keyBindings = {};
 
-    $(window).keypress(function (event) {
-        // Get the keycode
-        var keycode = null;
-        if(window.event) {
-            keycode = window.event.keyCode;
-        }else if(e) {
-            keycode = e.which;
-        }
+    window.addEventListener('keypress', function (event) {
+        var keycode =	window.event?window.event.keyCode:
+						event?event.which:null;
 
-        if (keyBindings[keycode]) {
+        if (keyBindings[keycode] instanceof Array) {
             keyBindings[keycode].forEach(function (callback) {
                 callback();
             });
         }
-    });
+    },false);
 
     Ayamel.KeyBinder = {
         addKeyBinding: function(key, callback) {
-            if (keyBindings[key]) {
+            if (keyBindings[key] instanceof Array) {
                 keyBindings[key].push(callback);
             } else {
                 keyBindings[key] = [callback];
             }
+        },
+        removeKeyBinding: function(key, callback) {
+			var idx, cbs = keyBindings[key];
+            if (!cbs) { return; }
+            idx = cbs.indexOf(callback);
+			if (idx === -1) { return; }
+			cbs.splice(idx,1);
         },
         keyCodes: {
             // Lower-case letters

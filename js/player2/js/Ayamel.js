@@ -28,6 +28,9 @@ var Ayamel = (function() {
         path: "/assets/Ayamel.js/js/player2/",
 
         // Additional classes that will be defined will be contained here
-        classes: {}
+        classes: {},
+		
+		// Utility functions & objects will be registered here
+		utils: {}
     };
 }());

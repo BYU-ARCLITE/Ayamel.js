@@ -8,6 +8,7 @@
         '</div>',
 		componentConstructorMap = {
 			"play": "PlayButton",
+			"rate": "RateSlider",
 			"volume": "VolumeSlider",
 			"timeCode": "TimeCode",
 			"captions": "CaptionsMenu",
@@ -24,7 +25,7 @@
         args.$holder.append(this.$element);
 
         // Create the control bar components
-        args.components = args.components || [["play", "volume", "captions"], ["fullScreen", "timeCode"]];
+        args.components = args.components || [["play", "volume", "captions"], ["rate", "fullScreen", "timeCode"]];
         this.components = {};
         function addComponent($controls, component) {
 			_this.components[component] = new Ayamel.classes[componentConstructorMap[component]]({
@@ -88,12 +89,12 @@
         }
     };
 
-    ControlBar.prototype.addEventListener = function(event, callback) {
-        this.element.addEventListener(event, callback, false);
+    ControlBar.prototype.addEventListener = function(event, callback, capture) {
+        this.element.addEventListener(event, callback, !!capture);
     };
 	
-    ControlBar.prototype.removeEventListener = function(event, callback) {
-        this.element.removeEventListener(event, callback, false);
+    ControlBar.prototype.removeEventListener = function(event, callback, capture) {
+        this.element.removeEventListener(event, callback, !!capture);
     };
 
     Ayamel.classes.ControlBar = ControlBar;

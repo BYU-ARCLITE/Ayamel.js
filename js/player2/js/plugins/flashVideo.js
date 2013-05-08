@@ -7,13 +7,12 @@
  */
 (function (Ayamel) {
 
-    var template = "<div class='videoBox'><div id='flowplayerHolder'></div></div>";
-    var captionHolderTemplate = '<div class="videoCaptionHolder"></div>';
-
-    var supportedMimeTypes = [
-        "video/mp4",
-        "video/x-flv"
-    ];
+    var template = "<div class='videoBox'><div id='flowplayerHolder'></div></div>",
+        captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
+        supportedMimeTypes = [
+            "video/mp4",
+            "video/x-flv"
+        ];
 
     function supportsFile(file) {
         var mime = file.mime.split(";")[0];
@@ -30,27 +29,36 @@
     }
 
     function FlashVideoPlayer(args) {
-        var _this = this;
-        var playing = false;
-        var swfPath = Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.16.swf";
-        var width;
+        var _this = this,
+            playing = false,
+            swfPath = Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.16.swf",
+            $element = $(template),
+            element = $element[0],
+            $captionsElement = $(captionHolderTemplate),
+            captionsElement = $captionsElement[0],
+            startTime = +args.startTime || 0,
+            stopTime = +args.endTime || -1,
+            width, height, player;
 
         // Create the element
-        this.$element = $(template);
-        args.$holder.append(this.$element);
+        this.$element = $element;
+        this.element = element;
+        args.$holder.append($element);
 
         // Create a place for captions
-        this.$captionsElement = $(captionHolderTemplate);
-        args.$holder.append(this.$captionsElement);
+        this.$captionsElement = $captionsElement;
+        this.captionsElement = captionsElement;
+        args.$holder.append($captionsElement);
 
         // Set up the aspect ratio
+        //TODO: check for height overflow and resize smaller if necessary
         args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-        width = _this.$element.width();
-        var height = width / args.aspectRatio;
-        _this.$element.height(height);
+        width = $element.width();
+        height = width / args.aspectRatio;
+        $element.height(height);
 
         // Create the player
-        this.player = flowplayer("flowplayerHolder", {
+        player = flowplayer("flowplayerHolder", {
             src: swfPath,
             wmode: "transparent"
         }, {
@@ -71,37 +79,42 @@
                 onFinish: function() {
                     var event = document.createEvent("HTMLEvents");
                     event.initEvent("ended", true, true);
-                    _this.$element[0].dispatchEvent(event);
                     playing = false;
+                    element.dispatchEvent(event);
                 },
                 onMetaData: function() {
                     var event = document.createEvent("HTMLEvents");
                     event.initEvent("durationchange", true, true);
-                    _this.$element[0].dispatchEvent(event);
+                    element.dispatchEvent(event);
                 },
                 onPause: function() {
                     var event = document.createEvent("HTMLEvents");
                     event.initEvent("pause", true, true);
-                    _this.$element[0].dispatchEvent(event);
                     playing = false;
+                    element.dispatchEvent(event);
                 },
                 onResume: function() {
                     var event = document.createEvent("HTMLEvents");
                     event.initEvent("play", true, true);
-                    _this.$element[0].dispatchEvent(event);
                     playing = true;
+                    element.dispatchEvent(event);
                 },
                 onStart: function() {
                     var event = document.createEvent("HTMLEvents");
                     event.initEvent("play", true, true);
-                    _this.$element[0].dispatchEvent(event);
                     playing = true;
+                    element.dispatchEvent(event);
                 },
                 onStop: function() {
                     var event = document.createEvent("HTMLEvents");
                     event.initEvent("pause", true, true);
-                    _this.$element[0].dispatchEvent(event);
                     playing = false;
+                    element.dispatchEvent(event);
+                },
+                onVolume: function () {
+                    var event = document.createEvent("HTMLEvents");
+                    event.initEvent("volumechange", true, true);
+                    element.dispatchEvent(event);
                 }
             },
 
@@ -112,65 +125,65 @@
             }
         });
 
-        // Set up duration
-        var startTime = args.startTime || 0;
-        var stopTime = args.endTime || -1;
+        this.player = player;
 
-        // Set up player events
-        this.player.onVolume(function () {
-            var event = document.createEvent("HTMLEvents");
-            event.initEvent("volumechange", true, true);
-            _this.$element[0].dispatchEvent(event);
-        });
-        setInterval(function () {
+        function fireTimeEvents() {
+            var event;
             if (playing) {
                 // Make sure that we are playing within bounds (give a buffer because flash vid isn't perfect)
-                if (startTime !== 0 && _this.player.getTime() < startTime - 0.5) {
-                    _this.player.seek(startTime);
+                if (startTime !== 0 && player.getTime() < startTime - 0.5) {
+                    player.seek(startTime);
                 }
-                if (stopTime !== -1 && _this.player.getTime() >= stopTime - 0.1) {
-                    _this.player.seek(startTime);
-                    _this.player.stop();
+                if (stopTime !== -1 && player.getTime() >= stopTime - 0.1) {
+                    player.seek(startTime);
+                    player.stop();
                 }
 
-                var event = document.createEvent("HTMLEvents");
+                event = document.createEvent("HTMLEvents");
                 event.initEvent("timeupdate", true, true);
-                _this.$element[0].dispatchEvent(event);
+                element.dispatchEvent(event);
             }
-        }, 50);
+        }
+
+        if(Ayamel.utils.Animation){
+            (function timeloop(){
+                Ayamel.utils.Animation.requestFrame(timeloop);
+                fireTimeEvents();
+            }());
+        }else{
+            setInterval(fireTimeEvents, 50);
+        }
 
         Object.defineProperties(this, {
             duration: {
                 get: function () {
-                    var videoDuration = this.player.getClip().fullDuration;
-                    var stop = stopTime === -1 ? videoDuration : stopTime;
+                    var stop = stopTime === -1 ? player.getClip().fullDuration : stopTime;
                     return stop - startTime;
                 }
             },
             currentTime: {
                 get: function () {
-                    return this.player.getTime() - startTime;
+                    return player.getTime() - startTime;
                 },
                 set: function (time) {
-                    time = Math.floor(Number(time)* 100) / 100;
-                    this.player.seek(time);
+                    time = Math.floor((+time||0) * 100) / 100;
+                    player.seek(time + startTime);
+                    return time;
                 }
             },
             muted: {
                 get: function () {
-                    return this.player.getVolume() === 0;
+                    return player.getVolume() === 0;
                 },
                 set: function (muted) {
-                    if (!!muted) {
-                        this.player.mute();
-                    } else {
-                        this.player.unmute();
-                    }
+                    muted = !!muted;
+                    player[muted?'mute':'unmute']();
+                    return muted;
                 }
             },
             paused: {
                 get: function () {
-                    return this.player.isPaused();
+                    return player.isPaused();
                 }
             },
             playbackRate: {
@@ -179,20 +192,22 @@
                 },
                 set: function (playbackRate) {
                     //this.$video[0].playbackRate = Number(playbackRate);
+                    return 1;
                 }
             },
             readyState: {
                 get: function () {
-                    return this.player.getState();
+                    return player.getState();
                 }
             },
             volume: {
                 get: function () {
-                    return this.player.getVolume() / 100;
+                    return player.getVolume() / 100;
                 },
                 set: function (volume) {
-                    volume = Number(volume) * 100;
-                    this.player.setVolume(volume);
+                    volume = (+volume||0) * 100;
+                    player.setVolume(volume);
+                    return volume;
                 }
             }
         });
@@ -215,7 +230,6 @@
         this.$element.height(this.normalHeight);
     };
 
-
     Ayamel.mediaPlugins.flashVideo = {
         install: function(args) {
 
@@ -229,18 +243,15 @@
             // Ensure that the browser supports flash
             var hasFlash = false;
             try {
-                var fo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
-                if(fo) hasFlash = true;
+                hasFlash = !!(new ActiveXObject('ShockwaveFlash.ShockwaveFlash'));
             }catch(e){
-                if(navigator.mimeTypes ["application/x-shockwave-flash"] != undefined) hasFlash = true;
+                hasFlash = (typeof navigator.mimeTypes["application/x-shockwave-flash"] !== 'undefined');
             }
-            if (!hasFlash)
-                return false;
 
             // Check that there is a supported resource
-            return resource.content.files.reduce(function (prev, file) {
-                return prev || (resource.type === "video" && supportsFile(file));
-            }, false);
+            return hasFlash && resource.content.files.some(function (file) {
+                return (resource.type === "video" && supportsFile(file));
+            });
         }
     };
 }(Ayamel));
