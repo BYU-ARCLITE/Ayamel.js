@@ -6,10 +6,9 @@
             "<div class='audioCaptionContainer'>" +
                 "<div class='audioCaptionHolder'></div>" +
             "</div>" +
-            "<audio></audio>" +
-        "</div>";
-
-    var supports = ["probably", "maybe"];
+        "</div>",
+        supports = ["probably", "maybe"],
+        testAudio = document.createElement("audio");
 
     var events = {
         abort: 'error',                     // Data loading was aborted
@@ -28,98 +27,119 @@
         volumechange: 'volumechange'        // Volume has changed
     };
 
-    function supportsFile(audio, file) {
-        return supports.indexOf(audio.canPlayType(file.mime)) >= 0;
+    function supportsFile(file) {
+        return supports.indexOf(testAudio.canPlayType(file.mime)) >= 0;
     }
 
     function findFile(resource) {
-        for (var i=0; i<resource.content.files.length; i += 1) {
-            var file = resource.content.files[i];
-            if (supportsFile(this.$audio[0], file))
+        var file, i;
+        for (i=0; i<resource.content.files.length; i += 1) {
+            file = resource.content.files[i];
+            if (supportsFile(file))
                 return file;
         }
         return null;
     }
 
     function Html5AudioPlayer(args) {
-        var _this = this;
-        var file;
+        var file, _this = this,
+            startTime = +args.startTime || 0,
+            stopTime = +args.endTime || -1,
+            $element = $(template),
+            element = $element[0],
+            $captionsElement = $element.find(".audioCaptionHolder"),
+            captionsElement = $captionsElement[0],
+            audio = new Audio();
 
-        // Create the element
-        this.$element = $(template);
-        this.$audio = this.$element.children("audio");
-        args.$holder.append(this.$element);
+        this.$element = $element;
+        this.element = element;
+        args.$holder.append($element);
+
+        this.audio = audio;
 
         // Create a place for captions
-        this.$captionsElement = this.$element.find(".audioCaptionHolder");
+        this.$captionsElement = $captionsElement;
+        this.captionsElement = captionsElement;
+        args.$holder.append($captionsElement);
 
         // Load the source
         file = findFile.call(this, args.resource);
-        this.$audio[0].src = file.downloadUri;
+        audio.src = file.downloadUri;
 
         // Set up event propagation
         Object.keys(events).forEach(function (eventName) {
-            _this.$audio[0].addEventListener(eventName, function (event) {
-                event.stopPropagation();
-
+            audio.addEventListener(eventName, function (event) {
                 var newEvent = document.createEvent("HTMLEvents");
                 newEvent.initEvent(events[eventName], true, true);
-                _this.$element[0].dispatchEvent(newEvent);
-            });
+                element.dispatchEvent(newEvent);
+                event.stopPropagation();
+            },false);
         });
+
+        // Set up the duration
+        element.addEventListener("timeupdate", function(event) {
+            if (audio.currentTime < startTime)
+                audio.currentTime = startTime;
+            if (stopTime != -1 && audio.currentTime > stopTime) {
+                audio.pause();
+                audio.currentTime = startTime;
+            }
+        }, false);
 
         Object.defineProperties(this, {
             duration: {
                 get: function () {
-                    return this.$audio[0].duration;
+                    var stop = stopTime === -1 ? audio.duration : stopTime;
+                    return stop - startTime;
                 }
             },
             currentTime: {
                 get: function () {
-                    return this.$audio[0].currentTime;
+                    return audio.currentTime - startTime;
                 },
                 set: function (time) {
-                    this.$audio[0].currentTime = Number(time);
+                    return audio.currentTime = (+time||0) + startTime;
                 }
             },
             muted: {
                 get: function () {
-                    return this.$audio[0].muted;
+                    return audio.muted;
                 },
                 set: function (muted) {
-                    this.$audio[0].muted = !!muted;
+                    return audio.muted = !!muted;
                 }
             },
             playbackRate: {
                 get: function () {
-                    return this.$audio[0].playbackRate;
+                    return audio.playbackRate;
                 },
                 set: function (playbackRate) {
-                    this.$audio[0].playbackRate = Number(playbackRate);
+                    playbackRate = +playbackRate
+                    return audio.playbackRate = isNaN(playbackRate)?1:playbackRate;
                 }
             },
             readyState: {
                 get: function () {
-                    return this.$audio[0].readyState;
+                    return audio.readyState;
                 }
             },
             volume: {
                 get: function () {
-                    return this.$audio[0].volume;
+                    return audio.volume;
                 },
                 set: function (volume) {
-                    this.$audio[0].volume = Number(volume);
+                    return audio.volume = +volume||0;
                 }
             }
         });
     }
 
     Html5AudioPlayer.prototype.play = function() {
-        this.$audio[0].play();
+        this.audio.play();
     };
 
     Html5AudioPlayer.prototype.pause = function() {
-        this.$audio[0].pause();
+        this.audio.pause();
     };
 
     Html5AudioPlayer.prototype.enterFullScreen = function(availableHeight) {
@@ -136,10 +156,9 @@
             return new Html5AudioPlayer(args);
         },
         supports: function(resource) {
-            var audio = document.createElement("audio");
-            return resource.content.files.reduce(function (prev, file) {
-                return prev || (resource.type === "audio" && supportsFile(audio, file));
-            }, false);
+            return resource.content.files.some(function (file) {
+                return (resource.type === "audio" && supportsFile(file));
+            });
         }
     };
 

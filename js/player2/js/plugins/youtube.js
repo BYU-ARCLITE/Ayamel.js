@@ -1,8 +1,14 @@
 (function (Ayamel, global) {
     "use strict";
 
-    var template = '<div><div id="youtubePlayer"></div></div>';
-    var captionHolderTemplate = '<div class="videoCaptionHolder"></div>';
+    var template = '<div><div id="youtubePlayer"></div></div>',
+        captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
+        counter = 0;
+
+    function genId(){
+        counter++;
+        return "AyamelYTPlayer-"+counter.toString(36);
+    }
 
     function supportsFile(file) {
         return file.streamUri &&
@@ -23,8 +29,9 @@
     }
 
     function findFile(resource) {
-        for (var i=0; i<resource.content.files.length; i += 1) {
-            var file = resource.content.files[i];
+        var file, i;
+        for (i=0; i<resource.content.files.length; i += 1) {
+            file = resource.content.files[i];
             if (supportsFile(file))
                 return file;
         }
@@ -32,150 +39,166 @@
     }
 
     function YouTubePlayer(args) {
-        var _this = this;
+        var _this = this,
+            height, width,
+            idstr = genId(),
+            startTime = +args.startTime || 0,
+            stopTime = +args.endTime || -1,
+            $element = $(template),
+            element = $element[0],
+            $captionsElement = $(captionHolderTemplate),
+            captionsElement = $captionsElement[0];
 
         // Create the element
-        this.$element = $(template);
+        this.$element = $element;
+        this.element = element;
         args.$holder.append(this.$element);
 
+        this.video = null;
+
         // Create a place for captions
-        this.$captionsElement = $(captionHolderTemplate);
-        args.$holder.append(this.$captionsElement);
+        this.$captionsElement = $captionsElement;
+        this.captionsElement = captionsElement;
+        args.$holder.append($captionsElement);
 
         // Set up the aspect ratio
+        //TODO: check for height overflow and resize smaller if necessary
         args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-        var width = _this.$element.width();
-        var height = width / args.aspectRatio;
-        _this.$element.height(height);
+        width = $element.width();
+        height = width / args.aspectRatio;
+        $element.height(height);
 
         // Include the YouTube API for a chromeless player
         // Docs here: https://developers.google.com/youtube/js_api_reference
         swfobject.embedSWF("http://www.youtube.com/apiplayer?enablejsapi=1&version=3",
             "youtubePlayer", width, height, "8", null, null,
-            { allowScriptAccess: "always", wmode: "transparent" }, { id: "myytplayer" });
+            { allowScriptAccess: "always", wmode: "transparent" }, { id: idstr });
 
-        // Figure out the start and end time
-        var startTime = args.startTime || 0;
-        var endTime = args.endTime === -1 ? undefined : args.endTime;
-
+		//TODO: Set up properties object to allow interactions before YouTube has loaded
+			
         Object.defineProperties(this, {
-            init: {
+			init: {
                 value: function() {
-                    this.$video = this.$element.children("#myytplayer")
-                        .width("100%")
-                        .height("100%");
+                    var $video = this.$element.children("#"+idstr),
+						video = $video[0],
+						playing = false;
+						
+                    $video.width("100%").height("100%");
 
+					this.video = video;
+					
                     // Load the source
-                    this.$video[0].loadVideoById({
+                    video.loadVideoById({
                         videoId: getYouTubeId(findFile(args.resource).streamUri),
                         startSeconds: startTime,
-                        endSeconds: endTime,
+                        endSeconds: stopTime === -1 ? undefined : stopTime,
                         suggestedQuality: "large"
                     });
-                    this.$video[0].pauseVideo();
+                    video.pauseVideo();
 
                     // Set up events. Unfortunately the YouTube API requires the callback to be in the global namespace.
                     window.youtubeStateChange = function(data) {
-                        var stateEventMap = {
-                            0: "ended",
-                            1: "play",
-                            2: "pause",
-                            3: "durationchange"
-                        };
-                        var event = document.createEvent("HTMLEvents");
-                        event.initEvent(stateEventMap[data], true, true);
-                        _this.$element[0].dispatchEvent(event);
+                        var event;
+						if(data === -1) { return; }
+						
+						event = document.createEvent("HTMLEvents");	
+                        event.initEvent({
+							0: "ended",
+							1: "play",
+							2: "pause",
+							3: "durationchange",
+							5: 'loading'
+						}[data], true, true);
+                        element.dispatchEvent(event);
 
                         // If we started playing then send out timeupdate events
-                        var playing = false;
-                        function timeUpdate() {
-                            var timeEvent = document.createEvent("HTMLEvents");
-                            timeEvent.initEvent("timeupdate", true, true);
-                            _this.$element[0].dispatchEvent(timeEvent);
-
-                            if (playing) {
-                                setTimeout(function () {timeUpdate();}, 50);
-                            }
-                        }
                         if (data === 1) {
                             playing = true;
-                            timeUpdate();
+                            (function timeUpdate() {
+                                var timeEvent = document.createEvent("HTMLEvents");
+                                timeEvent.initEvent("timeupdate", true, true);
+                                element.dispatchEvent(timeEvent);
 
-                            // Send another durationchange event. It's always changing
-                            var durationEvent = document.createEvent("HTMLEvents");
-                            durationEvent.initEvent("durationchange", true, true);
-                            _this.$element[0].dispatchEvent(durationEvent);
-                        }
-                        if (data === 0 || data === 2) {
-                            playing = false;
-                        }
+                                if (!playing) { return; }
+                                if(Ayamel.utils.Animation){
+                                    Ayamel.utils.Animation.requestFrame(timeUpdate);
+                                }else{
+                                    setTimeout(timeUpdate, 50);
+                                }
+                            }());
+                        }else if(data === 0 || data === 2){
+							playing = false;
+						}
                     };
-                    this.$video[0].addEventListener("onStateChange", "youtubeStateChange");
+                    video.addEventListener("onStateChange", "youtubeStateChange");
                 }
             },
             duration: {
                 get: function () {
-                    var end = endTime ? endTime : this.$video[0].getDuration();
-                    return end - startTime;
+                    var stop = stopTime === -1 ? this.video.getDuration() : stopTime;
+                    return stop - startTime;
                 }
             },
             currentTime: {
                 get: function () {
-                    return this.$video[0].getCurrentTime() - startTime;
+                    return this.video.getCurrentTime() - startTime;
                 },
                 set: function (time) {
-                    time = Math.floor(Number(time)* 100) / 100;
-                    this.$video[0].seekTo(time);
+                    time = Math.floor((+time||0)* 100) / 100;
+                    this.video.seekTo(time);
+                    return time;
                 }
             },
             muted: {
                 get: function () {
-                    return this.$video[0].isMuted();
+                    return this.video.isMuted();
                 },
                 set: function (muted) {
-                    if (!!muted) {
-                        this.$video[0].mute();
-                    } else {
-                        this.$video[0].unMute();
-                    }
+                    muted = !!muted;
+                    this.video[muted?'mute':'unmute']();
+                    return muted;
                 }
             },
             paused: {
                 get: function () {
-                    var state = this.$video[0].getPlayerState();
-                    return state !== 1;
+                    return this.video.getPlayerState() !== 1;
                 }
             },
             playbackRate: {
                 get: function () {
-                    return this.$video[0].getPlaybackRate();
+                    return this.video.getPlaybackRate();
                 },
                 set: function (playbackRate) {
-                    this.$video[0].setPlaybackRate(playbackRate);
+                    playbackRate = +playbackRate
+                    if(isNaN(playbackRate)){ playbackRate = 1; }
+                    this.video.setPlaybackRate(playbackRate);
+                    return playbackRate;
                 }
             },
             readyState: {
                 get: function () {
-                    return this.$video[0].getPlayerState();
+                    return this.video.getPlayerState();
                 }
             },
             volume: {
                 get: function () {
-                    return this.$video[0].getVolume() / 100;
+                    return this.video.getVolume() / 100;
                 },
                 set: function (volume) {
-                    this.$video[0].setVolume(Number(volume) * 100);
+                    volume = (+volume||0);
+                    this.video.setVolume(volume * 100);
+                    return volume;
                 }
             }
         });
     }
 
     YouTubePlayer.prototype.play = function() {
-        this.$video[0].playVideo();
+        this.video.playVideo();
     };
 
     YouTubePlayer.prototype.pause = function() {
-        this.$video[0].pauseVideo();
+        this.video.pauseVideo();
     };
 
     YouTubePlayer.prototype.enterFullScreen = function(availableHeight) {
@@ -189,18 +212,14 @@
 
     Ayamel.mediaPlugins.youtube = {
         install: function(args) {
-            var player;
-            global.onYouTubePlayerReady = function() {
-                player.init();
-            };
-            player = new YouTubePlayer(args);
-
+            var player = new YouTubePlayer(args);
+            global.onYouTubePlayerReady = player.init.bind(player);
             return player;
         },
         supports: function(resource) {
-            return resource.content.files.reduce(function (prev, file) {
-                return prev || (resource.type === "video" && supportsFile(file));
-            }, false);
+            return resource.content.files.some(function (file) {
+                return (resource.type === "video" && supportsFile(file));
+            });
         }
     };
 }(Ayamel, window));

@@ -59,6 +59,7 @@
         // There needs to be a place for captions
         if (this.plugin) {
             this.$captionsElement = this.plugin.$captionsElement;
+			this.captionsElement = this.plugin.captionsElement;
         }
 
         Object.defineProperties(this, {

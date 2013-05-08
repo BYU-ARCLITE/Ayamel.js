@@ -8,72 +8,93 @@
 (function (Ayamel) {
     "use strict";
 
-    var pseudoFullScreen = false;
-    var exitFullScreen;
-    var requestFullScreen;
-    var fullScreenElement;
-//    var isFullScreen;
-    var eventFullScreen;
+    var pseudoFullScreen = false,
+		exitFullScreen,
+		requestFullScreen,
+		fullScreenElement,
+		isFullScreen,
+		getAvailableHeight,
+		getAvailableWidth,
+		eventFullScreen;
 
     // Setup the fullscreen functions
-    if (!!document.mozCancelFullScreen) {
+    if (typeof document.mozCancelFullScreen === 'function') {
         exitFullScreen = function () {
             document.fullScreen && document.mozCancelFullScreen();
+            fullScreenElement = null;
         };
         requestFullScreen = function (element) {
             element.mozRequestFullScreen();
         };
-//        isFullScreen = function () {
-//            return document.fullScreen;
-//        };
+		isFullScreen = function () {
+			return document.fullScreen;
+		};
+		getAvailableHeight = function () {
+			return screen.height;
+		};
+		getAvailableWidth = function () {
+			return screen.width;
+		};
         eventFullScreen = "mozfullscreenchange";
-    } else if (!!document.webkitCancelFullScreen) {
+    } else if (typeof document.webkitCancelFullScreen === 'function') {
         exitFullScreen = function () {
             document.webkitIsFullScreen && document.webkitCancelFullScreen();
+            fullScreenElement = null;
         };
         requestFullScreen = function (element) {
             element.webkitRequestFullScreen();
         };
-//        isFullScreen = function () {
-//            return document.webkitIsFullScreen;
-//        };
+        isFullScreen = function () {
+            return document.webkitIsFullScreen;
+        };
+		getAvailableHeight = function () {
+			return screen.height;
+		};
+		getAvailableWidth = function () {
+			return screen.width;
+		};
         eventFullScreen = "webkitfullscreenchange";
     } else {
         // Pseudo fullscreen
         exitFullScreen = function () {
+			var event = document.createEvent("HTMLEvents"),
+				element = fullScreenElement;
+            event.initEvent("pseudofullscreenchange", true, true);
+            event.target = element;
+			
             pseudoFullScreen = false;
-            $(fullScreenElement).removeClass("pseudoFullScreen");
+            fullScreenElement = null;
+            element.classList.remove("pseudoFullScreen");
+            element.dispatchEvent(event);
         };
         requestFullScreen = function (element) {
+			var event = document.createEvent("HTMLEvents");
+            event.initEvent("pseudofullscreenchange", true, true);
+            event.target = element;
+			
             pseudoFullScreen = true;
             fullScreenElement = element;
-            $(element).addClass("pseudoFullScreen");
+            element.classList.add("pseudoFullScreen");
+            element.dispatchEvent(event);
         };
-//        isFullScreen = function () {
-//            return pseudoFullScreen;
-//        };
-
-        pseudoFullScreen = false;
+		isFullScreen = function () {
+			return pseudoFullScreen;
+		};
+		getAvailableHeight = function () {
+			return window.innerHeight;
+		};
+		getAvailableHeight = function () {
+			return window.innerWidth;
+		};
         eventFullScreen = "pseudofullscreenchange";
     }
 
-    Ayamel.FullScreenHandler = {
-        enter: function (element) {
-            requestFullScreen(element);
-        },
-        exit: function () {
-            exitFullScreen();
-            fullScreenElement = null;
-        },
-
-        fullScreenEvent: eventFullScreen,
-
-        getAvailableHeight: function() {
-            if (eventFullScreen === "pseudofullscreenchange") {
-                return $(window).height();
-            } else {
-                return screen.height;
-            }
-        }
-    };
+    Ayamel.utils.FullScreen = Object.create({},{
+        enter: { enumerable: true, value: requestFullScreen },
+        exit:{ enumerable: true, value: exitFullScreen },
+        fullScreenEvent: { enumerable: true, value: eventFullScreen },
+        isFullScreen: { enumerable: true, get: isFullScreen },
+        availableHeight: { enumerable: true, get: getAvailableHeight },
+        availableWidth: { enumerable: true, get: getAvailableWidth }
+    });
 }(Ayamel));

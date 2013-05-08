@@ -6,9 +6,10 @@
  * To change this template use File | Settings | File Templates.
  */
 (function (Ayamel) {
+    "use strict";
 
-    var template = "<div class='videoBox'></div>";
-    var captionHolderTemplate = '<div class="videoCaptionHolder"></div>';
+    var template = "<div class='videoBox'></div>",
+        captionHolderTemplate = '<div class="videoCaptionHolder"></div>';
 
     function supportsFile(file) {
         return file.streamUri && file.streamUri.substr(0,13) === "brightcove://";
@@ -41,34 +42,47 @@
     }
 
     function BrightcoveVideoPlayer(args) {
-        var _this = this;
-        var file = findFile(args.resource);
-        var videoId = file.streamUri.substr(13);
-        var properties = {
-            duration: 0,
-            currentTime: 0,
-            paused: true
-        };
+        var _this = this, width, height,
+            startTime = +args.startTime || 0,
+            stopTime = +args.endTime || -1,
+            file = findFile(args.resource),
+            videoId = file.streamUri.substr(13),
+            $element = $(template),
+            element = $element[0],
+            $captionsElement = $(captionHolderTemplate),
+            captionsElement = $captionsElement[0],
+            properties = {
+                duration: 0,
+                currentTime: 0,
+                paused: true
+            };
 
-        // Create the element
-        this.$element = $(template);
-        this.$element.append(generateBrightcoveTemplate(videoId));
-        args.$holder.append(this.$element);
+        this.$element = $element;
+        this.element = element;
+        $element.append(generateBrightcoveTemplate(videoId));
+        args.$holder.append($element);
 
         // Create a place for captions
-        this.$captionsElement = $(captionHolderTemplate);
-        args.$holder.append(this.$captionsElement);
+        this.$captionsElement = $captionsElement;
+        this.captionsElement = captionsElement;
+        args.$holder.append($captionsElement);
 
         // Set up the aspect ratio
+        //TODO: check for height overflow and resize smaller if necessary
         args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-        width = _this.$element.width();
-        var height = width / args.aspectRatio;
-        _this.$element.height(height);
+        width = $element.width();
+        height = width / args.aspectRatio;
+        $element.height(height);
 
+		this.player = null;
+		this.properties = properties;
+		
         // Register the global callbacks
         window.brightcoveTemplateLoaded = function brightcoveTemplateLoaded(experienceID) {
             var brightcoveExperience = brightcove.api.getExperience(experienceID);
             _this.player = brightcoveExperience.getModule(brightcove.api.modules.APIModules.VIDEO_PLAYER);
+			_this.player.seek(properties.currentTime);
+			if(!properties.paused){ _this.player.play(); }
         };
 
         window.brightcoveTemplateReady = function brightcoveTemplateReady(experienceID) {
@@ -95,10 +109,10 @@
 
             Object.keys(events).forEach(function (brightcoveEvent) {
                 _this.player.addEventListener(brightcoveEvent, function(event) {
-                    updateProperties(event);
                     var newEvent = document.createEvent("HTMLEvents");
+                    updateProperties(event);
                     newEvent.initEvent(events[brightcoveEvent], true, true);
-                    _this.$element[0].dispatchEvent(newEvent);
+                    element.dispatchEvent(newEvent);
                 });
             });
         };
@@ -106,15 +120,12 @@
         // Create the player
         brightcove.createExperiences();
 
-        // TODO: Set up the duration
-        var startTime = 0;
-        var stopTime = -1;
-
+		//TODO: Set up the duration checking
+		
         Object.defineProperties(this, {
             duration: {
                 get: function () {
-                    var videoDuration = properties.duration;
-                    var stop = stopTime === -1 ? videoDuration : stopTime;
+                    var stop = stopTime === -1 ? properties.duration : stopTime;
                     return stop - startTime;
                 }
             },
@@ -124,7 +135,9 @@
                 },
                 set: function (time) {
                     time = Math.floor(Number(time)* 100) / 100;
-                    this.player.seek(time);
+					properties.currentTime = time + startTime;
+                    this.player && this.player.seek(properties.currentTime);
+					return time;
                 }
             },
             muted: {
@@ -133,6 +146,7 @@
                     //return this.$video[0].muted;
                 },
                 set: function (muted) {
+                    return false;
                     //this.$video[0].muted = !!muted;
                 }
             },
@@ -147,6 +161,7 @@
                 },
                 set: function (playbackRate) {
                     //this.$video[0].playbackRate = Number(playbackRate);
+                    return 1;
                 }
             },
             readyState: {
@@ -161,18 +176,20 @@
                 },
                 set: function (volume) {
 //                    this.$video[0].volume = Number(volume);
+                    return 1;
                 }
             }
         });
-
     }
 
     BrightcoveVideoPlayer.prototype.play = function() {
-        this.player.play();
+        this.player && this.player.play();
+		this.properties.paused = false;
     };
 
     BrightcoveVideoPlayer.prototype.pause = function() {
-        this.player.pause();
+        this.player && this.player.pause();
+		this.properties.paused = true;
     };
 
     BrightcoveVideoPlayer.prototype.enterFullScreen = function(availableHeight) {

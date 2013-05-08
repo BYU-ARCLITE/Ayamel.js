@@ -17,7 +17,8 @@
         '</div>';
 
     function createElement() {
-        var $element = $(template);
+        var $element = $(template),
+			element = $element[0];
 
         // Allow clicking
         var moving = false;
@@ -45,7 +46,7 @@
                     var newEvent = document.createEvent("HTMLEvents");
                     newEvent.initEvent("scrubupdate", true, true);
                     newEvent.progress = width / elementWidth;
-                    $element[0].dispatchEvent(newEvent);
+                    element.dispatchEvent(newEvent);
                 }
             }).mouseup(function (event) {
                 if (moving) {
@@ -59,7 +60,7 @@
                     var newEvent = document.createEvent("HTMLEvents");
                     newEvent.initEvent("scrubend", true, true);
                     newEvent.progress = width / elementWidth;
-                    $element[0].dispatchEvent(newEvent);
+                    element.dispatchEvent(newEvent);
                 }
             });
 
@@ -67,28 +68,34 @@
     }
 
     function ProgressBar(args) {
-        var _this = this;
-        var progress = 0;
+        var _this = this,
+			progress = 0,
+			$element = createElement(),
+			element = $element[0];
 
-        this.$element = createElement();
-        args.$holder.append(this.$element);
+        this.$element = $element;
+		this.element = element;
+        args.$holder.append($element);
 
         Object.defineProperty(this, "progress", {
             get: function () {
                 return progress;
             },
             set: function (val) {
-                var progress = Number(val);
-
-                if (!_this.$element.hasClass("moving")) {
-                    _this.$element.children(".progressLevel").width((progress * 100) + "%");
+                var progress = +val||0;
+                if (!$element.hasClass("moving")) {
+                    $element.children(".progressLevel").width((progress * 100) + "%");
                 }
             }
         });
     }
 
-    ProgressBar.prototype.addEventListener = function(event, callback) {
-        this.$element[0].addEventListener(event, callback);
+    ProgressBar.prototype.addEventListener = function(event, callback, capture) {
+        this.element.addEventListener(event, callback, !!capture);
+    };
+	
+    ProgressBar.prototype.removeEventListener = function(event, callback, capture) {
+        this.element.removeEventListener(event, callback, !!capture);
     };
 
     Ayamel.classes.ProgressBar = ProgressBar;

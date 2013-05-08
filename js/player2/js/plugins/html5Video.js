@@ -1,10 +1,10 @@
 (function(Ayamel) {
     "use strict";
 
-    var template = "<div class='videoBox'><video></video></div>";
-    var captionHolderTemplate = '<div class="videoCaptionHolder"></div>';
-
-    var supports = ["probably", "maybe"];
+    var template = "<div class='videoBox'><video></video></div>",
+        captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
+        supports = ["probably", "maybe"],
+        testVideo = document.createElement('video');
 
     var events = {
         abort: 'error',                     // Data loading was aborted
@@ -23,127 +23,133 @@
         volumechange: 'volumechange'        // Volume has changed
     };
 
-    function supportsFile(video, file) {
-        return supports.indexOf(video.canPlayType(file.mime)) >= 0;
+    function supportsFile(file) {
+        return supports.indexOf(testVideo.canPlayType(file.mime)) >= 0;
     }
 
     function findFile(resource) {
-        for (var i=0; i<resource.content.files.length; i += 1) {
-            var file = resource.content.files[i];
-            if (supportsFile(this.$video[0], file))
+        var file, i;
+        for (i=0; i<resource.content.files.length; i += 1) {
+            file = resource.content.files[i];
+            if (supportsFile(file))
                 return file;
         }
         return null;
     }
 
     function Html5VideoPlayer(args) {
-        var _this = this;
-        var width;
-        var file;
+        var _this = this, file,
+            height, width,
+            startTime = +args.startTime || 0,
+            stopTime = +args.endTime || -1,
+            $element = $(template),
+            element = $element[0],
+            $captionsElement = $(captionHolderTemplate),
+            captionsElement = $captionsElement[0],
+            video = $element.children("video")[0];
 
         // Create the element
-        this.$element = $(template);
-        this.$video = this.$element.children("video");
-        args.$holder.append(this.$element);
+        this.$element = $element;
+        this.element = element;
+        args.$holder.append(element);
+
+        this.video = video;
 
         // Create a place for captions
-        this.$captionsElement = $(captionHolderTemplate);
-        args.$holder.append(this.$captionsElement);
+        this.$captionsElement = $captionsElement;
+        this.captionsElement = captionsElement;
+        args.$holder.append($captionsElement);
 
         // Set up the aspect ratio
+        //TODO: check for height overflow and resize smaller if necessary
         args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
         width = _this.$element.width();
-        var height = width / args.aspectRatio;
-        _this.$element.height(height);
+        height = width / args.aspectRatio;
+        $element.height(height);
 
         // Load the source
         file = findFile.call(this, args.resource);
-        this.$video[0].src = file.downloadUri;
+        video.src = file.downloadUri;
 
         // Set up event propagation
         Object.keys(events).forEach(function (eventName) {
-            _this.$video[0].addEventListener(eventName, function (event) {
-                event.stopPropagation();
-
+            video.addEventListener(eventName, function (event) {
                 var newEvent = document.createEvent("HTMLEvents");
                 newEvent.initEvent(events[eventName], true, true);
-                _this.$element[0].dispatchEvent(newEvent);
-            });
+                element.dispatchEvent(newEvent);
+                event.stopPropagation();
+            }, false);
         });
 
         // Set up the duration
-        var startTime = args.startTime || 0;
-        var stopTime = args.endTime || -1;
-        this.$element[0].addEventListener("timeupdate", function(event) {
-            if (_this.$video[0].currentTime < startTime)
-                _this.$video[0].currentTime = startTime;
-
-            if (stopTime != -1 && _this.$video[0].currentTime > stopTime) {
-                _this.$video[0].pause();
-                _this.$video[0].currentTime = startTime;
+        element.addEventListener("timeupdate", function(event) {
+            if (video.currentTime < startTime)
+                video.currentTime = startTime;
+            if (stopTime != -1 && video.currentTime > stopTime) {
+                video.pause();
+                video.currentTime = startTime;
             }
-        });
+        }, false);
 
         Object.defineProperties(this, {
             duration: {
                 get: function () {
-                    var videoDuration = this.$video[0].duration;
-                    var stop = stopTime === -1 ? videoDuration : stopTime;
+                    var stop = stopTime === -1 ? video.duration : stopTime;
                     return stop - startTime;
                 }
             },
             currentTime: {
                 get: function () {
-                    return this.$video[0].currentTime - startTime;
+                    return video.currentTime - startTime;
                 },
                 set: function (time) {
-                    time = Math.floor(Number(time)* 100) / 100;
-                    this.$video[0].currentTime = time;
+                    return video.currentTime = (+time||0) + startTime;
                 }
             },
             muted: {
                 get: function () {
-                    return this.$video[0].muted;
+                    return video.muted;
                 },
                 set: function (muted) {
-                    this.$video[0].muted = !!muted;
+                    return video.muted = !!muted;
                 }
             },
             paused: {
                 get: function () {
-                    return this.$video[0].paused;
+                    return video.paused;
                 }
             },
             playbackRate: {
                 get: function () {
-                    return this.$video[0].playbackRate;
+                    return video.playbackRate;
                 },
                 set: function (playbackRate) {
-                    this.$video[0].playbackRate = Number(playbackRate);
+                    playbackRate = +playbackRate
+                    return video.playbackRate = isNaN(playbackRate)?1:playbackRate;
                 }
             },
             readyState: {
                 get: function () {
-                    return this.$video[0].readyState;
+                    return video.readyState;
                 }
             },
             volume: {
                 get: function () {
-                    return this.$video[0].volume;
+                    return video.volume;
                 },
                 set: function (volume) {
-                    this.$video[0].volume = Number(volume);
+                    return video.volume = +volume||0;
                 }
             }
         });
     }
 
     Html5VideoPlayer.prototype.play = function() {
-        this.$video[0].play();
+        this.video.play();
     };
 
     Html5VideoPlayer.prototype.pause = function() {
-        this.$video[0].pause();
+        this.video.pause();
     };
 
     Html5VideoPlayer.prototype.enterFullScreen = function(availableHeight) {
@@ -160,10 +166,9 @@
             return new Html5VideoPlayer(args);
         },
         supports: function(resource) {
-            var video = document.createElement("video");
-            return resource.content.files.reduce(function (prev, file) {
-                return prev || (resource.type === "video" && supportsFile(video, file));
-            }, false);
+            return resource.content.files.some(function (file) {
+                return (resource.type === "video" && supportsFile(file));
+            });
         }
     };
 

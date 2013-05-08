@@ -108,7 +108,7 @@
 					return volume;
 				},
 				set: function (value) {
-					volume = +value;
+					volume = +value||0;
 					$level.width(volume*100);
 					return volume;
 				}
