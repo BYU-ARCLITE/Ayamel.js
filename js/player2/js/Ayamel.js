@@ -58,6 +58,22 @@ var Ayamel = (function() {
 		
 		// Utility functions & objects will be registered here
 		utils: {
+			hasTimeline: function(resource){
+				//determines if a resource has an inherent timeline, or if it's just static
+				switch(resource.type){
+				case 'audio':
+				case 'audio_sequence':
+				case 'video':
+				case 'video_sequence':
+				case 'image_sequence':
+					return true;
+				case 'image':
+				case 'text':
+				case 'text_sequence':
+				default:
+					return false;
+				}
+			},
 			getTextDirection: function(text){
 				/*
 				Apply the Unicode Bidirectional Algorithm's Paragraph Level steps to the text to determine

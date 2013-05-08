@@ -63,7 +63,7 @@
         // Set up the aspect ratio
         //TODO: check for height overflow and resize smaller if necessary
         args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-        width = _this.$element.width();
+        width = $element.width();
         height = width / args.aspectRatio;
         $element.height(height);
 
