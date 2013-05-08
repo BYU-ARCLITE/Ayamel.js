@@ -80,13 +80,13 @@
 			init: {
                 value: function() {
                     var $video = this.$element.children("#"+idstr),
-						video = $video[0],
-						playing = false;
-						
+                        video = $video[0],
+                        playing = false;
+
                     $video.width("100%").height("100%");
 
-					this.video = video;
-					
+                    this.video = video;
+
                     // Load the source
                     video.loadVideoById({
                         videoId: getYouTubeId(findFile(args.resource).streamUri),
@@ -98,17 +98,21 @@
 
                     // Set up events. Unfortunately the YouTube API requires the callback to be in the global namespace.
                     window.youtubeStateChange = function(data) {
-                        var event;
-						if(data === -1) { return; }
-						
-						event = document.createEvent("HTMLEvents");	
+                        var played = 0,
+                            event,
+                            durationEvent;
+                        if(data === -1) { return; }
+
+                        console.log(data);
+
+                        event = document.createEvent("HTMLEvents");
                         event.initEvent({
-							0: "ended",
-							1: "play",
-							2: "pause",
-							3: "durationchange",
-							5: 'loading'
-						}[data], true, true);
+                            0: "ended",
+                            1: "play",
+                            2: "pause",
+                            3: "durationchange",
+                            5: 'loading'
+                        }[data], true, true);
                         element.dispatchEvent(event);
 
                         // If we started playing then send out timeupdate events
@@ -120,15 +124,23 @@
                                 element.dispatchEvent(timeEvent);
 
                                 if (!playing) { return; }
-                                if(Ayamel.utils.Animation){
-                                    Ayamel.utils.Animation.requestFrame(timeUpdate);
-                                }else{
+                                // The request frame method throws a TypeError. So for now just use setTimeout.
+//                                if(Ayamel.utils.Animation){
+//                                    Ayamel.utils.Animation.requestFrame(timeUpdate);
+//                                }else{
                                     setTimeout(timeUpdate, 50);
-                                }
+//                                }
                             }());
                         }else if(data === 0 || data === 2){
-							playing = false;
-						}
+                            // If this is the first pause, then the duration is changed/loaded, so send out that event
+                            if (!played++) {
+                                durationEvent = document.createEvent("HTMLEvents");
+                                durationEvent.initEvent("durationchange", true, true);
+                                element.dispatchEvent(durationEvent);
+                            }
+
+                            playing = false;
+                        }
                     };
                     video.addEventListener("onStateChange", "youtubeStateChange");
                 }
