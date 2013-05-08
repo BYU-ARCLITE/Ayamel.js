@@ -116,5 +116,5 @@
         });
     }
 
-    Ayamel.classes.VolumeSlider = VolumeSlider;
+    Ayamel.controls.volume = VolumeSlider;
 }(Ayamel));

@@ -2,21 +2,23 @@
     "use strict";
 
     var template =
-        '<div class="controlBar">' +
-            '<div class="leftControls"></div>' +
-            '<div class="rightControls"></div>' +
-        '</div>',
-		componentConstructorMap = {
-			"play": "PlayButton",
-			"rate": "RateSlider",
-			"volume": "VolumeSlider",
-			"timeCode": "TimeCode",
-			"captions": "CaptionsMenu",
-			"fullScreen": "FullScreenButton"
-		};
+        '<div class="controlBar">\
+            <div class="leftControls"></div>\
+            <div class="rightControls"></div>\
+        </div>';
 
+	function addComponent($controls, component) {
+		var constructor = Ayamel.controls[component];
+		if(typeof constructor !== 'function'){ return; }
+		this.components[component] = new constructor({
+			$holder: $controls
+		});
+	}
+	
     function ControlBar(args) {
         var _this = this,
+			controlLists = args.components || {left:["play", "volume", "captions"], right:["rate", "fullScreen", "timeCode"]},
+			components = {},
 			$element = $(template);
 
         // Create the element
@@ -25,59 +27,58 @@
         args.$holder.append(this.$element);
 
         // Create the control bar components
-        args.components = args.components || [["play", "volume", "captions"], ["rate", "fullScreen", "timeCode"]];
-        this.components = {};
-        function addComponent($controls, component) {
-			_this.components[component] = new Ayamel.classes[componentConstructorMap[component]]({
-				$holder: $controls
-			});
-        }
-        args.components[0].forEach(addComponent.bind(null,$element.children(".leftControls")));
-        args.components[1].forEach(addComponent.bind(null,$element.children(".rightControls")));
+        this.components = components;
+
+        if(controlLists.left instanceof Array){
+			controlLists.left.forEach(addComponent.bind(this,$element.children(".leftControls")));
+		}
+        if(controlLists.right instanceof Array){
+			controlLists.right.forEach(addComponent.bind(this,$element.children(".rightControls")));
+		}
 
         Object.defineProperties(this, {
             currentTime: {
 				enumerable: true,
                 set: function (value) {
-                    if (this.components.timeCode) {
-                        this.components.timeCode.currentTime = value;
+                    if (components.timeCode) {
+                        components.timeCode.currentTime = value;
                     }
                 },
 				get: function () {
-					return this.components.timeCode?this.components.timeCode.currentTime:0;
+					return components.timeCode?components.timeCode.currentTime:0;
 				}
             },
             duration: {
 				enumerable: true,
                 set: function (value) {
-                    if (this.components.timeCode) {
-                        this.components.timeCode.duration = value;
+                    if (components.timeCode) {
+                        components.timeCode.duration = value;
                     }
                 },
 				get: function () {
-					return this.components.timeCode?this.components.timeCode.duration:0;
+					return components.timeCode?components.timeCode.duration:0;
 				}
             },
             fullScreen: {
 				enumerable: true,
                 set: function (value) {
-                    if (this.components.fullScreen) {
-                        this.components.fullScreen.fullScreen = !!value;
+                    if (components.fullScreen) {
+                        components.fullScreen.fullScreen = !!value;
                     }
                 },
 				get: function () {
-					return this.components.fullScreen?this.components.fullScreen.fullScreen:false;
+					return components.fullScreen?components.fullScreen.fullScreen:false;
 				}
             },
             playing: {
 				enumerable: true,
                 set: function (value) {
-                    if (this.components.play) {
-                        this.components.play.playing = !!value;
+                    if (components.play) {
+                        components.play.playing = !!value;
                     }
                 },
 				get: function () {
-					return this.components.play?this.components.play.playing:false;
+					return components.play?components.play.playing:false;
 				}
             }
         });

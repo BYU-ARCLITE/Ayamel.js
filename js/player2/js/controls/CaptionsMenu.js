@@ -64,5 +64,5 @@
         });
     };
 
-    Ayamel.classes.CaptionsMenu = CaptionsMenu
+    Ayamel.controls.captions = CaptionsMenu;
 }(Ayamel));
