@@ -151,7 +151,7 @@
         this.$element.height(this.normalHeight);
     };
 
-    Ayamel.mediaPlugins.html5Audio = {
+    Ayamel.mediaPlugins.audio.html5 = {
         install: function(args) {
             return new Html5AudioPlayer(args);
         },

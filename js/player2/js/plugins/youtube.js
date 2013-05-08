@@ -222,7 +222,7 @@
         this.$element.height(this.normalHeight);
     };
 
-    Ayamel.mediaPlugins.youtube = {
+    Ayamel.mediaPlugins.video.youtube = {
         install: function(args) {
             var player = new YouTubePlayer(args);
             global.onYouTubePlayerReady = player.init.bind(player);

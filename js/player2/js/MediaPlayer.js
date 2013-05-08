@@ -21,12 +21,14 @@
     }
 
     function MediaPlayer(args) {
-        var _this = this,
-			plugins = Ayamel.prioritizedPlugins,
-			$element = $(template);
-
-        args.startTime = processTime(args.startTime || 0);
-        args.endTime = processTime(args.endTime || -1);
+        var _this = this, i,
+			pluginModule, plugin = null,
+			resource = args.resource,
+			registeredPlugins = Ayamel.mediaPlugins[resource.type] || {},
+			pluginPriority = Ayamel.prioritizedPlugins[resource.type] || [],
+			$element = $(template),
+			startTime = processTime(args.startTime || 0),
+			endTime = processTime(args.endTime || -1);
 
         // Set up the element
         this.$element = $element;
@@ -34,33 +36,35 @@
         args.$holder.append(this.$element);
 
         // Load the resource
-        if(!plugins.length) {
-            plugins = Object.keys(Ayamel.mediaPlugins).map(function(plugin) {
-                return Ayamel.mediaPlugins[plugin];
-            });
-        }
-		try {
-			plugins.forEach(function (plugin) {
-				if (plugin.supports(args.resource)) {
-					_this.plugin = plugin.install({
-						$holder: $element,
-						resource: args.resource,
-						aspectRatio: args.aspectRatio,
-						startTime: args.startTime,
-						endTime: args.endTime
-					});
-					throw 0;
-				}
+        if (!pluginPriority.length) {
+			pluginPriority = Object.keys(registeredPlugins);
+		} else {
+			pluginPriority = pluginPriority.filter(function(name){
+				return registeredPlugins.hasOwnProperty(name);
 			});
-		}catch(e){
-			if(e !== 0){ throw e; }
+			[].push.apply(pluginPriority,Object.keys(registeredPlugins).filter(function(name){
+				return pluginPriority.indexOf(name) === -1;
+			}));
+		}
+		for(i = 0; plugin === null && (pluginModule = registeredPlugins[pluginPriority[i]]); i++){
+			if (!pluginModule.supports(args.resource)) { continue; }
+			plugin = pluginModule.install({
+				$holder: $element,
+				resource: resource,
+				aspectRatio: args.aspectRatio,
+				startTime: startTime,
+				endTime: endTime
+			});
 		}
 
         // There needs to be a place for captions
-        if (this.plugin) {
-            this.$captionsElement = this.plugin.$captionsElement;
-			this.captionsElement = this.plugin.captionsElement;
-        }
+        if (plugin === null) {
+			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
+		}
+		
+		this.plugin = plugin;
+        this.$captionsElement = plugin.$captionsElement;
+		this.captionsElement = plugin.captionsElement;
 
         Object.defineProperties(this, {
             duration: {

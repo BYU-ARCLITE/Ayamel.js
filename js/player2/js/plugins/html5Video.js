@@ -161,7 +161,7 @@
         this.$element.height(this.normalHeight);
     };
 
-    Ayamel.mediaPlugins.html5Video = {
+    Ayamel.mediaPlugins.video.html5 = {
         install: function(args) {
             return new Html5VideoPlayer(args);
         },

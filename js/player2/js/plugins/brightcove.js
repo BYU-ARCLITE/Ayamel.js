@@ -201,15 +201,15 @@
         this.$element.height(this.normalHeight);
     };
 
-    Ayamel.mediaPlugins.brightcove = {
+    Ayamel.mediaPlugins.video.brightcove = {
         install: function(args) {
             // Create the player
             return new BrightcoveVideoPlayer(args);
         },
         supports: function(resource) {
-            return resource.content.files.reduce(function (prev, file) {
-                return prev || (resource.type === "video" && supportsFile(file));
-            }, false);
+            return resource.content.files.some(function (file) {
+                return (resource.type === "video" && supportsFile(file));
+            });
         }
     }
 }(Ayamel));
