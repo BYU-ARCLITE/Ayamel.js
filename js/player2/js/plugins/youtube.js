@@ -52,7 +52,7 @@
         // Create the element
         this.$element = $element;
         this.element = element;
-        args.$holder.append(this.$element);
+        args.$holder.append($element);
 
         this.video = null;
 
@@ -81,6 +81,7 @@
                 value: function() {
                     var $video = this.$element.children("#"+idstr),
                         video = $video[0],
+						played = false,
                         playing = false;
 
                     $video.width("100%").height("100%");
@@ -98,12 +99,9 @@
 
                     // Set up events. Unfortunately the YouTube API requires the callback to be in the global namespace.
                     window.youtubeStateChange = function(data) {
-                        var played = 0,
-                            event,
-                            durationEvent;
+                        var event;
+							
                         if(data === -1) { return; }
-
-                        console.log(data);
 
                         event = document.createEvent("HTMLEvents");
                         event.initEvent({
@@ -133,10 +131,11 @@
                             }());
                         }else if(data === 0 || data === 2){
                             // If this is the first pause, then the duration is changed/loaded, so send out that event
-                            if (!played++) {
-                                durationEvent = document.createEvent("HTMLEvents");
-                                durationEvent.initEvent("durationchange", true, true);
-                                element.dispatchEvent(durationEvent);
+                            if (!played) {
+								played = true;
+                                event = document.createEvent("HTMLEvents");
+                                event.initEvent("durationchange", true, true);
+                                element.dispatchEvent(event);
                             }
 
                             playing = false;
@@ -156,8 +155,11 @@
                     return this.video.getCurrentTime() - startTime;
                 },
                 set: function (time) {
+					var timeEvent = document.createEvent("HTMLEvents");
                     time = Math.floor((+time||0)* 100) / 100;
                     this.video.seekTo(time);
+				  	timeEvent.initEvent("timeupdate", true, true);
+					this.element.dispatchEvent(timeEvent);
                     return time;
                 }
             },
