@@ -83,7 +83,7 @@
 		getAvailableHeight = function () {
 			return window.innerHeight;
 		};
-		getAvailableHeight = function () {
+		getAvailableWidth = function () {
 			return window.innerWidth;
 		};
         eventFullScreen = "pseudofullscreenchange";

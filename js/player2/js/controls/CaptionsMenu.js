@@ -52,10 +52,11 @@
 
         // Set up clicking here because we have the track in scope
         $track.click(function (e) {
+            track.mode = {showing: "disabled", disabled: "showing"}[track.mode];
 
             // Send an event
             var event = document.createEvent("HTMLEvents");
-            event.initEvent(this.classList.contains("active")?"enabletrack":"disabletrack", true, true);
+            event.initEvent(this.classList.contains("active")?"disabletrack":"enabletrack", true, true);
             event.track = track;
             this.classList.toggle("active");
             _this.element.dispatchEvent(event);

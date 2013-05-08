@@ -23,5 +23,5 @@
     Ayamel.utils.Animation = {
         requestFrame: raf,
 		cancelFrame: caf
-    });
+    };
 }(Ayamel));
