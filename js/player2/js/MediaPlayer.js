@@ -53,7 +53,7 @@
             return time;
         }
         return time.split(":").reduce(function(last, next){
-            return last * 60 + (+part||0);
+            return last * 60 + (+next||0);
         }, 0);
     }
 
