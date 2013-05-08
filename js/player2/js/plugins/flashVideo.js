@@ -9,7 +9,7 @@
 
     var template = "<div class='videoBox'><div id='flowplayerHolder'></div></div>",
         captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
-		installed = false,
+        installed = false,
         supportedMimeTypes = [
             "video/mp4",
             "video/x-flv"
@@ -58,6 +58,29 @@
         height = width / args.aspectRatio;
         $element.height(height);
 
+        function fireTimeEvents() {
+            var event;
+            if (!playing) { return; }
+            // Make sure that we are playing within bounds (give a buffer because flash vid isn't perfect)
+            if (startTime !== 0 && player.getTime() < startTime - 0.5) {
+                player.seek(startTime);
+            }
+            if (stopTime !== -1 && player.getTime() >= stopTime - 0.1) {
+                player.seek(startTime);
+                player.stop();
+            }
+
+            event = document.createEvent("HTMLEvents");
+            event.initEvent("timeupdate", true, true);
+            element.dispatchEvent(event);
+
+            if(Ayamel.utils.Animation){
+                Ayamel.utils.Animation.requestFrame(fireTimeEvents);
+            }else{
+                setTimeout(fireTimeEvents, 50);
+            }
+        }
+
         // Create the player
         player = flowplayer("flowplayerHolder", {
             src: swfPath,
@@ -99,12 +122,14 @@
                     event.initEvent("play", true, true);
                     playing = true;
                     element.dispatchEvent(event);
+                    fireTimeEvents();
                 },
                 onStart: function() {
                     var event = document.createEvent("HTMLEvents");
                     event.initEvent("play", true, true);
                     playing = true;
                     element.dispatchEvent(event);
+                    fireTimeEvents();
                 },
                 onStop: function() {
                     var event = document.createEvent("HTMLEvents");
@@ -128,33 +153,6 @@
 
         this.player = player;
 
-        function fireTimeEvents() {
-            var event;
-            if (playing) {
-                // Make sure that we are playing within bounds (give a buffer because flash vid isn't perfect)
-                if (startTime !== 0 && player.getTime() < startTime - 0.5) {
-                    player.seek(startTime);
-                }
-                if (stopTime !== -1 && player.getTime() >= stopTime - 0.1) {
-                    player.seek(startTime);
-                    player.stop();
-                }
-
-                event = document.createEvent("HTMLEvents");
-                event.initEvent("timeupdate", true, true);
-                element.dispatchEvent(event);
-            }
-        }
-
-        if(Ayamel.utils.Animation){
-            (function timeloop(){
-                Ayamel.utils.Animation.requestFrame(timeloop);
-                fireTimeEvents();
-            }());
-        }else{
-            setInterval(fireTimeEvents, 50);
-        }
-
         Object.defineProperties(this, {
             duration: {
                 get: function () {
@@ -167,8 +165,11 @@
                     return player.getTime() - startTime;
                 },
                 set: function (time) {
+                    var event = document.createEvent("HTMLEvents");
                     time = Math.floor((+time||0) * 100) / 100;
                     player.seek(time + startTime);
+                    event.initEvent("timeupdate", true, true);
+                    element.dispatchEvent(event);
                     return time;
                 }
             },
@@ -233,11 +234,11 @@
 
     Ayamel.mediaPlugins.video.flash = {
         install: function(args) {
-			if(!installed){
-				// Include the flowplayer script
-				$("head").append("<script type='text/javascript' src='" + Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.12.min.js'></script>");
-				installed = true;
-			}
+            if(!installed){
+                // Include the flowplayer script
+                $("head").append("<script type='text/javascript' src='" + Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.12.min.js'></script>");
+                installed = true;
+            }
             return new FlashVideoPlayer(args);
         },
         supports: function(resource) {
