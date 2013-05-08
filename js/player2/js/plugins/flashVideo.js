@@ -9,6 +9,7 @@
 
     var template = "<div class='videoBox'><div id='flowplayerHolder'></div></div>",
         captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
+		installed = false,
         supportedMimeTypes = [
             "video/mp4",
             "video/x-flv"
@@ -230,12 +231,13 @@
         this.$element.height(this.normalHeight);
     };
 
-    Ayamel.mediaPlugins.flashVideo = {
+    Ayamel.mediaPlugins.video.flash = {
         install: function(args) {
-
-            // Include the flowplayer script
-            $("head").append("<script type='text/javascript' src='" + Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.12.min.js'></script>");
-
+			if(!installed){
+				// Include the flowplayer script
+				$("head").append("<script type='text/javascript' src='" + Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.12.min.js'></script>");
+				installed = true;
+			}
             return new FlashVideoPlayer(args);
         },
         supports: function(resource) {

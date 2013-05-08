@@ -26,8 +26,27 @@ var Ayamel = (function() {
         },
 
         // Audio, video, and other players will be registered here
-        mediaPlugins: {},
-        prioritizedPlugins: [],
+        mediaPlugins: {
+			audio: {},
+			audio_sequence: {},
+			video: {},
+			video_sequence: {},
+			image: {},
+			image_sequence: {},
+			text: {},
+			text_sequence: {}
+		},
+		
+        prioritizedPlugins: {
+			audio: [],
+			audio_sequence: [],
+			video: [],
+			video_sequence: [],
+			image: [],
+			image_sequence: [],
+			text: [],
+			text_sequence: []
+		},
 
         path: "/assets/Ayamel.js/js/player2/",
 
