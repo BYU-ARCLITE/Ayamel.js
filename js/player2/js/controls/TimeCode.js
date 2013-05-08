@@ -68,5 +68,5 @@
         });
     }
 
-    Ayamel.classes.TimeCode = TimeCode;
+    Ayamel.controls.timeCode = TimeCode;
 }(Ayamel));

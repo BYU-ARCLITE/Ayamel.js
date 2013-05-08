@@ -90,5 +90,5 @@
         });
     }
 
-    Ayamel.classes.RateSlider = RateSlider;
+    Ayamel.controls.rate = RateSlider;
 }(Ayamel));

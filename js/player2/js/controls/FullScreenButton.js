@@ -43,5 +43,5 @@
         });
     }
 
-    Ayamel.classes.FullScreenButton = FullScreenButton;
+    Ayamel.controls.fullScreen = FullScreenButton;
 }(Ayamel));

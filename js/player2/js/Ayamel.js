@@ -31,6 +31,9 @@ var Ayamel = (function() {
 
         path: "/assets/Ayamel.js/js/player2/",
 
+		// Control widget classes will be registered here
+        controls: {},
+		
         // Additional classes that will be defined will be contained here
         classes: {},
 		

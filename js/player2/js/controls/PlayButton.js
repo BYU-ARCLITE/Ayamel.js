@@ -50,5 +50,5 @@
         });
     }
 
-    Ayamel.classes.PlayButton = PlayButton;
+    Ayamel.controls.play = PlayButton;
 }(Ayamel));
