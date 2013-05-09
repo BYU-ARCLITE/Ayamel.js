@@ -629,3 +629,81 @@
     width: 100%;
     height: 100%
 }
+
+/* iPad adjustments */
+
+.ipad .ayamelPlayer .progressBar {
+    height: 40px;
+    padding: 0 20px;
+}
+
+.ipad .ayamelPlayer .progressLevelPad {
+    width: 20px;
+    height: 40px;
+}
+
+.ipad .ayamelPlayer .progressLevelPad:first-child {
+    margin-left: -20px;
+}
+
+.ipad .ayamelPlayer .progressLevelPad:last-child {
+    margin-right: -20px;
+}
+
+.ipad .ayamelPlayer .progressLevel {
+    height: 40px;
+}
+
+.ipad .ayamelPlayer .progressKnob {
+    width: 40px;
+    height: 40px;
+    margin-left: -20px;
+    margin-right: -20px;
+
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+}
+
+.ipad .ayamelPlayer .controlBar {
+    height: 60px;
+}
+
+.ipad .ayamelPlayer .playButton,
+.ipad .ayamelPlayer .fullScreenButton {
+    width: 40px;
+    height: 30px;
+    padding-top: 10px;
+    font-size: 18pt;
+}
+
+.ipad .ayamelPlayer .captions {
+    width: 40px;
+    height: 40px;
+}
+
+.ipad .ayamelPlayer .captionsIcon {
+    width: 40px;
+    height: 40px;
+    background-size: 25px;
+}
+
+.ipad .ayamelPlayer .captionsMenu {
+    margin-left: -50px;
+    bottom: 60px;
+}
+
+.ipad .ayamelPlayer .captionsMenuTip,
+.ipad .ayamelPlayer .captionsMenuTipDark {
+    margin-left: -65px;
+}
+
+.ipad .ayamelPlayer .volume {
+    display: none;
+}
+
+.ipad .ayamelPlayer .timeCode {
+    height: 20px;
+    padding: 12px 10px;
+    margin: 2px 5px;
+}
