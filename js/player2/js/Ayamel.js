@@ -90,13 +90,7 @@ var Ayamel = (function() {
 					if(k >= 0){ i = k; }
 				}
 				return text.substring(0,i).search(l_exp) >= 0 ? 'ltr' : 'rtl';
-			},
-            mobile: {
-                isIPad: (function () {
-                    var ua = navigator.userAgent;
-                    return /iPad/i.test(ua) || /iPhone OS 3_1_2/i.test(ua) || /iPhone OS 3_2_2/i.test(ua);
-                }())
-            }
+			}
 		}
     };
 }());
