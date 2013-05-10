@@ -25,7 +25,7 @@
             $level = $element.children(".progressLevel"),
             lastX;
 
-        element.addEventListener(Ayamel.utils.mobile.isIPad ? "touchstart" : "mousedown", function (event) {
+        element.addEventListener(Ayamel.utils.mobile.isMobile ? "touchstart" : "mousedown", function (event) {
             $(this).addClass("moving");
             moving = true;
             var left = $(this).offset().left;
@@ -39,7 +39,7 @@
             event.stopPropagation();
         }, false);
 
-        document.body.addEventListener(Ayamel.utils.mobile.isIPad ? "touchmove" : "mousemove", function (event) {
+        document.body.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
             if (moving) {
                 var left = $element.offset().left;
                 var elementWidth = $element.width();
@@ -54,13 +54,13 @@
                 event.stopPropagation();
             }
         }, false);
-        document.body.addEventListener(Ayamel.utils.mobile.isIPad ? "touchend" : "mouseup", function (event) {
+        document.body.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function (event) {
             if (moving) {
                 $element.removeClass("moving");
                 moving = false;
                 var left = $element.offset().left;
                 var elementWidth = $element.width();
-                var width = Math.min(Math.max((Ayamel.utils.mobile.isIPad ? lastX : event.pageX) - left - 10, 0), elementWidth);
+                var width = Math.min(Math.max((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left - 10, 0), elementWidth);
                 $level.width(width);
 
                 var newEvent = document.createEvent("HTMLEvents");
