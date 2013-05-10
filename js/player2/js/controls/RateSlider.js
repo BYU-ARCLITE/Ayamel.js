@@ -20,23 +20,24 @@
             element = $element[0],
             slider = new Ayamel.controls.slider({
                 $holder: $element,
-                level: 100
+                min: 0, max: 2,
+                level: 1
             });
 
         this.$element = $element;
         this.element = element;
         args.$holder.append($element);
 
-        slider.addEventListener('levelchange',function(percent){
-            rate = percent / 100;
-            slider.level = percent;
+        slider.addEventListener('levelchange',function(level){
+            rate = level;
+            slider.level = level;
             dispatchRate(element,rate);
         },false);
 
         // Allow resetting
         $element.children(".speedIcon").click(function () {
             rate = 1;
-            slider.level = 100;
+            slider.level = 1;
             dispatchRate(element,1);
         });
 
@@ -49,7 +50,7 @@
                 },
                 set: function (value) {
                     rate = +value||0;
-                    slider.level = rate*100;
+                    slider.level = rate;
                     return rate;
                 }
             }

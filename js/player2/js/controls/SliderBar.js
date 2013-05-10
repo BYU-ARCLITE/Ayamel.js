@@ -1,4 +1,4 @@
-(function(Ayamel) {
+(function(Ayamel, global) {
     "use strict";
 
     var template =
@@ -10,7 +10,10 @@
 
     function SliderBar(args){
         var _this = this,
-            pc = Math.min(+args.level||0,100),
+            max = isNaN(+args.max)?1:(+args.max),
+            min = +args.min||0,
+            scale = 100/(max-min),
+            value = Math.min(+args.level||0,max),
             $element = $(template),
             element = $element[0],
             $level = $element.find(".sliderLevel"),
@@ -24,19 +27,25 @@
 
         this.events = {};
 
-        level.style.width = pc+"%";
+        level.style.width = (value-min)*scale+"%";
+
+        function pxToValue(px){
+            var pmax = parseInt(global.getComputedStyle(element,null).getPropertyValue('width'),10),
+                pc = Math.min(Math.max(px,0),pmax)/pmax;
+            return pc*(max-min)+min;
+        }
 
         element.addEventListener('mousedown',function (event) {
             var newEvent;
             if (!moving) {
                 moving = true;
-                levelPosition = $level.offset().left;
-                _this.emit('levelchange', Math.min(Math.max(event.pageX - levelPosition, 0) - 7, 100));
+                levelPosition = $level.offset().left + 7;
+                _this.emit('levelchange', pxToValue(event.pageX - levelPosition));
             }
         },false);
         document.addEventListener('mousemove', function (event) {
             if (moving) {
-                _this.emit('levelchange', Math.min(Math.max(event.pageX - levelPosition, 0) - 7, 100));
+                _this.emit('levelchange', pxToValue(event.pageX - levelPosition));
             }
         },false)
         document.addEventListener('mouseup', function (event) {
@@ -46,12 +55,12 @@
         Object.defineProperties(this,{
             level: {
                 set: function(val){
-                    pc = Math.min(+val||0,100);
-                    level.style.width = pc+"%";
-                    return pc;
+                    value = Math.max(Math.min(+val||0,max),min);
+                    level.style.width = (value-min)*scale+"%";
+                    return value;
                 },
                 get: function(){
-                    return pc;
+                    return value;
                 }
             }
         });
@@ -76,4 +85,4 @@
     };
 
     Ayamel.controls.slider = SliderBar;
-}(Ayamel));
+}(Ayamel, window));
