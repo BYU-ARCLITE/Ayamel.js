@@ -28,16 +28,16 @@
             element = $element[0],
             slider = new Ayamel.controls.slider({
                 $holder: $element,
-                level: 100
+                level: 1
             });
 
         this.$element = $element;
         this.element = element;
         args.$holder.append($element);
 
-        slider.addEventListener('levelchange',function(percent){
-            volume = percent / 100;
-            slider.level = percent;
+        slider.addEventListener('levelchange',function(level){
+            volume = level;
+            slider.level = level;
             dispatchVolume(element,volume);
         },false);
 
@@ -76,7 +76,7 @@
                 },
                 set: function (value) {
                     volume = +value||0;
-                    $level.width(volume*100);
+                    slider.level = volume;
                     return volume;
                 }
             }
