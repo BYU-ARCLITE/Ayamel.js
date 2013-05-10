@@ -129,7 +129,7 @@
     right: 0;
 }
 
-.ayamelPlayer .playButton {
+.ayamelPlayer .button {
     display: inline-block;
     vertical-align: top;
     width: 20px;
@@ -161,18 +161,24 @@
     );
 }
 
-.ayamelPlayer .playButton:active {
+.ayamelPlayer .button:active {
     -webkit-box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
     -moz-box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
     box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
 }
 
-.ayamelPlayer .playButton.paused:before {
+.ayamelPlayer .button.play.paused:before {
     content: "\f04b";
 }
 
-.ayamelPlayer .playButton:not(.paused):before {
+.ayamelPlayer .button.play:not(.paused):before {
     content: "\f04c";
+}
+
+.ayamelPlayer .rate {
+    display: inline-block;
+    vertical-align: top;
+    margin: 5px;
 }
 
 .ayamelPlayer .volume {
@@ -181,8 +187,7 @@
     margin: 5px;
 }
 
-.ayamelPlayer .muteIcon {
-
+.ayamelPlayer .speedIcon, .ayamelPlayer .muteIcon  {
     display: inline-block;
     vertical-align: top;
     width: 20px;
@@ -214,10 +219,14 @@
     );
 }
 
-.ayamelPlayer .muteIcon:active {
+.ayamelPlayer .speedIcon:active, .ayamelPlayer .muteIcon:active {
     -webkit-box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
     -moz-box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
     box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.ayamelPlayer .rate .speedIcon:before {
+    content: "\f0e4";
 }
 
 .ayamelPlayer .volume:not(.muted) .muteIcon:before {
@@ -342,47 +351,8 @@
     text-align: center;
 }
 
-.ayamelPlayer .captions {
-    display: inline-block;
-    vertical-align: top;
-    width: 20px;
-    height: 20px;
-    color: white;
-    text-align: center;
-    margin: 5px;
+.ayamelPlayer .button.captions {
     position: relative;
-
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-    -webkit-box-shadow: 0 0 0 1px #1a1a1a;
-    -moz-box-shadow: 0 0 0 1px #1a1a1a;
-    box-shadow: 0 0 0 1px #1a1a1a;
-
-    background-image: linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-    background-image: -o-linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-    background-image: -moz-linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-    background-image: -webkit-linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-    background-image: -ms-linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-
-    background-image: -webkit-gradient(
-        linear,
-        left bottom,
-        left top,
-        color-stop(0, rgb(36,36,36)),
-        color-stop(1, rgb(61,61,61))
-    );
-}
-
-.ayamelPlayer .captions.active {
-    -webkit-box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
-    -moz-box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
-    box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
-}
-
-.ayamelPlayer .captionsIcon {
-    width: 20px;
-    height: 20px;
     background: url("../images/captions.png") center no-repeat;
     background-size: 15px;
 }
@@ -427,7 +397,6 @@
     margin-left: -15px;
 }
 
-
 .ayamelPlayer .captionsMenuTip {
     border-top: 30px solid #333;
     border-left: 15px solid transparent;
@@ -463,49 +432,11 @@
     font-style: italic;
 }
 
-.ayamelPlayer .fullScreenButton {
-    display: inline-block;
-    vertical-align: top;
-    width: 20px;
-    height: 20px;
-    margin: 5px;
-    color: white;
-    font-family: FontAwesome;
-    text-align: center;
-
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-    -webkit-box-shadow: 0 0 0 1px #1a1a1a;
-    -moz-box-shadow: 0 0 0 1px #1a1a1a;
-    box-shadow: 0 0 0 1px #1a1a1a;
-
-    background-image: linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-    background-image: -o-linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-    background-image: -moz-linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-    background-image: -webkit-linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-    background-image: -ms-linear-gradient(bottom, rgb(36,36,36) 0%, rgb(61,61,61) 100%);
-
-    background-image: -webkit-gradient(
-        linear,
-        left bottom,
-        left top,
-        color-stop(0, rgb(36,36,36)),
-        color-stop(1, rgb(61,61,61))
-    );
-}
-
-.ayamelPlayer .fullScreenButton:active {
-    -webkit-box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
-    -moz-box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
-    box-shadow: 0 0 0 1px #1a1a1a, inset 1px 1px 3px rgba(0, 0, 0, 0.7);
-}
-
-.ayamelPlayer .fullScreenButton.active:before {
+.ayamelPlayer .button.fullScreen.active:before {
     content: "\f066";
 }
 
-.ayamelPlayer .fullScreenButton:not(.active):before {
+.ayamelPlayer .button.fullScreen:not(.active):before {
     content: "\f0b2";
 }
 

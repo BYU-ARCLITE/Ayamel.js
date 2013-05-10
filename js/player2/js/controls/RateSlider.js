@@ -2,8 +2,8 @@
     "use strict";
 
     var template =
-        '<div class="volume">\
-            <div class="muteIcon"></div>\
+        '<div class="rate">\
+            <div class="speedIcon"></div>\
             <div class="volumeSlider">\
                 <div class="volumeLevelPad"></div>\
                 <div class="volumeLevel"></div>\
