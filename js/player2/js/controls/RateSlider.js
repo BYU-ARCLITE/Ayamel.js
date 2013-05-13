@@ -2,8 +2,8 @@
     "use strict";
 
     var template =
-        '<div class="rate">\
-            <div class="speedIcon"></div>\
+        '<div class="control rate">\
+            <div class="button speed"></div>\
         </div>';
 
     function dispatchRate(element,rate) {
@@ -35,7 +35,7 @@
         },false);
 
         // Allow resetting
-        $element.children(".speedIcon").click(function () {
+        $element.children(".speed").click(function () {
             rate = 1;
             slider.level = 1;
             dispatchRate(element,1);
