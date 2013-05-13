@@ -18,7 +18,7 @@
             element = $element[0],
             $level = $element.find(".sliderLevel"),
             level = $level[0],
-            levelPosition = 0,
+            left = 0, lastX = 0,
             moving = false;
 
         this.$element = $element;
@@ -35,21 +35,25 @@
             return pc*(max-min)+min;
         }
 
-        element.addEventListener('mousedown',function (event) {
-            var newEvent;
-            if (!moving) {
-                moving = true;
-                levelPosition = $level.offset().left + 7;
-                _this.emit('levelchange', pxToValue(event.pageX - levelPosition));
-            }
+        element.addEventListener(Ayamel.utils.mobile.isMobile ? "touchstart" : "mousedown", function (event) {
+            var val, newEvent;
+            if (moving) { return; }
+            moving = true;
+            left = $level.offset().left + 7;
+            lastX = event.pageX;
+            val = pxToValue(lastX - left);
+            _this.emit('scrubstart', val);
+            _this.emit('levelchange', val);
         },false);
-        document.addEventListener('mousemove', function (event) {
-            if (moving) {
-                _this.emit('levelchange', pxToValue(event.pageX - levelPosition));
-            }
+        document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
+            if (!moving) { return; }
+            lastX = event.pageX;
+            _this.emit('levelchange', pxToValue(lastX - left));
         },false)
-        document.addEventListener('mouseup', function (event) {
+        document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function (event) {
+            if (!moving) { return; }
             moving = false;
+            _this.emit('scrubend', pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left));
         },false);
 
         Object.defineProperties(this,{
