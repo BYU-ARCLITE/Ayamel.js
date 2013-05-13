@@ -9,7 +9,7 @@
     "use strict";
 
     var template =
-        '<div class="button captions">' +
+        '<div class="control button captions">' +
             '<div class="captionsMenu">' +
                 '<div class="captionsMenuTipDark"></div>' +
                 '<div class="captionsMenuTip"></div>' +

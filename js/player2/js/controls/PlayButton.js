@@ -8,7 +8,7 @@
 (function(Ayamel) {
     "use strict";
 
-    var template = '<div class="button play paused"></div>';
+    var template = '<div class="control button play paused"></div>';
 
     function PlayButton(args) {
 

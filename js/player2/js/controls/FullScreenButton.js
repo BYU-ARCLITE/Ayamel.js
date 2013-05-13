@@ -8,7 +8,7 @@
 (function(Ayamel) {
     "use strict";
 
-    var template = '<div class="button fullScreen"></div>';
+    var template = '<div class="control button fullScreen"></div>';
 
     function FullScreenButton(args) {
         var fullScreen = false,

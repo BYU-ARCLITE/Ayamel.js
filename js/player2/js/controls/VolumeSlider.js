@@ -9,8 +9,8 @@
     "use strict";
 
     var template =
-        '<div class="volume">\
-            <div class="muteIcon"></div>\
+        '<div class="control volume">\
+            <div class="button mute"></div>\
         </div>';
 
     function dispatchVolume(element,volume) {
@@ -42,7 +42,7 @@
         },false);
 
         // Allow muting
-        $element.children(".muteIcon").click(function () {
+        $element.children(".mute").click(function () {
             var newEvent = document.createEvent("HTMLEvents");
             if (muted) {
                 muted = false;
