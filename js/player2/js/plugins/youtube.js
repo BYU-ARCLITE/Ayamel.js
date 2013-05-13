@@ -170,7 +170,7 @@
                 },
                 set: function (muted) {
                     muted = !!muted;
-                    this.video[muted?'mute':'unmute']();
+                    this.video[muted?'mute':'unMute']();
                     return muted;
                 }
             },
