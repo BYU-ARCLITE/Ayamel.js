@@ -5,93 +5,97 @@
  * Time: 2:12 PM
  * To change this template use File | Settings | File Templates.
  */
-(function(Ayamel) {
+(function(Ayamel, global) {
     "use strict";
 
     var template =
-        '<div class="progressBar">' +
-            '<div class="progressLevelPad"></div>' +
-            '<div class="progressLevel"></div>' +
-            '<div class="progressKnob"></div>' +
-            '<div class="progressLevelPad"></div>' +
-        '</div>';
+        '<div class="progressBar">\
+            <div class="progressLevel">\
+                <div class="progressKnob"></div>\
+            </div>\
+        </div>';
 
-    function createElement() {
-        var $element = $(template),
-			element = $element[0],
+    function ProgressBar(args) {
+        var  _this = this,
+            max = isNaN(+args.max)?1:(+args.max),
+            min = +args.min||0,
+            scale = 100/(max-min),
+            value = Math.min(+args.progress||0,max),
+            $element = $(template),
+            element = $element[0],
+            level = $element.find(".progressLevel")[0],
+            left = 0, lastX = 0,
+            moving = false;
 
-        // Allow clicking
-            moving = false,
-            $level = $element.children(".progressLevel"),
-            lastX;
+        this.$element = $element;
+        this.element = element;
+        args.$holder.append($element);
+
+        level.style.width = (value-min)*scale+"%";
+
+        function pxToValue(px){
+            var pmax = parseInt(global.getComputedStyle(element,null).getPropertyValue('width'),10),
+                pc = Math.min(Math.max(px,0),pmax)/pmax;
+            return pc*(max-min)+min;
+        }
 
         element.addEventListener(Ayamel.utils.mobile.isMobile ? "touchstart" : "mousedown", function (event) {
-            $(this).addClass("moving");
+            var newEvent;
+            if (moving) { return; }
+            left = $element.offset().left + 10;
             moving = true;
-            var left = $(this).offset().left;
-            var width = Math.min(Math.max(event.pageX - left - 10, 0), $(this).width());
-            $level.width(width);
 
-            var newEvent = document.createEvent("HTMLEvents");
+            lastX = event.pageX;
+            value = pxToValue(lastX - left);
+            level.style.width = (value-min)*scale+"%";
+
+            newEvent = document.createEvent("HTMLEvents");
             newEvent.initEvent("scrubstart", true, true);
-            newEvent.progress = width / $(this).width();
-            this.dispatchEvent(newEvent);
+            newEvent.progress = value;
+            element.dispatchEvent(newEvent);
             event.stopPropagation();
         }, false);
 
         document.body.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
-            if (moving) {
-                var left = $element.offset().left;
-                var elementWidth = $element.width();
-                var width = Math.min(Math.max(event.pageX - left - 10, 0), elementWidth);
-                lastX = event.pageX;
-                $level.width(width);
+            var newEvent;
+            if (!moving) { return; }
 
-                var newEvent = document.createEvent("HTMLEvents");
-                newEvent.initEvent("scrubupdate", true, true);
-                newEvent.progress = width / elementWidth;
-                element.dispatchEvent(newEvent);
-                event.stopPropagation();
-            }
+            lastX = event.pageX;
+            value = pxToValue(lastX - left);
+            level.style.width = (value-min)*scale+"%";
+
+            newEvent = document.createEvent("HTMLEvents");
+            newEvent.initEvent("scrubupdate", true, true);
+            newEvent.progress = value;
+            element.dispatchEvent(newEvent);
+            event.stopPropagation();
         }, false);
+
         document.body.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function (event) {
-            if (moving) {
-                $element.removeClass("moving");
-                moving = false;
-                var left = $element.offset().left;
-                var elementWidth = $element.width();
-                var width = Math.min(Math.max((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left - 10, 0), elementWidth);
-                $level.width(width);
+            var newEvent;
+            if (!moving) { return; }
+            moving = false;
 
-                var newEvent = document.createEvent("HTMLEvents");
-                newEvent.initEvent("scrubend", true, true);
-                newEvent.progress = width / elementWidth;
-                element.dispatchEvent(newEvent);
-                event.stopPropagation();
-            }
+            value = pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left);
+            level.style.width = (value-min)*scale+"%";
+
+            newEvent = document.createEvent("HTMLEvents");
+            newEvent.initEvent("scrubend", true, true);
+            newEvent.progress = value;
+            element.dispatchEvent(newEvent);
+            event.stopPropagation();
         }, false);
 
-        return $element;
-    }
-
-    function ProgressBar(args) {
-        var _this = this,
-			progress = 0,
-			$element = createElement(),
-			element = $element[0];
-
-        this.$element = $element;
-		this.element = element;
-        args.$holder.append($element);
-
-        Object.defineProperty(this, "progress", {
-            get: function () {
-                return progress;
-            },
-            set: function (val) {
-                var progress = +val||0;
-                if (!$element.hasClass("moving")) {
-                    $element.children(".progressLevel").width((progress * 100) + "%");
+        Object.defineProperties(this, {
+            progress: {
+                set: function(val){
+                    if (moving) { return value; }
+                    value = Math.max(Math.min(+val||0,max),min);
+                    level.style.width = (value-min)*scale+"%";
+                    return value;
+                },
+                get: function(){
+                    return value;
                 }
             }
         });
@@ -100,10 +104,10 @@
     ProgressBar.prototype.addEventListener = function(event, callback, capture) {
         this.element.addEventListener(event, callback, !!capture);
     };
-	
+
     ProgressBar.prototype.removeEventListener = function(event, callback, capture) {
         this.element.removeEventListener(event, callback, !!capture);
     };
 
     Ayamel.classes.ProgressBar = ProgressBar;
-}(Ayamel));
+}(Ayamel, window));
