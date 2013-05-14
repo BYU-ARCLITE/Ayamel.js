@@ -5,8 +5,8 @@
 
     function AyamelPlayer(args) {
         var _this = this,
-			$element = $(template),
-			element = $element[0];
+            $element = $(template),
+            element = $element[0];
 
         this.$element = $element;
         this.element = element;
@@ -85,7 +85,7 @@
         // Update the progress bar and control bar when the media is playing
         this.mediaPlayer.addEventListener("timeupdate", function(event) {
             var time = _this.mediaPlayer.currentTime,
-				duration = _this.mediaPlayer.duration;
+                duration = _this.mediaPlayer.duration;
             _this.progressBar.progress = time / duration;
             _this.controlBar.currentTime = time;
         });
@@ -137,22 +137,26 @@
         this.controlBar.addEventListener("volumechange", function(event) {
             event.stopPropagation();
             _this.mediaPlayer.volume = event.volume;
+            _this.controlBar.volume = _this.mediaPlayer.volume;
         });
-		
+        
         // Change the playback rate when the rate controls are adjusted
         this.controlBar.addEventListener("ratechange", function(event) {
             event.stopPropagation();
             _this.mediaPlayer.playbackRate = event.playbackRate;
+            _this.controlBar.playbackRate = _this.mediaPlayer.playbackRate;
         });
 
         // Mute/unmute the media when the mute button is pressed
         this.controlBar.addEventListener("mute", function(event) {
             event.stopPropagation();
             _this.mediaPlayer.muted = true;
+            _this.controlBar.muted = _this.mediaPlayer.muted;
         });
         this.controlBar.addEventListener("unmute", function(event) {
             event.stopPropagation();
             _this.mediaPlayer.muted = false;
+            _this.controlBar.muted = _this.mediaPlayer.muted;
         });
 
         // Enable/disable caption tracks when clicked in the caption menu
@@ -166,22 +170,22 @@
         });
 
         // Enter/exit full screen when the button is pressed
-		
-		 function fullScreenChangeHandler() {
-			if (!Ayamel.utils.FullScreen.isFullScreen) {
-				Ayamel.utils.FullScreen.exit(element);
-				_this.mediaPlayer.exitFullScreen();
-				_this.controlBar.fullScreen = false;
-			}
-		}
-		
+        
+         function fullScreenChangeHandler() {
+            if (!Ayamel.utils.FullScreen.isFullScreen) {
+                Ayamel.utils.FullScreen.exit(element);
+                _this.mediaPlayer.exitFullScreen();
+                _this.controlBar.fullScreen = false;
+            }
+        }
+        
         this.controlBar.addEventListener("enterfullscreen", function(event) {
             // Figure out how much space we have for the media player to fill
             var availableHeight = Ayamel.utils.FullScreen.availableHeight
                 - _this.progressBar.$element.height()
                 - _this.controlBar.$element.height();
-				
-			Ayamel.utils.FullScreen.enter(element);
+                
+            Ayamel.utils.FullScreen.enter(element);
             _this.mediaPlayer.enterFullScreen(availableHeight);
 
             // Add an event listener for exiting due to external causes
@@ -189,7 +193,7 @@
 
             event.stopPropagation();
         });
-		
+        
         this.controlBar.addEventListener("exitfullscreen", function(event) {
             Ayamel.utils.FullScreen.exit();
             _this.mediaPlayer.exitFullScreen();
@@ -264,8 +268,8 @@
     AyamelPlayer.prototype.addEventListener = function(event, callback, capture) {
         this.element.addEventListener(event, callback, !!capture);
     };
-	
-	AyamelPlayer.prototype.removeEventListener = function(event, callback, capture) {
+    
+    AyamelPlayer.prototype.removeEventListener = function(event, callback, capture) {
         this.element.removeEventListener(event, callback, !!capture);
     };
 

@@ -184,10 +184,22 @@
                     return this.video.getPlaybackRate();
                 },
                 set: function (playbackRate) {
+                    var i, ratelist, best, next, bdist, ndist;
                     playbackRate = +playbackRate
                     if(isNaN(playbackRate)){ playbackRate = 1; }
-                    this.video.setPlaybackRate(playbackRate);
-                    return playbackRate;
+                    ratelist = this.video.getAvailablePlaybackRates();
+                    bdist = 1/0;
+                    for(i=ratelist.length-1, best = ratelist[i]; i>=0; i--){
+                        next = ratelist[i];
+                        ndist = Math.abs(playbackRate - next);
+                        if(ndist > bdist){ break; }
+                        bdist = ndist;
+                        best = next;
+                    }
+                    if(best !== this.video.getPlaybackRate()){
+                        this.video.setPlaybackRate(best);
+                    }
+                    return best;
                 }
             },
             readyState: {

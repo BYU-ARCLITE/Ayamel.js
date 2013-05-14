@@ -11,7 +11,8 @@
     var template = '<div class="control button fullScreen"></div>';
 
     function FullScreenButton(args) {
-        var fullScreen = false,
+        var _this = this,
+			fullScreen = false,
 			$element = $(template),
 			element = $element[0];
 
@@ -41,7 +42,20 @@
 				return fullScreen;
 			}
         });
-    }
 
+        if(typeof args.parent === 'object'){
+            Object.defineProperties(args.parent, {
+				fullScreen: {
+					enumerable: true,
+					set: function (value) {
+						return _this.fullScreen = !!value;
+					},
+					get: function () {
+						return fullScreen;
+					}
+				}
+			});
+		}
+	}
     Ayamel.controls.fullScreen = FullScreenButton;
 }(Ayamel));
