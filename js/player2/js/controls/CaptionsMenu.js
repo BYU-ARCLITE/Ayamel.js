@@ -41,8 +41,8 @@
 
     CaptionsMenu.prototype.addTrack = function(track) {
         // Create the menu entry
-        var _this = this;
-        var $track = $('<div class="captionsMenuEntry">' + track.label + ' (' + track.language + ')</div>');
+        var _this = this,
+			$track = $('<div class="captionsMenuEntry">' + track.label + ' (' + track.language + ')</div>');
         this.$element.find(".noCaptionTracks").remove();
         this.$element.children(".captionsMenu").append($track);
         if (track.mode === "showing") {
@@ -51,13 +51,12 @@
 
         // Set up clicking here because we have the track in scope
         $track.click(function (e) {
-            track.mode = {showing: "disabled", disabled: "showing"}[track.mode];
-
-            // Send an event
-            var event = document.createEvent("HTMLEvents");
-            event.initEvent(this.classList.contains("active")?"disabletrack":"enabletrack", true, true);
-            event.track = track;
+			var event = document.createEvent("HTMLEvents"),
+				active = this.classList.contains("active");
             this.classList.toggle("active");
+            track.mode = active?'disabled':'showing';
+            event.initEvent(active?"disabletrack":"enabletrack", true, true);
+            event.track = track;
             _this.element.dispatchEvent(event);
             e.stopPropagation();
         });

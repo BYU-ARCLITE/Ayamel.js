@@ -11,12 +11,12 @@
     var template = '<div class="control button play paused"></div>';
 
     function PlayButton(args) {
-
-        var playing = false,
-			$element = $(template);
+        var _this = this,
+            playing = false,
+            $element = $(template);
 
         this.$element = $element;
-		this.element = $element[0];
+        this.element = $element[0];
         args.$holder.append($element);
 
         // Set up events
@@ -38,7 +38,7 @@
 
         // Be able to set the playing attribute
         Object.defineProperty(this, "playing", {
-			enumerable: true,
+            enumerable: true,
             get: function () {
                 return playing;
             },
@@ -48,6 +48,20 @@
                 return playing;
             }
         });
+
+        if(typeof args.parent === 'object'){
+            Object.defineProperties(args.parent, {
+                playing: {
+                    enumerable: true,
+                    set: function (value) {
+                        return _this.playing = !!value;
+                    },
+                    get: function () {
+                        return playing;
+                    }
+                }
+            });
+        }
     }
 
     Ayamel.controls.play = PlayButton;

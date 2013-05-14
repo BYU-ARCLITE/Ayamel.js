@@ -45,16 +45,30 @@
         Object.defineProperties(this, {
             rate: {
                 enumerable: true,
-                get: function () {
-                    return rate;
-                },
                 set: function (value) {
                     rate = +value||0;
                     slider.level = rate;
                     return rate;
+                },
+                get: function () {
+                    return rate;
                 }
             }
         });
+
+        if(typeof args.parent === 'object'){
+            Object.defineProperties(args.parent, {
+                playbackRate: {
+                    enumerable: true,
+                    set: function (value) {
+                        return _this.rate = value;
+                    },
+                    get: function () {
+                        return rate;
+                    }
+                }
+            });
+        }
     }
 
     Ayamel.controls.rate = RateSlider;

@@ -11,6 +11,7 @@
 		var constructor = Ayamel.controls[component];
 		if(typeof constructor !== 'function'){ return; }
 		this.components[component] = new constructor({
+			parent: this,
 			$holder: $controls
 		});
 	}
@@ -26,6 +27,15 @@
 		this.element = $element[0];
         args.$holder.append(this.$element);
 
+		//set default values
+		this.currentTime = 0;
+		this.duration = 0;
+		this.volume = 0;
+		this.muted = false;
+		this.playbackRate = 0;
+		this.playing = false;
+		this.fullScreen = false;
+		
         // Create the control bar components
         this.components = components;
 
@@ -35,53 +45,6 @@
         if(controlLists.right instanceof Array){
 			controlLists.right.forEach(addComponent.bind(this,$element.children(".rightControls")));
 		}
-
-        Object.defineProperties(this, {
-            currentTime: {
-				enumerable: true,
-                set: function (value) {
-                    if (components.timeCode) {
-                        components.timeCode.currentTime = value;
-                    }
-                },
-				get: function () {
-					return components.timeCode?components.timeCode.currentTime:0;
-				}
-            },
-            duration: {
-				enumerable: true,
-                set: function (value) {
-                    if (components.timeCode) {
-                        components.timeCode.duration = value;
-                    }
-                },
-				get: function () {
-					return components.timeCode?components.timeCode.duration:0;
-				}
-            },
-            fullScreen: {
-				enumerable: true,
-                set: function (value) {
-                    if (components.fullScreen) {
-                        components.fullScreen.fullScreen = !!value;
-                    }
-                },
-				get: function () {
-					return components.fullScreen?components.fullScreen.fullScreen:false;
-				}
-            },
-            playing: {
-				enumerable: true,
-                set: function (value) {
-                    if (components.play) {
-                        components.play.playing = !!value;
-                    }
-                },
-				get: function () {
-					return components.play?components.play.playing:false;
-				}
-            }
-        });
     }
 
     ControlBar.prototype.addTrack = function(track) {

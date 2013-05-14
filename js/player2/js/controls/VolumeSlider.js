@@ -81,6 +81,29 @@
                 }
             }
         });
+
+        if(typeof args.parent === 'object'){
+            Object.defineProperties(args.parent, {
+                muted: {
+                    enumerable: true,
+                    set: function (value) {
+                        return _this.muted = value;
+                    },
+                    get: function () {
+                        return muted;
+                    }
+                },
+                volume: {
+                    enumerable: true,
+                    set: function (value) {
+                        return _this.volume = value;
+                    },
+                    get: function () {
+                        return volume;
+                    }
+                },
+            });
+        }
     }
 
     Ayamel.controls.volume = VolumeSlider;
