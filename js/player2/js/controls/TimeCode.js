@@ -22,7 +22,7 @@
         text = (hh>0?(hh>9?hh:"0"+hh)+":":"");
         return text+(mm>9?mm:"0"+mm)+":"+(ss>9?ss:"0"+ss);//+"."+(ms>99?ms:(ms>9?"0"+ms:"00"+ms));
     }
-    
+
     function TimeCode(args) {
         var _this = this,
             duration = 0, currentTime = 0,
@@ -34,12 +34,10 @@
             element.textContent = currentTimeText + " / " + durationText;
         }
 
-        // Create the element
         this.$element = $element;
         this.element = element;
         args.$holder.append($element);
 
-        // Be able to set the playing attribute
         Object.defineProperties(this, {
             currentTime: {
                 enumerable: true,
@@ -66,29 +64,6 @@
                 }
             }
         });
-        
-        if(typeof args.parent === 'object'){
-            Object.defineProperties(args.parent, {
-                currentTime: {
-                    enumerable: true,
-                    set: function (value) {
-                        return _this.currentTime = value;
-                    },
-                    get: function () {
-                        return currentTime;
-                    }
-                },
-                duration: {
-                    enumerable: true,
-                    set: function (value) {
-                        return _this.duration = value;
-                    },
-                    get: function () {
-                        return duration;
-                    }
-                }
-            });
-        }
     }
 
     Ayamel.controls.timeCode = TimeCode;

@@ -27,11 +27,6 @@
             endTime: args.endTime
         });
 
-        // Create the ProgressBar
-        this.progressBar = new Ayamel.classes.ProgressBar({
-            $holder: $element
-        });
-
         // Create the ControlBar
         this.controlBar = new Ayamel.classes.ControlBar({
             $holder: $element,
@@ -82,12 +77,9 @@
         //   Set up event listeners for the media player
         // -----------------------------------------------
 
-        // Update the progress bar and control bar when the media is playing
+        // Update the control bar when the media is playing
         this.mediaPlayer.addEventListener("timeupdate", function(event) {
-            var time = _this.mediaPlayer.currentTime,
-                duration = _this.mediaPlayer.duration;
-            _this.progressBar.progress = time / duration;
-            _this.controlBar.currentTime = time;
+            _this.controlBar.currentTime = _this.mediaPlayer.currentTime;
         });
 
         // When there is a duration change (such as on a load) then notify the control bar of this
@@ -110,16 +102,13 @@
             _this.controlBar.playing = true;
         });
 
-        //   Set up event listeners for the progress bar
-        // -----------------------------------------------
-
-        // When the user is done scrubbing, seek to that position
-        this.progressBar.addEventListener("scrubend", function(event) {
-            _this.mediaPlayer.currentTime = event.progress * _this.mediaPlayer.duration;
-        });
-
         //   Set up event listeners for the control bar
         // ----------------------------------------------
+
+        // When the user is done scrubbing, seek to that position
+        this.controlBar.addEventListener("scrubend", function(event) {
+            _this.mediaPlayer.currentTime = event.progress * _this.mediaPlayer.duration;
+        });
 
         // Play the media when the play button is pressed
         this.controlBar.addEventListener("play", function(event) {
@@ -139,7 +128,7 @@
             _this.mediaPlayer.volume = event.volume;
             _this.controlBar.volume = _this.mediaPlayer.volume;
         });
-        
+
         // Change the playback rate when the rate controls are adjusted
         this.controlBar.addEventListener("ratechange", function(event) {
             event.stopPropagation();
@@ -170,7 +159,7 @@
         });
 
         // Enter/exit full screen when the button is pressed
-        
+
          function fullScreenChangeHandler() {
             if (!Ayamel.utils.FullScreen.isFullScreen) {
                 Ayamel.utils.FullScreen.exit(element);
@@ -178,13 +167,12 @@
                 _this.controlBar.fullScreen = false;
             }
         }
-        
+
         this.controlBar.addEventListener("enterfullscreen", function(event) {
             // Figure out how much space we have for the media player to fill
             var availableHeight = Ayamel.utils.FullScreen.availableHeight
-                - _this.progressBar.$element.height()
                 - _this.controlBar.$element.height();
-                
+
             Ayamel.utils.FullScreen.enter(element);
             _this.mediaPlayer.enterFullScreen(availableHeight);
 
@@ -193,7 +181,7 @@
 
             event.stopPropagation();
         });
-        
+
         this.controlBar.addEventListener("exitfullscreen", function(event) {
             Ayamel.utils.FullScreen.exit();
             _this.mediaPlayer.exitFullScreen();
@@ -268,7 +256,7 @@
     AyamelPlayer.prototype.addEventListener = function(event, callback, capture) {
         this.element.addEventListener(event, callback, !!capture);
     };
-    
+
     AyamelPlayer.prototype.removeEventListener = function(event, callback, capture) {
         this.element.removeEventListener(event, callback, !!capture);
     };

@@ -9,34 +9,35 @@
     "use strict";
 
     var template =
-        '<div class="control button captions">' +
-            '<div class="captionsMenu">' +
-                '<div class="captionsMenuTipDark"></div>' +
-                '<div class="captionsMenuTip"></div>' +
-                '<div class="noCaptionTracks">No captions available.</div>' +
-            '</div>' +
-        '</div>';
+        '<div class="control button captions">\
+            <div class="icon"></div>\
+            <div class="captionsMenu">\
+                <div class="captionsMenuTipDark"></div>\
+                <div class="captionsMenuTip"></div>\
+                <div class="noCaptionTracks">No captions available.</div>\
+            </div>\
+        </div>';
 
     function CaptionsMenu(args) {
 		var $element = $(template),
 			element = $element[0],
-			$menu = $element.children(".captionsMenu");
+			menu = $element.children(".captionsMenu")[0];
 
         this.$element = $element;
 		this.element = element;
         args.$holder.append($element);
 			
         // Set up clicking to show the menu
-        $element.click(function (event) {
+        element.addEventListener('click', function (event) {
             event.stopPropagation();
-            $(this).toggleClass("active");
-        });
-        $("body").click(function () {
-            $element.removeClass("active");
-        });
-        $menu.click(function (event) {
+            element.classList.toggle("active");
+        },false);
+        document.addEventListener('click', function () {
+            element.classList.remove("active");
+        },false);
+        menu.addEventListener('click', function (event) {
             event.stopPropagation();
-        });
+        },false);
     }
 
     CaptionsMenu.prototype.addTrack = function(track) {
