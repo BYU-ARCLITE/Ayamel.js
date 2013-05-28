@@ -319,6 +319,7 @@
 .ayamelPlayer .captionsMenuEntry {
     padding: 5px 0;
     cursor: pointer;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
 .ayamelPlayer .captionsMenuEntry:hover {
