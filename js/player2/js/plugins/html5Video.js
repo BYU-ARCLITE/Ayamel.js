@@ -8,7 +8,7 @@
 
     var events = {
         abort: 'error',                     // Data loading was aborted
-        error: 'error',                     // An error occured
+        error: 'error',                     // An error occurred
         emptied: 'error',                   // Data not present unexpectedly
         stalled: 'error',                   // Data transfer stalled
         play: 'play',                       // Video started playing (fired with play())
@@ -94,16 +94,17 @@
         Object.defineProperties(this, {
             duration: {
                 get: function () {
-                    var stop = stopTime === -1 ? video.duration : stopTime;
-                    return stop - startTime;
+//                    var stop = stopTime === -1 ? video.duration : stopTime;
+//                    return stop - startTime;
+                    return video.duration;
                 }
             },
             currentTime: {
                 get: function () {
-                    return video.currentTime - startTime;
+                    return video.currentTime;// - startTime;
                 },
                 set: function (time) {
-                    return video.currentTime = (+time||0) + startTime;
+                    return video.currentTime = (+time||0);// + startTime;
                 }
             },
             muted: {

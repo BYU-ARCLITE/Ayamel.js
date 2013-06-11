@@ -48,14 +48,7 @@
         return null;
 	}
 		
-    function processTime(time) {
-        if (typeof time === "number") {
-            return time;
-        }
-        return time.split(":").reduce(function(last, next){
-            return last * 60 + (+next||0);
-        }, 0);
-    }
+
 
     function MediaPlayer(args) {
         var _this = this,
@@ -72,8 +65,8 @@
 			$holder: $element,
 			resource: args.resource,
 			aspectRatio: args.aspectRatio,
-			startTime: processTime(args.startTime || 0),
-			endTime: processTime(args.endTime || -1)
+			startTime: args.startTime,
+			endTime: args.endTime
 		});
 		if(plugin === null){
 			$element.remove();

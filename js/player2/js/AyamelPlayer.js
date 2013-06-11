@@ -3,10 +3,21 @@
 
     var template = '<div class="ayamelPlayer"></div>';
 
+    function processTime(time) {
+        if (typeof time === "number") {
+            return time;
+        }
+        return time.split(":").reduce(function(last, next){
+            return last * 60 + (+next||0);
+        }, 0);
+    }
+
     function AyamelPlayer(args) {
         var _this = this,
             $element = $(template),
-            element = $element[0];
+            element = $element[0],
+            startTime = processTime(args.startTime || 0),
+            endTime = processTime(args.endTime || -1);
 
         this.$element = $element;
         this.element = element;
@@ -23,8 +34,8 @@
             $holder: $element,
             resource: args.resource,
             aspectRatio: args.aspectRatio,
-            startTime: args.startTime,
-            endTime: args.endTime
+            startTime: startTime,
+            endTime: endTime
         });
 
         // Create the ControlBar
@@ -79,12 +90,15 @@
 
         // Update the control bar when the media is playing
         this.mediaPlayer.addEventListener("timeupdate", function(event) {
-            _this.controlBar.currentTime = _this.mediaPlayer.currentTime;
+            // It's ok to lie to the control bar about the time
+            _this.controlBar.currentTime = _this.mediaPlayer.currentTime - startTime;
         });
 
         // When there is a duration change (such as on a load) then notify the control bar of this
         this.mediaPlayer.addEventListener("durationchange", function(event) {
-            _this.controlBar.duration = _this.mediaPlayer.duration;
+            // It's ok to lie to the control bar about the time
+            var duration = endTime === -1 ? _this.mediaPlayer.duration : endTime;
+            _this.controlBar.duration = duration - startTime;
         });
 
         // When the media ends, notify the control bar of this
@@ -107,7 +121,9 @@
 
         // When the user is done scrubbing, seek to that position
         this.controlBar.addEventListener("scrubend", function(event) {
-            _this.mediaPlayer.currentTime = event.progress * _this.mediaPlayer.duration;
+            // If we have been lying to the control bar, then keep that in mind
+            var length = (endTime === -1 ? _this.mediaPlayer.duration : endTime) - startTime;
+            _this.mediaPlayer.currentTime = event.progress * length + startTime;
         });
 
         // Play the media when the play button is pressed
