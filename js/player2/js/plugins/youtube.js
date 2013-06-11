@@ -147,13 +147,15 @@
             },
             duration: {
                 get: function () {
-                    var stop = stopTime === -1 ? this.video.getDuration() : stopTime;
-                    return stop - startTime;
+//                    var stop = stopTime === -1 ? this.video.getDuration() : stopTime;
+//                    return stop - startTime;
+                    return this.video.getDuration();
                 }
             },
             currentTime: {
                 get: function () {
-                    return this.video.getCurrentTime() - startTime;
+//                    return this.video.getCurrentTime() - startTime;
+                    return this.video.getCurrentTime();
                 },
                 set: function (time) {
                     var timeEvent = document.createEvent("HTMLEvents");

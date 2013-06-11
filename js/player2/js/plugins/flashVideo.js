@@ -156,18 +156,21 @@
         Object.defineProperties(this, {
             duration: {
                 get: function () {
-                    var stop = stopTime === -1 ? player.getClip().fullDuration : stopTime;
-                    return stop - startTime;
+//                    var stop = stopTime === -1 ? player.getClip().fullDuration : stopTime;
+//                    return stop - startTime;
+                    return player.getClip().fullDuration;
                 }
             },
             currentTime: {
                 get: function () {
-                    return player.getTime() - startTime;
+//                    return player.getTime() - startTime;
+                    return player.getTime();
                 },
                 set: function (time) {
                     var event = document.createEvent("HTMLEvents");
                     time = Math.floor((+time||0) * 100) / 100;
-                    player.seek(time + startTime);
+//                    player.seek(time + startTime);
+                    player.seek(time);
                     event.initEvent("timeupdate", true, true);
                     element.dispatchEvent(event);
                     return time;
