@@ -20,9 +20,7 @@
 						label: resource.title || "Unnamed",
 						lang: resource.language || "eng",
 						url: file.downloadUri,
-						success: function(){
-							callback(this);
-						}
+						success: callback
 					});
 				}
 			});

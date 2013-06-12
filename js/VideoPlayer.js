@@ -82,10 +82,9 @@
                             TextTrack.get({
                                 kind: "subtitles",
                                 label: captionTrackResource.title || "Unnamed",
-                                lang: captionTrackResource.language || "en", // TODO: Incorporate L2 data
+                                lang: captionTrackResource.language || "eng", // TODO: Incorporate L2 data
                                 url: file.downloadUri,
-                                success: function(){
-                                    var track = this;
+                                success: function(track){
                                     self.captionRenderer.addTextTrack(track);
 
                                     if (!trackEnabled) {
