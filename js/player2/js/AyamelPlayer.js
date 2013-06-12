@@ -57,6 +57,7 @@
         if (args.captionTracks) {
             args.captionTracks.forEach(function (resource) {
                 Ayamel.utils.loadCaptionTrack(resource, function (track) {
+                    track.resourceId = resource.id;
                     _this.captionRenderer.addTextTrack(track);
                     _this.controlBar.addTrack(track);
                 });
@@ -166,11 +167,11 @@
 
         // Enable/disable caption tracks when clicked in the caption menu
         this.controlBar.addEventListener("enabletrack", function(event) {
-            event.stopPropagation();
+//            event.stopPropagation();
             event.track.mode = "showing";
         });
         this.controlBar.addEventListener("disabletrack", function(event) {
-            event.stopPropagation();
+//            event.stopPropagation();
             event.track.mode = "disabled";
         });
 
