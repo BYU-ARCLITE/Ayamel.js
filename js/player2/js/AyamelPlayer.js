@@ -55,12 +55,16 @@
 
         // Load the caption tracks
         if (args.captionTracks) {
-            args.captionTracks.forEach(function (resource) {
+            async.map(args.captionTracks, function (resource, callback) {
                 Ayamel.utils.loadCaptionTrack(resource, function (track) {
                     track.resourceId = resource.id;
                     _this.captionRenderer.addTextTrack(track);
                     _this.controlBar.addTrack(track);
+                    callback(null, track);
                 });
+            }, function (err, tracks) {
+                if (args.captionTrackCallback)
+                    args.captionTrackCallback(tracks);
             });
         }
 
