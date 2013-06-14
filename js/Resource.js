@@ -103,6 +103,7 @@ var ResourceLibrary = (function() {
                     }
                 });
             }
-        }
+        },
+        Resource: Resource
     };
 }());
