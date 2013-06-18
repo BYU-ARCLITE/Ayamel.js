@@ -441,15 +441,17 @@
     pointer-events: none;
 }
 
-.captionator-cue {
+.caption-cue {
     pointer-events: auto;
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
+
+    color: white;
 }
 
-.ayamelPlayer .audioCaptionHolder .captionator-cue {
+.ayamelPlayer .audioCaptionHolder .caption-cue {
     font-size: 16pt;
     box-shadow: inset 1px 1px 7px rgba(0, 0, 0, 0.3), inset 0 0 0 30px #222222;
 }
