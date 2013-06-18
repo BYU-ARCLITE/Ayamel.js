@@ -7963,8 +7963,23 @@
 	
 	Ayamel.utils.langCodes = langCodes;
 	Ayamel.utils.getLangName = function(ncode,lcode){
+		if(!langCodes.hasOwnProperty(ncode)){
+			throw new Error("Invalid Part 3 Language Code");
+		}
 		//should do a lookup on a localization server
 		return langCodes[ncode].name;
+	};
+	Ayamel.utils.getLangScope = function(lcode){
+		if(!langCodes.hasOwnProperty(lcode)){
+			throw new Error("Invalid Part 3 Language Code");
+		}
+		return langCodes[lcode].scope;
+	};
+	Ayamel.utils.getLangType = function(lcode){
+		if(!langCodes.hasOwnProperty(lcode)){
+			throw new Error("Invalid Part 3 Language Code");
+		}
+		return langCodes[lcode].type;
 	};
 	Ayamel.utils.getMacroLang = function(lcode){
 		return macromap.hasOwnProperty(lcode)?macromap[lcode]:lcode;
@@ -7974,5 +7989,11 @@
 			throw new Error("Invalid Part 1 Language Code");
 		}
 		return p1map[p1code];
+	};
+	Ayamel.utils.downgradeLangCode = function(p3code){
+		if(!langCodes.hasOwnProperty(p3code)){
+			throw new Error("Invalid Part 3 Language Code");
+		}
+		return langCodes[p3code].part1;
 	};
 }(Ayamel));
