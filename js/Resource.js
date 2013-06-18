@@ -1,29 +1,20 @@
 var ResourceLibrary = (function() {
     "use strict";
 
+    var baseUrl = "";
+
     /**
      * This is a cache of resources to reduce the number of calls that need to be made.
      */
     var cache = {};
     
-    function Resource(data, url) {
-        this.url = url;
+    function Resource(data, id) {
+        this.id = id;
         this.relations = null;
         if (data) {
             $.extend(this, data);
         }
     }
-    
-    Resource.prototype.getThumbnail = function() {
-        if(this.content && this.content.files) {
-            for (var i=0; i<this.content.files.length; i++) {
-                var file = this.content.files[i];
-                if (file.mime.substr(0,5) === "image" && file.representation === "summary")
-                    return file.downloadUri;
-            }
-        }
-        return null;
-    };
 
     Resource.prototype.getRelations = function(callback) {
         var _this = this;
@@ -31,7 +22,8 @@ var ResourceLibrary = (function() {
         if (this.relations) {
             callback();
         } else {
-            $.ajax(this.url + "/relations", {
+            var url = baseUrl + "relations?id=" + this.id;
+            $.ajax(url, {
                 dataType: "json",
                 success: function(data) {
                     _this.relations = data.relations;
@@ -41,17 +33,16 @@ var ResourceLibrary = (function() {
         }
     };
 
+    // TODO: Change this
     Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback) {
         test = test || function (resource) { return true; };
 
         var filteredRelations = this.relations.filter(test);
 
-        var baseUrl = this.url.substring(0, this.url.lastIndexOf("/")+1);
         async.map(filteredRelations, function(relation, asyncCallback) {
 
             // We have a relation. Get the resource
-            var url = baseUrl + relation[relationRole];
-            ResourceLibrary.load(url, function (resource) {
+            ResourceLibrary.load(relation[relationRole], function (resource) {
                 asyncCallback(null, resource);
             });
         }, function (err, results) {
@@ -88,16 +79,20 @@ var ResourceLibrary = (function() {
     };
     
     return {
-        load: function (url, callback) {
-            if (cache[url]) {
-                callback(cache[url]);
+        setBaseUrl: function(url) {
+            baseUrl = url;
+        },
+        load: function (id, callback) {
+            if (cache[id]) {
+                callback(cache[id]);
             } else {
+                var url = baseUrl + "resources/" + id;
                 $.ajax(url, {
                     dataType: "json",
                     success: function(data) {
                         if (callback) {
-                            var resource = new Resource(data.resource, url);
-                            cache[url] = resource;
+                            var resource = new Resource(data.resource, id);
+                            cache[id] = resource;
                             callback(resource);
                         }
                     }

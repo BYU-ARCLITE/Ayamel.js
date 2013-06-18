@@ -16,9 +16,9 @@
 			resource.content.files.forEach(function (file) {
 				if (Object.keys(TimedText.mime_types).indexOf(file.mime) >= 0) {
 					TextTrack.get({
-						kind: "captions", //file.attributes.kind
-						label: resource.title || "Unnamed",
-						lang: resource.language || "eng",
+						kind: (file.attributes && file.attributes.kind) || "subtitles",
+						label: resource.title || "Untitled",
+						lang: resource.languages[0] || "eng",
 						url: file.downloadUri,
 						success: callback
 					});
