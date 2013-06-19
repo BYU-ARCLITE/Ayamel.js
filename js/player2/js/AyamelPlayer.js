@@ -75,12 +75,15 @@
          */
 
         Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes.space, function() {
-            if (_this.mediaPlayer.paused) {
-                _this.mediaPlayer.play();
-                _this.controlBar.playing = true;
-            } else {
-                _this.mediaPlayer.pause();
-                _this.controlBar.playing = false;
+            // Don't do anything if in a text box
+            if (["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) === -1) {
+                if (_this.mediaPlayer.paused) {
+                    _this.mediaPlayer.play();
+                    _this.controlBar.playing = true;
+                } else {
+                    _this.mediaPlayer.pause();
+                    _this.controlBar.playing = false;
+                }
             }
         });
 
