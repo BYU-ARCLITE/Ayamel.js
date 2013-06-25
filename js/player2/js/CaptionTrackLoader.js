@@ -14,7 +14,7 @@
 			callback(resource);
 		} else {
 			resource.content.files.forEach(function (file) {
-				if (Object.keys(TimedText.mime_types).indexOf(file.mime) >= 0) {
+				if (TimedText.isSupported(file.mime)) {
 					TextTrack.get({
 						kind: (file.attributes && file.attributes.kind) || "subtitles",
 						label: resource.title || "Untitled",
