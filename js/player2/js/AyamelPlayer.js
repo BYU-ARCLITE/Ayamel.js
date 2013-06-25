@@ -46,7 +46,7 @@
 
         // Create the caption renderer
         if (this.mediaPlayer.$captionsElement) {
-            this.captionRenderer = new CaptionRenderer(this.mediaPlayer.captionsElement, {
+            this.captionRenderer = new TimedText.CaptionRenderer(this.mediaPlayer.captionsElement, {
                 appendCueCanvasTo: this.mediaPlayer.captionsElement,
                 renderCue: args.renderCue
             });
