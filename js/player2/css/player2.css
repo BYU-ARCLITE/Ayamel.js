@@ -463,29 +463,29 @@
 
 /* iPad adjustments */
 
-.ipad .ayamelPlayer .progressBar {
+.mobile .ayamelPlayer .progressBar {
     height: 40px;
-    padding: 0 20px;
 }
 
-.ipad .ayamelPlayer .progressLevelPad {
+.mobile .ayamelPlayer .progressLevelPad {
     width: 20px;
     height: 40px;
 }
 
-.ipad .ayamelPlayer .progressLevelPad:first-child {
+.mobile .ayamelPlayer .progressLevelPad:first-child {
     margin-left: -20px;
 }
 
-.ipad .ayamelPlayer .progressLevelPad:last-child {
+.mobile .ayamelPlayer .progressLevelPad:last-child {
     margin-right: -20px;
 }
 
-.ipad .ayamelPlayer .progressLevel {
+.mobile .ayamelPlayer .progressLevel {
     height: 40px;
+    padding-left: 20px;
 }
 
-.ipad .ayamelPlayer .progressKnob {
+.mobile .ayamelPlayer .progressKnob {
     width: 40px;
     height: 40px;
     margin-left: -20px;
@@ -496,44 +496,79 @@
     border-radius: 20px;
 }
 
-.ipad .ayamelPlayer .controlBar {
+.mobile .ayamelPlayer .controlBar {
+    height: 101px;
+}
+
+.mobile .ayamelPlayer .widgets {
     height: 60px;
 }
 
-.ipad .ayamelPlayer .playButton,
-.ipad .ayamelPlayer .fullScreenButton {
+
+.mobile .ayamelPlayer .widgets .button {
+    width: 40px;
+    height: 40px;
+    font-size: 18pt;
+    line-height: 30pt;
+}
+
+.mobile .ayamelPlayer .captions .icon {
+    background-size: 25px;
+}
+
+.mobile .ayamelPlayer .sliderKnob {
+    width: 30px;
+    height: 30px;
+    margin-left: -15px;
+    margin-right: -15px;
+
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+}
+
+.mobile .ayamelPlayer .sliderLevel, .mobile .ayamelPlayer .sliderContainer {
+    height: 30px;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+}
+
+/*
+.mobile .ayamelPlayer .playButton,
+.mobile .ayamelPlayer .fullScreenButton {
     width: 40px;
     height: 30px;
     padding-top: 10px;
     font-size: 18pt;
 }
 
-.ipad .ayamelPlayer .captions {
+.mobile .ayamelPlayer .captions {
     width: 40px;
     height: 40px;
 }
 
-.ipad .ayamelPlayer .captionsIcon {
+.mobile .ayamelPlayer .captionsIcon {
     width: 40px;
     height: 40px;
     background-size: 25px;
-}
+}*/
 
-.ipad .ayamelPlayer .captionsMenu {
+.mobile .ayamelPlayer .captionsMenu {
     margin-left: -50px;
     bottom: 60px;
 }
 
-.ipad .ayamelPlayer .captionsMenuTip,
-.ipad .ayamelPlayer .captionsMenuTipDark {
+.mobile .ayamelPlayer .captionsMenuTip,
+.mobile .ayamelPlayer .captionsMenuTipDark {
     margin-left: -65px;
 }
 
-.ipad .ayamelPlayer .volume {
+.mobile .ayamelPlayer .volume {
     display: none;
 }
 
-.ipad .ayamelPlayer .timeCode {
+.mobile .ayamelPlayer .timeCode {
     height: 20px;
     padding: 12px 10px;
     margin: 2px 5px;
