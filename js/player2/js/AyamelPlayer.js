@@ -56,8 +56,9 @@
         // Load the caption tracks
         if (args.captionTracks) {
             async.map(args.captionTracks, function (resource, callback) {
-                Ayamel.utils.loadCaptionTrack(resource, function (track) {
+                Ayamel.utils.loadCaptionTrack(resource, function (track, mime) {
                     track.resourceId = resource.id;
+                    track.mime = mime;
                     _this.captionRenderer.addTextTrack(track);
                     _this.controlBar.addTrack(track);
                     callback(null, track);
