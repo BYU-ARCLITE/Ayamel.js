@@ -149,28 +149,30 @@
                 get: function () {
 //                    var stop = stopTime === -1 ? this.video.getDuration() : stopTime;
 //                    return stop - startTime;
-                    return this.video.getDuration();
+                    return this.video ? this.video.getDuration() : 0;
                 }
             },
             currentTime: {
                 get: function () {
 //                    return this.video.getCurrentTime() - startTime;
-                    return this.video.getCurrentTime();
+                    return this.video ? this.video.getCurrentTime() : 0;
                 },
                 set: function (time) {
+					if(!this.video){ return 0; }
                     var timeEvent = document.createEvent("HTMLEvents");
                     time = Math.floor((+time||0)* 100) / 100;
                     this.video.seekTo(time);
-                      timeEvent.initEvent("timeupdate", true, true);
+                    timeEvent.initEvent("timeupdate", true, true);
                     this.element.dispatchEvent(timeEvent);
                     return time;
                 }
             },
             muted: {
                 get: function () {
-                    return this.video.isMuted();
+                    return this.video ? this.video.isMuted() : false;
                 },
                 set: function (muted) {
+					if(!this.video){ return false; }
                     muted = !!muted;
                     this.video[muted?'mute':'unMute']();
                     return muted;
@@ -178,14 +180,15 @@
             },
             paused: {
                 get: function () {
-                    return this.video.getPlayerState() !== 1;
+                    return this.video ? this.video.getPlayerState() !== 1 : true;
                 }
             },
             playbackRate: {
                 get: function () {
-                    return this.video.getPlaybackRate();
+                    return this.video ? this.video.getPlaybackRate() : 1;
                 },
                 set: function (playbackRate) {
+					if(!this.video){ return 1; }
                     var i, ratelist, best, next, bdist, ndist;
                     playbackRate = +playbackRate
                     if(isNaN(playbackRate)){ playbackRate = 1; }
@@ -206,14 +209,15 @@
             },
             readyState: {
                 get: function () {
-                    return this.video.getPlayerState();
+                    return this.video ? this.video.getPlayerState() : 0;
                 }
             },
             volume: {
                 get: function () {
-                    return this.video.getVolume() / 100;
+                    return this.video ? this.video.getVolume() / 100 : 1;
                 },
                 set: function (volume) {
+					if(!this.video){ return 1; }
                     volume = (+volume||0);
                     this.video.setVolume(volume * 100);
                     return volume;
@@ -223,10 +227,12 @@
     }
 
     YouTubePlayer.prototype.play = function() {
+		if(!this.video){ return; }
         this.video.playVideo();
     };
 
     YouTubePlayer.prototype.pause = function() {
+		if(!this.video){ return; }
         this.video.pauseVideo();
     };
 
