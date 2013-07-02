@@ -87,12 +87,6 @@
         });
     }
 
-    ControlBar.prototype.addTrack = function(track) {
-        if (this.components.captions) {
-            this.components.captions.addTrack(track);
-        }
-    };
-
     ControlBar.prototype.addEventListener = function(event, callback, capture) {
         this.element.addEventListener(event, callback, !!capture);
     };

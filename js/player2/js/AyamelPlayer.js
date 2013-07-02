@@ -45,11 +45,18 @@
         });
 
         // Create the caption renderer
-        if (this.mediaPlayer.$captionsElement) {
-            this.captionRenderer = new TimedText.CaptionRenderer(this.mediaPlayer.captionsElement, {
-                appendCueCanvasTo: this.mediaPlayer.captionsElement,
-                renderCue: args.renderCue
-            });
+        if (this.mediaPlayer.captionsElement) {
+			if(args.captionRenderer instanceof TimedText.CaptionRenderer){
+				this.captionRenderer = args.captionRenderer;
+				this.captionRenderer.target = this.mediaPlayer.captionsElement;
+				this.captionRenderer.appendCueCanvasTo = this.mediaPlayer.captionsElement;
+			}else{
+				this.captionRenderer = new TimedText.CaptionRenderer({
+					target: this.mediaPlayer.captionsElement,
+					appendCueCanvasTo: this.mediaPlayer.captionsElement,
+					renderCue: args.renderCue
+				});
+			}
             this.captionRenderer.bindMediaElement(this.mediaPlayer);
         }
 
@@ -58,13 +65,12 @@
             async.map(args.captionTracks, function (resource, callback) {
                 Ayamel.utils.loadCaptionTrack(resource, function (track, mime) {
                     track.resourceId = resource.id;
-                    track.mime = mime;
-                    _this.captionRenderer.addTextTrack(track);
-                    _this.controlBar.addTrack(track);
+					track.mime = mime;
+                    _this.addTextTrack(track);
                     callback(null, track);
                 });
             }, function (err, tracks) {
-                if (args.captionTrackCallback)
+                if (typeof args.captionTrackCallback === 'function')
                     args.captionTrackCallback(tracks);
             });
         }
@@ -175,12 +181,12 @@
 
         // Enable/disable caption tracks when clicked in the caption menu
         this.controlBar.addEventListener("enabletrack", function(event) {
-//            event.stopPropagation();
             event.track.mode = "showing";
+			_this.captionRenderer.rebuildCaptions();
         });
         this.controlBar.addEventListener("disabletrack", function(event) {
-//            event.stopPropagation();
             event.track.mode = "disabled";
+			_this.captionRenderer.rebuildCaptions();
         });
 
         // Enter/exit full screen when the button is pressed
@@ -269,7 +275,16 @@
             }
         });
     }
-
+	
+    AyamelPlayer.prototype.addTextTrack = function(track) {
+		if(!this.captionRenderer){ return; }
+		if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
+		this.captionRenderer.addTextTrack(track);
+        if (this.controlBar.components.captions) {
+            this.controlBar.components.captions.addTrack(track);
+        }
+    };
+	
     AyamelPlayer.prototype.play = function() {
         this.mediaPlayer.play();
     };
