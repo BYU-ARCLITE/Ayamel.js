@@ -1,110 +1,99 @@
-/**
- * ControlBar.js
- * This is an alternate control bar.
- * Instead of MediaControls.js include
- * <ol>
- *     <li>ProgressBar.js</li>
- *     <li>ControlBar.js</li>
- * </ol>
- *
- * Requires
- *  - JQuery
- *  - ProgressBar.js
- * Used by
- *  - MediaController.js
- */
-var ControlBar = (function () {
+(function(Ayamel) {
     "use strict";
 
-    // Templates for the control bar and component holder
-    var template = document.createElement('div'),
-        componentHolderTemplate = document.createElement('div');
+    var wtemplate =
+        '<div class="widgets">\
+            <div class="left"></div>\
+            <div class="right"></div>\
+        </div>';
 
-	template.className = "controlBar";
-	componentHolderTemplate.className = "components";
-	
-    /**
-     * The Control Bar object.
-     * @constructor
-     */
-    function ControlBar(attributes,componentNames) {
-        var _this = this, components = {},
-			progressBar = new ProgressBar(this),
-            element = template.cloneNode(false),
-            componentHolder = componentHolderTemplate.cloneNode(false),
-			clist = (componentNames || []) // Turn the list of names into actual components
-				.filter(function(name){ return typeof ControlBarComponents[name] === 'function'; })
-				.map(function(name){ return ControlBarComponents[name](_this, attributes); });
+    function addComponent($controls, component) {
+        var constructor = Ayamel.controls[component];
+        if(typeof constructor !== 'function'){ return; }
+        this.components[component] = new constructor({
+            parent: this,
+            $holder: $controls
+        });
+    }
 
-        // Add the progress bar
-        element.appendChild(progressBar.element);
+    function ControlBar(args) {
+        var _this = this,
+            controlLists = args.components || {left:["play", "volume", "captions"], right:["rate", "fullScreen", "timeCode"]},
+            components = {}, progressBar, timeCode,
+            currentTime = 0, duration = 0,
+            element = document.createElement('div'),
+            $element = $(element);
 
-        // Add the components
-        element.appendChild(componentHolder);
-        clist.forEach(function(component){
-			components[component.name] = component;
-            componentHolder.appendChild(component.element);
+        element.className = "controlBar";
+
+        // Create the ProgressBar
+        progressBar = new Ayamel.classes.ProgressBar({
+            $holder: $element
         });
 
-		this.progressBar = progressBar;
-		this.components = components;
-		this.element = element;
+        $element.append(wtemplate);
+
+        this.element = element;
+        this.$element = $element;
+        args.$holder.append($element);
+
+        //set default values
+        this.volume = 0;
+        this.muted = false;
+        this.playbackRate = 0;
+        this.playing = false;
+        this.fullScreen = false;
+
+        // Create the control bar components
+        this.components = components;
+
+        if(controlLists.left instanceof Array){
+            controlLists.left.forEach(addComponent.bind(this,$element.find(".left")));
+        }
+        if(controlLists.right instanceof Array){
+            controlLists.right.forEach(addComponent.bind(this,$element.find(".right")));
+        }
+
+        timeCode = components.timeCode || {};
+        Object.defineProperties(this, {
+            currentTime: {
+                enumerable: true,
+                set: function (value) {
+                    currentTime = Math.min(+value||0,duration);
+                    progressBar.progress = currentTime / duration;
+                    timeCode.currentTime = currentTime;
+                    return currentTime;
+                },
+                get: function () {
+                    return currentTime;
+                }
+            },
+            duration: {
+                enumerable: true,
+                set: function (value) {
+                    duration = +value||0;
+                    timeCode.duration = duration;
+                    if(currentTime > duration) {
+                        currentTime = duration;
+                        progressBar.progress = 1;
+                        timeCode.currentTime = duration;
+                    }
+                    return duration;
+                },
+                get: function () {
+                    return duration;
+                }
+            }
+        });
     }
-	
-	Object.defineProperties(ControlBar.prototype, {
-		duration: {
-			set: function(value){ this.progressBar.duration = value; },
-			get: function(){ return this.progressBar.duration; }
-		},
-		muted: {
-			set: function(value){
-				var volume = this.components.volume;
-				if(volume){ return volume.muted = value; }
-				return false;
-			},
-			get: function(){
-				var volume = this.components.volume;
-				return volume?volume.muted:false;
-			}
-		},
-		playing: {
-			set: function(value){
-				var play = this.components.play;
-				if(play){ return play.playing = value; }
-				return false;
-			},
-			get: function(){
-				var play = this.components.play;
-				return play?play.playing:false;
-			}
-		},
-		progress: {
-			set: function(value){ return this.progressBar.progress = value; },
-			get: function(){ return this.progressBar.progress; }
-		},
-		volume: {
-			set: function (value) {
-				var volume = this.components.volume;
-				if(volume){ return volume.volume = value; }
-				return 100;
-			},
-			get: function () {
-				var volume = this.components.volume;
-				return volume?volume.volume:100;
-			}
-		}
-	});
 
-    ControlBar.prototype.addEventListener = function (eventName, callback) {
-        this.element.addEventListener(eventName, callback, false);
-    };
-    ControlBar.prototype.removeEventListener = function (eventName, callback) {
-        this.element.removeEventListener(eventName, callback, false);
-    };
-    ControlBar.prototype.getComponent = function(name) {
-        return this.components[name]||null;
+    ControlBar.prototype.addEventListener = function(event, callback, capture) {
+        this.element.addEventListener(event, callback, !!capture);
     };
 
-    return ControlBar;
+    ControlBar.prototype.removeEventListener = function(event, callback, capture) {
+        this.element.removeEventListener(event, callback, !!capture);
+    };
 
-}());
+    Ayamel.classes.ControlBar = ControlBar;
+}(Ayamel));
