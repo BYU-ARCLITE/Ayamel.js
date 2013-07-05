@@ -13,28 +13,18 @@
     function PlayButton(args) {
         var _this = this,
             playing = false,
-            $element = $(template);
+            $element = $(template),
+			element = $element[0];
 
         this.$element = $element;
-        this.element = $element[0];
+        this.element = element;
         args.$holder.append($element);
 
         // Set up events
-        this.$element.click(function (e) {
+        element.addEventListener('click',function (e) {
             e.stopPropagation();
-
-            var event = document.createEvent("HTMLEvents");
-            if (playing) {
-                event.initEvent("pause", true, true);
-                playing = false;
-                $element.addClass("paused");
-            } else {
-                event.initEvent("play", true, true);
-                playing = true;
-                $element.removeClass("paused");
-            }
-            this.dispatchEvent(event);
-        });
+            element.dispatchEvent(new Event(playing?'pause':'play',{bubbles:true,cancelable:true}));
+        },false);
 
         // Be able to set the playing attribute
         Object.defineProperty(this, "playing", {

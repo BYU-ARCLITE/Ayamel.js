@@ -68,12 +68,10 @@
 
         // Set up event propagation
         Object.keys(events).forEach(function (eventName) {
-            audio.addEventListener(eventName, function (event) {
-                var newEvent = document.createEvent("HTMLEvents");
-                newEvent.initEvent(events[eventName], true, true);
-                element.dispatchEvent(newEvent);
+            video.addEventListener(eventName, function (event) {
+                element.dispatchEvent(new Event(events[eventName],{bubbles:true,cancelable:true}));
                 event.stopPropagation();
-            },false);
+            }, false);
         });
 
         // Set up the duration

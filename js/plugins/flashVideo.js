@@ -59,7 +59,6 @@
         $element.height(height);
 
         function fireTimeEvents() {
-            var event;
             if (!playing) { return; }
             // Make sure that we are playing within bounds (give a buffer because flash vid isn't perfect)
             if (startTime !== 0 && player.getTime() < startTime - 0.5) {
@@ -70,9 +69,8 @@
                 player.stop();
             }
 
-            event = document.createEvent("HTMLEvents");
-            event.initEvent("timeupdate", true, true);
-            element.dispatchEvent(event);
+            
+            element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:true}));
 
             if(Ayamel.utils.Animation){
                 Ayamel.utils.Animation.requestFrame(fireTimeEvents);
@@ -101,46 +99,32 @@
 
                 // Set up clip events
                 onFinish: function() {
-                    var event = document.createEvent("HTMLEvents");
-                    event.initEvent("ended", true, true);
                     playing = false;
-                    element.dispatchEvent(event);
+                    element.dispatchEvent(new Event('ended',{bubbles:true,cancelable:true}));
                 },
                 onMetaData: function() {
-                    var event = document.createEvent("HTMLEvents");
-                    event.initEvent("durationchange", true, true);
-                    element.dispatchEvent(event);
+                    element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:true}));
                 },
                 onPause: function() {
-                    var event = document.createEvent("HTMLEvents");
-                    event.initEvent("pause", true, true);
                     playing = false;
-                    element.dispatchEvent(event);
+                    element.dispatchEvent(new Event('pause',{bubbles:true,cancelable:true}));
                 },
                 onResume: function() {
-                    var event = document.createEvent("HTMLEvents");
-                    event.initEvent("play", true, true);
                     playing = true;
-                    element.dispatchEvent(event);
+                    element.dispatchEvent(new Event('play',{bubbles:true,cancelable:true}));
                     fireTimeEvents();
                 },
                 onStart: function() {
-                    var event = document.createEvent("HTMLEvents");
-                    event.initEvent("play", true, true);
                     playing = true;
-                    element.dispatchEvent(event);
+                    element.dispatchEvent(new Event('play',{bubbles:true,cancelable:true}));
                     fireTimeEvents();
                 },
                 onStop: function() {
-                    var event = document.createEvent("HTMLEvents");
-                    event.initEvent("pause", true, true);
-                    playing = false;
-                    element.dispatchEvent(event);
+					playing = false;
+                    element.dispatchEvent(new Event('pause',{bubbles:true,cancelable:true}));
                 },
                 onVolume: function () {
-                    var event = document.createEvent("HTMLEvents");
-                    event.initEvent("volumechange", true, true);
-                    element.dispatchEvent(event);
+                    element.dispatchEvent(new Event('volumechange',{bubbles:true,cancelable:true}));
                 }
             },
 
@@ -167,12 +151,10 @@
                     return player.getTime();
                 },
                 set: function (time) {
-                    var event = document.createEvent("HTMLEvents");
                     time = Math.floor((+time||0) * 100) / 100;
 //                    player.seek(time + startTime);
                     player.seek(time);
-                    event.initEvent("timeupdate", true, true);
-                    element.dispatchEvent(event);
+                    element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:true}));
                     return time;
                 }
             },

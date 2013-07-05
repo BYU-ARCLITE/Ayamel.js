@@ -6,13 +6,6 @@
             <div class="button speed"></div>\
         </div>';
 
-    function dispatchRate(element,rate) {
-        var newEvent = document.createEvent("HTMLEvents");
-        newEvent.initEvent("ratechange", true, true);
-        newEvent.playbackRate = rate;
-        element.dispatchEvent(newEvent);
-    }
-
     function RateSlider(args) {
         var _this = this,
             rate = 1,
@@ -31,14 +24,14 @@
         slider.addEventListener('levelchange',function(level){
             rate = level;
             slider.level = level;
-            dispatchRate(element,rate);
+            element.dispatchEvent(new CustomEvent("ratechange",{bubbles:true,cancelable:true,detail:rate}));
         },false);
 
         // Allow resetting
         $element.children(".speed").click(function () {
             rate = 1;
             slider.level = 1;
-            dispatchRate(element,1);
+            element.dispatchEvent(new Event("ratechange",{bubbles:true,cancelable:true,detail:rate}));
         });
 
         // Be able to set the rate attribute

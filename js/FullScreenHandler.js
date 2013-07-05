@@ -57,25 +57,17 @@
     } else {
         // Pseudo fullscreen
         exitFullScreen = function () {
-			var event = document.createEvent("HTMLEvents"),
-				element = fullScreenElement;
-            event.initEvent("pseudofullscreenchange", true, true);
-            event.target = element;
-			
+			var element = fullScreenElement;
             pseudoFullScreen = false;
             fullScreenElement = null;
             element.classList.remove("pseudoFullScreen");
-            element.dispatchEvent(event);
+            element.dispatchEvent(new CustomEvent("pseudofullscreenchange",{bubbles:true,cancelable:true}));
         };
-        requestFullScreen = function (element) {
-			var event = document.createEvent("HTMLEvents");
-            event.initEvent("pseudofullscreenchange", true, true);
-            event.target = element;
-			
+        requestFullScreen = function (element) {			
             pseudoFullScreen = true;
             fullScreenElement = element;
             element.classList.add("pseudoFullScreen");
-            element.dispatchEvent(event);
+            element.dispatchEvent(new CustomEvent("pseudofullscreenchange",{bubbles:true,cancelable:true}));
         };
 		isFullScreen = function () {
 			return pseudoFullScreen;

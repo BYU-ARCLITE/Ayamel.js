@@ -112,19 +112,14 @@
 
                     // Set up events. Unfortunately the YouTube API requires the callback to be in the global namespace.
                     window.youtubeStateChange = function(data) {
-                        var event;
-
                         if(data === -1) { return; }
-
-                        event = document.createEvent("HTMLEvents");
-                        event.initEvent({
+                        element.dispatchEvent(new Event({
                             0: "ended",
                             1: "play",
                             2: "pause",
                             3: "durationchange",
                             5: 'loading'
-                        }[data], true, true);
-                        element.dispatchEvent(event);
+                        }[data],{bubbles:true,cancelable:true}));
 
                         // If we started playing then send out timeupdate events
                         if (data === 1) {
@@ -134,9 +129,7 @@
                             // If this is the first pause, then the duration is changed/loaded, so send out that event
                             if (!played) {
                                 played = true;
-                                event = document.createEvent("HTMLEvents");
-                                event.initEvent("durationchange", true, true);
-                                element.dispatchEvent(event);
+                                element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:true}));
                             }
 
                             playing = false;
@@ -159,11 +152,9 @@
                 },
                 set: function (time) {
 					if(!this.video){ return 0; }
-                    var timeEvent = document.createEvent("HTMLEvents");
                     time = Math.floor((+time||0)* 100) / 100;
                     this.video.seekTo(time);
-                    timeEvent.initEvent("timeupdate", true, true);
-                    this.element.dispatchEvent(timeEvent);
+                    this.element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:true}));
                     return time;
                 }
             },
