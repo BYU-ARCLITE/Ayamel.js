@@ -33,8 +33,7 @@
 			var idx, cbs = keyBindings[key];
             if (!cbs) { return; }
             idx = cbs.indexOf(callback);
-			if (idx === -1) { return; }
-			cbs.splice(idx,1);
+			if (~idx) { cbs.splice(idx,1); }
         },
         keyCodes: {
             // Lower-case letters

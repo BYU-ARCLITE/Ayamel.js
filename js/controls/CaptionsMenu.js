@@ -52,14 +52,14 @@
 
         // Set up clicking here because we have the track in scope
         $track.click(function (e) {
-			var event = document.createEvent("HTMLEvents"),
-				active = this.classList.contains("active");
+			var	active = this.classList.contains("active");
+            e.stopPropagation();
             this.classList.toggle("active");
             track.mode = active?'disabled':'showing';
-            event.initEvent(active?"disabletrack":"enabletrack", true, true);
-            event.track = track;
-            _this.element.dispatchEvent(event);
-            e.stopPropagation();
+            _this.element.dispatchEvent(new CustomEvent(
+				active?"disabletrack":"enabletrack",
+				{bubbles:true,cancelable:true,detail:{track:track}}
+			));
         });
     };
 

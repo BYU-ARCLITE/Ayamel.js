@@ -22,12 +22,10 @@
 
         // Set up events
         this.$element.click(function (e) {
-            var event = document.createEvent("HTMLEvents");
-            event.initEvent(fullScreen?"exitfullscreen":"enterfullscreen", true, true);
+            e.stopPropagation();
 			fullScreen = !fullScreen;
             this.classList.toggle("active");
-            this.dispatchEvent(event);
-            e.stopPropagation();
+            this.dispatchEvent(new Event(fullScreen?"enterfullscreen":"exitfullscreen",{bubbles:true,cancelable:true}));
         });
 
         // Be able to set the playing attribute

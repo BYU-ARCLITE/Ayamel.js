@@ -49,8 +49,7 @@
             value = pxToValue(lastX - left);
             level.style.width = (value-min)*scale+"%";
 
-            newEvent = document.createEvent("HTMLEvents");
-            newEvent.initEvent("scrubstart", true, true);
+            newEvent = new Event('scrubstart');
             newEvent.progress = value;
             element.dispatchEvent(newEvent);
             event.stopPropagation();
@@ -64,8 +63,7 @@
             value = pxToValue(lastX - left);
             level.style.width = (value-min)*scale+"%";
 
-            newEvent = document.createEvent("HTMLEvents");
-            newEvent.initEvent("scrubupdate", true, true);
+            newEvent = new Event('scrubupdate');
             newEvent.progress = value;
             element.dispatchEvent(newEvent);
             event.stopPropagation();
@@ -79,8 +77,7 @@
             value = pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left);
             level.style.width = (value-min)*scale+"%";
 
-            newEvent = document.createEvent("HTMLEvents");
-            newEvent.initEvent("scrubend", true, true);
+            newEvent = new Event('scrubend');
             newEvent.progress = value;
             element.dispatchEvent(newEvent);
             event.stopPropagation();

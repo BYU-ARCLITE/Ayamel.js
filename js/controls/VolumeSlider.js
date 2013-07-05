@@ -13,13 +13,6 @@
             <div class="button mute"></div>\
         </div>';
 
-    function dispatchVolume(element,volume) {
-        var newEvent = document.createEvent("HTMLEvents");
-        newEvent.initEvent("volumechange", true, true);
-        newEvent.volume = volume;
-        element.dispatchEvent(newEvent);
-    }
-
     function VolumeSlider(args) {
         var _this = this,
             volume = 1,
@@ -38,20 +31,20 @@
         slider.addEventListener('levelchange',function(level){
             volume = level;
             slider.level = level;
-            dispatchVolume(element,volume);
+            element.dispatchEvent(new CustomEvent("volumechange",{bubbles:true,cancelable:true,detail:volume}));
         },false);
 
         // Allow muting
         $element.children(".mute").click(function () {
-            var newEvent = document.createEvent("HTMLEvents");
+            var newEvent;
             if (muted) {
                 muted = false;
                 element.classList.remove("muted");
-                newEvent.initEvent("unmute", true, true);
+                newEvent = new Event("unmute");
             } else {
                 muted = true;
                 element.classList.add("muted");
-                newEvent.initEvent("mute", true, true);
+                newEvent = new Event("mute");
             }
             element.dispatchEvent(newEvent);
         });

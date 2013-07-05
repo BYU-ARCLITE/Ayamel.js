@@ -109,10 +109,8 @@
 
             Object.keys(events).forEach(function (brightcoveEvent) {
                 _this.player.addEventListener(brightcoveEvent, function(event) {
-                    var newEvent = document.createEvent("HTMLEvents");
                     updateProperties(event);
-                    newEvent.initEvent(events[brightcoveEvent], true, true);
-                    element.dispatchEvent(newEvent);
+                    element.dispatchEvent(new Event(events[brightcoveEvent],{bubbles:true,cancelable:true}));
                 });
             });
         };

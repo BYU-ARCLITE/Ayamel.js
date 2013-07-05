@@ -156,14 +156,14 @@
         // Change the volume when the volume controls are adjusted
         this.controlBar.addEventListener("volumechange", function(event) {
             event.stopPropagation();
-            _this.mediaPlayer.volume = event.volume;
+            _this.mediaPlayer.volume = event.detail;
             _this.controlBar.volume = _this.mediaPlayer.volume;
         });
 
         // Change the playback rate when the rate controls are adjusted
         this.controlBar.addEventListener("ratechange", function(event) {
             event.stopPropagation();
-            _this.mediaPlayer.playbackRate = event.playbackRate;
+            _this.mediaPlayer.playbackRate = event.detail;
             _this.controlBar.playbackRate = _this.mediaPlayer.playbackRate;
         });
 

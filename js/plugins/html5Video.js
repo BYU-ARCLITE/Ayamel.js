@@ -74,9 +74,7 @@
         // Set up event propagation
         Object.keys(events).forEach(function (eventName) {
             video.addEventListener(eventName, function (event) {
-                var newEvent = document.createEvent("HTMLEvents");
-                newEvent.initEvent(events[eventName], true, true);
-                element.dispatchEvent(newEvent);
+                element.dispatchEvent(new Event(events[eventName],{bubbles:true,cancelable:true}));
                 event.stopPropagation();
             }, false);
         });

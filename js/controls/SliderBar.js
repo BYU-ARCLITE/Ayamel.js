@@ -42,18 +42,18 @@
             left = $level.offset().left + 7;
             lastX = event.pageX;
             val = pxToValue(lastX - left);
-            _this.emit('scrubstart', val);
-            _this.emit('levelchange', val);
+            _this.dispatchEvent(new CustomEvent('scrubstart', {bubbles:true,cancelable:true,detail:val}));
+            _this.dispatchEvent(new CustomEvent('levelchange', {bubbles:true,cancelable:true,detail:val}));
         },false);
         document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
             if (!moving) { return; }
             lastX = event.pageX;
-            _this.emit('levelchange', pxToValue(lastX - left));
+            _this.dispatchEvent(new CustomEvent('levelchange', {detail:pxToValue(lastX - left)}));
         },false)
         document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function (event) {
             if (!moving) { return; }
             moving = false;
-            _this.emit('scrubend', pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left));
+            _this.dispatchEvent(new CustomEvent('scrubend', {detail:pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left)}));
         },false);
 
         Object.defineProperties(this,{
@@ -70,9 +70,10 @@
         });
     }
 
-    SliderBar.prototype.emit = function(evt, data){
-        var that = this, fns = this.events[evt];
-        fns && fns.forEach(function(cb){ try{cb.call(that,data);}catch(e){} });
+    SliderBar.prototype.dispatchEvent = function(evt){
+        var that = this, fns = this.events[evt.type];
+		evt.target = this;
+        fns && fns.forEach(function(cb){ try{cb.call(that,evt);}catch(ignore){} });
     };
 
     SliderBar.prototype.addEventListener = function(name, cb, capture){
@@ -84,8 +85,7 @@
         var idx, fns = this.events[evt];
         if(!(fns instanceof Array)){ return; }
         idx = fns.indexOf(cb);
-        if(idx === -1){ return; }
-        fns.splice(idx,1);
+        if(~idx){ fns.splice(idx,1); }
     };
 
     Ayamel.controls.slider = SliderBar;
