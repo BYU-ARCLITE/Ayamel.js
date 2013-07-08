@@ -31,7 +31,7 @@
         slider.addEventListener('levelchange',function(level){
             volume = level;
             slider.level = level;
-            element.dispatchEvent(new CustomEvent("volumechange",{bubbles:true,cancelable:true,detail:volume}));
+            element.dispatchEvent(new CustomEvent("volumechange",{bubbles:true,cancelable:true,detail:{volume:volume}}));
         },false);
 
         // Allow muting
