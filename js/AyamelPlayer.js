@@ -156,14 +156,14 @@
         // Change the volume when the volume controls are adjusted
         this.controlBar.addEventListener("volumechange", function(event) {
             event.stopPropagation();
-            _this.mediaPlayer.volume = event.detail;
+            _this.mediaPlayer.volume = event.detail.volume;
             _this.controlBar.volume = _this.mediaPlayer.volume;
         });
 
         // Change the playback rate when the rate controls are adjusted
         this.controlBar.addEventListener("ratechange", function(event) {
             event.stopPropagation();
-            _this.mediaPlayer.playbackRate = event.detail;
+            _this.mediaPlayer.playbackRate = event.detail.playbackRate;
             _this.controlBar.playbackRate = _this.mediaPlayer.playbackRate;
         });
 
@@ -181,11 +181,11 @@
 
         // Enable/disable caption tracks when clicked in the caption menu
         this.controlBar.addEventListener("enabletrack", function(event) {
-            event.track.mode = "showing";
+            event.detail.track.mode = "showing";
 			_this.captionRenderer.rebuildCaptions();
         });
         this.controlBar.addEventListener("disabletrack", function(event) {
-            event.track.mode = "disabled";
+            event.detail.track.mode = "disabled";
 			_this.captionRenderer.rebuildCaptions();
         });
 

@@ -24,14 +24,14 @@
         slider.addEventListener('levelchange',function(level){
             rate = level;
             slider.level = level;
-            element.dispatchEvent(new CustomEvent("ratechange",{bubbles:true,cancelable:true,detail:rate}));
+            element.dispatchEvent(new CustomEvent("ratechange",{bubbles:true,cancelable:true,detail:{playbackRate:rate}}));
         },false);
 
         // Allow resetting
         $element.children(".speed").click(function () {
             rate = 1;
             slider.level = 1;
-            element.dispatchEvent(new Event("ratechange",{bubbles:true,cancelable:true,detail:rate}));
+            element.dispatchEvent(new Event("ratechange",{bubbles:true,cancelable:true,detail:{playbackRate:rate}}));
         });
 
         // Be able to set the rate attribute
