@@ -22,7 +22,7 @@
         args.$holder.append($element);
 
         slider.addEventListener('levelchange',function(evt){
-            rate = evt.detail;
+            rate = evt.detail.level;
             slider.level = rate;
             element.dispatchEvent(new CustomEvent("ratechange",{bubbles:true,cancelable:true,detail:{playbackRate:rate}}));
         },false);
