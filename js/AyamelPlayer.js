@@ -138,7 +138,7 @@
         this.controlBar.addEventListener("scrubend", function(event) {
             // If we have been lying to the control bar, then keep that in mind
             var length = (endTime === -1 ? _this.mediaPlayer.duration : endTime) - startTime;
-            _this.mediaPlayer.currentTime = event.progress * length + startTime;
+            _this.mediaPlayer.currentTime = event.detail.progress * length + startTime;
         });
 
         // Play the media when the play button is pressed

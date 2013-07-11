@@ -42,18 +42,21 @@
             left = $level.offset().left + 7;
             lastX = event.pageX;
             val = pxToValue(lastX - left);
-            _this.dispatchEvent(new CustomEvent('scrubstart', {bubbles:true,cancelable:true,detail:val}));
-            _this.dispatchEvent(new CustomEvent('levelchange', {bubbles:true,cancelable:true,detail:val}));
+            _this.dispatchEvent(new CustomEvent('scrubstart', {detail:{progress:val}}));
+            _this.dispatchEvent(new CustomEvent('levelchange', {detail:{level:val}}));
         },false);
         document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
+			var val;
             if (!moving) { return; }
             lastX = event.pageX;
-            _this.dispatchEvent(new CustomEvent('levelchange', {detail:pxToValue(lastX - left)}));
+			val = pxToValue(lastX - left);
+            _this.dispatchEvent(new CustomEvent('scrubupdate', {detail:{progress:val}}));
+            _this.dispatchEvent(new CustomEvent('levelchange', {detail:{level:val}}));
         },false)
         document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function (event) {
             if (!moving) { return; }
             moving = false;
-            _this.dispatchEvent(new CustomEvent('scrubend', {detail:pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left)}));
+            _this.dispatchEvent(new CustomEvent('scrubend', {detail:{progress:pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left)}}));
         },false);
 
         Object.defineProperties(this,{
