@@ -40,7 +40,6 @@
         }
 
         element.addEventListener(Ayamel.utils.mobile.isMobile ? "touchstart" : "mousedown", function (event) {
-            var newEvent;
             if (moving) { return; }
             left = $element.offset().left + 10;
             moving = true;
@@ -49,37 +48,31 @@
             value = pxToValue(lastX - left);
             level.style.width = (value-min)*scale+"%";
 
-            newEvent = new Event('scrubstart');
-            newEvent.progress = value;
-            element.dispatchEvent(newEvent);
+            element.dispatchEvent(new CustomEvent('scrubstart',{bubbles:true,detail:{progress:value}}));
+            element.dispatchEvent(new CustomEvent('levelchange', {bubbles:true,detail:{level:value}}));
             event.stopPropagation();
         }, false);
 
         document.body.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
-            var newEvent;
             if (!moving) { return; }
 
             lastX = event.pageX;
             value = pxToValue(lastX - left);
             level.style.width = (value-min)*scale+"%";
 
-            newEvent = new Event('scrubupdate');
-            newEvent.progress = value;
-            element.dispatchEvent(newEvent);
+            element.dispatchEvent(new CustomEvent('scrubupdate',{bubbles:true,detail:{progress:value}}));
+            element.dispatchEvent(new CustomEvent('levelchange', {bubbles:true,detail:{level:value}}));
             event.stopPropagation();
         }, false);
 
         document.body.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function (event) {
-            var newEvent;
             if (!moving) { return; }
             moving = false;
 
             value = pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left);
             level.style.width = (value-min)*scale+"%";
-
-            newEvent = new Event('scrubend');
-            newEvent.progress = value;
-            element.dispatchEvent(newEvent);
+			
+            element.dispatchEvent(new CustomEvent('scrubend',{bubbles:true,detail:{progress:value}}));
             event.stopPropagation();
         }, false);
 
