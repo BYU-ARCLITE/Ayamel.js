@@ -28,9 +28,9 @@
         this.element = element;
         args.$holder.append($element);
 
-        slider.addEventListener('levelchange',function(level){
-            volume = level;
-            slider.level = level;
+        slider.addEventListener('levelchange',function(evt){
+            volume = evt.detail;
+            slider.level = volume;
             element.dispatchEvent(new CustomEvent("volumechange",{bubbles:true,cancelable:true,detail:{volume:volume}}));
         },false);
 

@@ -21,9 +21,9 @@
         this.element = element;
         args.$holder.append($element);
 
-        slider.addEventListener('levelchange',function(level){
-            rate = level;
-            slider.level = level;
+        slider.addEventListener('levelchange',function(evt){
+            rate = evt.detail;
+            slider.level = rate;
             element.dispatchEvent(new CustomEvent("ratechange",{bubbles:true,cancelable:true,detail:{playbackRate:rate}}));
         },false);
 
@@ -31,7 +31,7 @@
         $element.children(".speed").click(function () {
             rate = 1;
             slider.level = 1;
-            element.dispatchEvent(new Event("ratechange",{bubbles:true,cancelable:true,detail:{playbackRate:rate}}));
+            element.dispatchEvent(new CustomEvent("ratechange",{bubbles:true,cancelable:true,detail:{playbackRate:rate}}));
         });
 
         // Be able to set the rate attribute
