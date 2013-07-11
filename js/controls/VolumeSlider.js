@@ -29,7 +29,7 @@
         args.$holder.append($element);
 
         slider.addEventListener('levelchange',function(evt){
-            volume = evt.detail;
+            volume = evt.detail.level;
             slider.level = volume;
             element.dispatchEvent(new CustomEvent("volumechange",{bubbles:true,cancelable:true,detail:{volume:volume}}));
         },false);
@@ -40,11 +40,11 @@
             if (muted) {
                 muted = false;
                 element.classList.remove("muted");
-                newEvent = new Event("unmute");
+                newEvent = new Event("unmute",{bubbles:true});
             } else {
                 muted = true;
                 element.classList.add("muted");
-                newEvent = new Event("mute");
+                newEvent = new Event("mute",{bubbles:true});
             }
             element.dispatchEvent(newEvent);
         });
