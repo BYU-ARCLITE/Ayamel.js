@@ -219,6 +219,16 @@
             element.removeEventListener(Ayamel.utils.FullScreen.fullScreenEvent,fullScreenChangeHandler,false);
         });
 
+        this.controlBar.addEventListener("captionJump", function(event) {
+            // Find the first visible track
+            var track = _this.captionRenderer.tracks.filter(function(track){return track.mode === "showing";})[0];
+            if (track) {
+                // Move forward or back a caption
+                var traversal = Ayamel.utils.CaptionsTranversal[event.detail.direction];
+                _this.currentTime = traversal(track, _this.currentTime);
+            }
+        });
+
         /*
          * ==========================================================================================
          *                                      Attributes

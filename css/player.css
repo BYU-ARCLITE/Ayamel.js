@@ -338,6 +338,10 @@
     content: "\f0b2";
 }
 
+.ayamelPlayer .button.lastCaption:before {
+    content: "\f048";
+}
+
 /* Full Screen */
 
 .ayamelPlayer:-webkit-full-screen {
