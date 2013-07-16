@@ -16,7 +16,10 @@
             var cue = track.cues
                 .filter(function(cue) {return cue.endTime < currentTime}) // Take only those before the given time
                 .sort(function (a,b) {return b.endTime - a.endTime})[0]; // Sort by end time with latest being first and take the first one
-            return cue.startTime;
+            if (cue)
+                return cue.startTime;
+            else
+                return 0;
         },
 
         // Find the cue which is closest to being played and move to its beginning
@@ -24,7 +27,10 @@
             var cue = track.cues
                 .filter(function(cue) {return cue.startTime > currentTime}) // Take only those after the given time
                 .sort(function (a,b) {return a.startTime - b.startTime})[0]; // Sort by start time with earliest being first and take the first one
-            return cue.startTime;
+            if (cue)
+                return cue.startTime;
+            else
+                return currentTime;
         }
     };
 })(Ayamel);
