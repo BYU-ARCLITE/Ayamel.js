@@ -157,6 +157,26 @@
             return resource.content.files.some(function (file) {
                 return (resource.type === "audio" && supportsFile(file));
             });
+        },
+        features: {
+            desktop: {
+                captions: true,
+                fullScreen: false,
+                lastCaption: true,
+                play: true,
+                rate: true,
+                timeCode: true,
+                volume: true
+            },
+            mobile: {
+                captions: true,
+                fullScreen: false,
+                lastCaption: true,
+                play: true,
+                rate: false,
+                timeCode: true,
+                volume: false
+            }
         }
     };
 

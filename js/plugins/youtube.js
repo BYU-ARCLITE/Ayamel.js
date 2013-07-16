@@ -246,6 +246,28 @@
             return resource.content.files.some(function (file) {
                 return (resource.type === "video" && supportsFile(file));
             });
+        },
+        features: {
+            desktop: {
+                captions: true,
+                fullScreen: true,
+                lastCaption: true,
+                play: true,
+                rate: false,
+                timeCode: true,
+                volume: true
+            },
+            mobile: {
+                captions: true,
+                fullScreen: true,
+                lastCaption: true,
+                play: true,
+                rate: false,
+                timeCode: true,
+                volume: false
+            }
         }
     };
+
+
 }(Ayamel, window));
