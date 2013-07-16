@@ -17,7 +17,8 @@
             $element = $(template),
             element = $element[0],
             startTime = processTime(args.startTime || 0),
-            endTime = processTime(args.endTime || -1);
+            endTime = processTime(args.endTime || -1),
+            pluginFeatures;
 
         this.$element = $element;
         this.element = element;
@@ -35,13 +36,17 @@
             resource: args.resource,
             aspectRatio: args.aspectRatio,
             startTime: startTime,
-            endTime: endTime
+            endTime: endTime,
+            featureCallback: function(features) {
+                pluginFeatures = features;
+            }
         });
 
         // Create the ControlBar
         this.controlBar = new Ayamel.classes.ControlBar({
             $holder: $element,
-            components: args.components
+            components: args.components,
+            pluginFeatures: pluginFeatures
         });
 
         // Create the caption renderer

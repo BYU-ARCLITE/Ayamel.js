@@ -42,7 +42,7 @@
         }
         for(i = 0; pluginModule = registeredPlugins[pluginPriority[i]]; i++){
             if (pluginModule.supports(resource)) {
-				return pluginModule.install(args);
+				return [pluginModule.install(args), pluginModule.features];
 			}
         }
         return null;
@@ -52,7 +52,7 @@
 
     function MediaPlayer(args) {
         var _this = this,
-			plugin, $element;
+			plugin, pluginData, $element;
 
 		if(!Ayamel.utils.hasTimeline(args.resource)){
 			throw new Error("Cannot create player for untimed media.");
@@ -61,13 +61,14 @@
 		// Attempt to load the resource
 		$element = $(template);
         args.$holder.append($element);
-        plugin = loadPlugin({
+        pluginData = loadPlugin({
 			$holder: $element,
 			resource: args.resource,
 			aspectRatio: args.aspectRatio,
 			startTime: args.startTime,
 			endTime: args.endTime
 		});
+        plugin = pluginData[0];
 		if(plugin === null){
 			$element.remove();
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
@@ -124,6 +125,8 @@
                 }
             }
         });
+
+        args.featureCallback && args.featureCallback(pluginData[1]);
     }
 
 	MediaPlayer.prototype = Object.create(BasicMediaPrototype,{
@@ -151,7 +154,7 @@
 	
 	function MediaViewer(args) {
         var _this = this,
-			plugin, $element;
+			plugin, pluginData, $element;
 
 		if(Ayamel.utils.hasTimeline(args.resource)){
 			throw new Error("Cannot create viewer for timed media.");
@@ -160,11 +163,12 @@
 		// Attempt to load the resource
 		$element = $(template);
         args.$holder.append($element);
-        plugin = loadPlugin({
+        pluginData = loadPlugin({
 			$holder: $element,
 			resource: args.resource,
 			aspectRatio: args.aspectRatio
 		});
+        plugin = pluginData[0];
 		if(plugin === null){
 			$element.remove();
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
@@ -176,6 +180,8 @@
         this.plugin = plugin;
         this.$captionsElement = plugin.$captionsElement;
         this.captionsElement = plugin.captionsElement;
+
+        args.featureCallback && args.featureCallback(pluginData[1]);
     }
 
     MediaViewer.prototype = BasicMediaPrototype;

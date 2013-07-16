@@ -7,9 +7,15 @@
             <div class="right"></div>\
         </div>';
 
-    function addComponent($controls, component) {
+    function addComponent($controls, pluginFeatures, component) {
+        // Check to see if this component is supported by the plugin and device
+        var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
+        if (!pluginFeatures[device][component])
+            return;
+
         var constructor = Ayamel.controls[component];
         if(typeof constructor !== 'function'){ return; }
+
         this.components[component] = new constructor({
             parent: this,
             $holder: $controls
@@ -48,10 +54,10 @@
         this.components = components;
 
         if(controlLists.left instanceof Array){
-            controlLists.left.forEach(addComponent.bind(this,$element.find(".left")));
+            controlLists.left.forEach(addComponent.bind(this, $element.find(".left"), args.pluginFeatures));
         }
         if(controlLists.right instanceof Array){
-            controlLists.right.forEach(addComponent.bind(this,$element.find(".right")));
+            controlLists.right.forEach(addComponent.bind(this, $element.find(".right"), args.pluginFeatures));
         }
 
         timeCode = components.timeCode || {};
