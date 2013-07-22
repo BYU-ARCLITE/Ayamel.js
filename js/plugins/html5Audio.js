@@ -60,7 +60,7 @@
         // Create a place for captions
         this.$captionsElement = $captionsElement;
         this.captionsElement = captionsElement;
-        args.$holder.append($captionsElement);
+//        args.$holder.append($captionsElement);
 
         // Load the source
         file = findFile.call(this, args.resource);
@@ -68,7 +68,7 @@
 
         // Set up event propagation
         Object.keys(events).forEach(function (eventName) {
-            video.addEventListener(eventName, function (event) {
+            audio.addEventListener(eventName, function (event) {
                 element.dispatchEvent(new Event(events[eventName],{bubbles:true,cancelable:true}));
                 event.stopPropagation();
             }, false);
