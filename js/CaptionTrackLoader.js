@@ -18,7 +18,7 @@
 					TextTrack.get({
 						kind: (file.attributes && file.attributes.kind) || "subtitles",
 						label: resource.title || "Untitled",
-						lang: (resource.languages && resource.languages[0]) || "eng",
+						lang: (resource.languages && resource.languages.iso639_3 && resource.languages.iso639_3[0]) || "eng",
 						url: file.downloadUri,
 						success: callback
 					});
