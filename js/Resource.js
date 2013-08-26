@@ -7,7 +7,7 @@ var ResourceLibrary = (function() {
      * This is a cache of resources to reduce the number of calls that need to be made.
      */
     var cache = {};
-    
+
     function Resource(data, id) {
         this.id = id;
         this.relations = null;
@@ -22,7 +22,7 @@ var ResourceLibrary = (function() {
         if (this.relations) {
             callback();
         } else {
-            var url = baseUrl + "relations?id=" + this.id;
+            var url = baseUrl + "relations?id=" + this.id + "&nocache=" + Date.now().toString(36);
             $.ajax(url, {
                 dataType: "json",
                 success: function(data) {
@@ -77,7 +77,7 @@ var ResourceLibrary = (function() {
             _this.loadResourcesFromRelations("subjectId", test, callback);
         });
     };
-    
+
     return {
         setBaseUrl: function(url) {
             baseUrl = url;
@@ -86,7 +86,7 @@ var ResourceLibrary = (function() {
             if (cache[id]) {
                 callback(cache[id]);
             } else {
-                var url = baseUrl + "resources/" + id;
+                var url = baseUrl + "resources/" + id + "?" + Date.now().toString(36);
                 $.ajax(url, {
                     dataType: "json",
                     success: function(data) {
