@@ -82,15 +82,12 @@
         // Create the player
         player = flowplayer("flowplayerHolder", {
             src: swfPath,
-            wmode: "transparent"
+            wmode: "opaque"
         }, {
-            wmode: "opaque",
-
             canvas: {
                 backgroundColor: "#000000",
                 backgroundGradient: "none"
             },
-
             clip: {
                 url: findFile(args.resource).downloadUri,
                 autoPlay: false,
@@ -127,9 +124,7 @@
                     element.dispatchEvent(new Event('volumechange',{bubbles:true,cancelable:true}));
                 }
             },
-
             play: null,
-
             plugins: {
                 controls: null
             }
