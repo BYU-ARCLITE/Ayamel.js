@@ -25,20 +25,20 @@
     }
 
     function generateBrightcoveTemplate(videoId) {
-        return '' +
-            '<object id="myExperience" class="BrightcoveExperience">' +
-                '<param name="bgcolor" value="#FFFFFF" />' +
-                '<param name="width" value="100%" />' +
-                '<param name="height" value="100%" />' +
-                '<param name="playerID" value="2359958964001" />' +
-                '<param name="playerKey" value="AQ~~,AAABBjeLsAk~,DhYCBe7490IkhazTuLjixXSBXs1PvEho" />' +
-                '<param name="isSlim" value="true" />' +
-                '<param name="dynamicStreaming" value="true" />' +
-                '<param name="includeAPI" value="true" />' +
-                '<param name="templateLoadHandler" value="brightcoveTemplateLoaded" />' +
-                '<param name="@videoPlayer" value="' + videoId + '" />' +
-                '<param name="templateReadyHandler" value="brightcoveTemplateReady" />' +
-            '</object>';
+        return '<object id="experience'+videoId+'" class="BrightcoveExperience">\
+                <param name="bgcolor" value="#FFFFFF" />\
+                <param name="width" value="100%" />\
+                <param name="height" value="100%" />\
+                <param name="wmode" value="opaque" />\
+                <param name="playerID" value="2359958964001" />\
+                <param name="playerKey" value="AQ~~,AAABBjeLsAk~,DhYCBe7490IkhazTuLjixXSBXs1PvEho" />\
+                <param name="isSlim" value="true" />\
+                <param name="dynamicStreaming" value="true" />\
+                <param name="includeAPI" value="true" />\
+                <param name="templateLoadHandler" value="brightcoveTemplateLoaded" />\
+                <param name="@videoPlayer" value="' + videoId + '" />\
+                <param name="templateReadyHandler" value="brightcoveTemplateReady" />\
+            </object>';
     }
 
     function BrightcoveVideoPlayer(args) {
