@@ -4,40 +4,21 @@ var ResourceLibrary = (function() {
 	var baseUrl = "";
 
 	/**
-	 * This is a cache of resources to reduce the number of calls that need to be made.
+	 * This is a cache of resource requests to reduce the number of calls that need to be made.
 	 */
-	var reqcache = {},
-		rescache = {};
+	var reqcache = {};
 
 	function Resource(data, id) {
+		var key;
 		this.id = id;
-		this.relations = null;
-		if (data) {
-			$.extend(this, data);
+		this.relations = [];
+		for(key in data) if(data.hasOwnProperty(key)) {
+			this[key] = data[key];
 		}
 	}
 
-	Resource.prototype.getRelations = function(callback) {
-		var _this = this;
-		if (this.relations) {
-			callback();
-		} else {
-			var url = baseUrl + "relations?id=" + this.id + "&nocache=" + Date.now().toString(36);
-			$.ajax(url, {
-				dataType: "json",
-				success: function(data) {
-					_this.relations = data.relations;
-					callback();
-				}
-			});
-		}
-	};
-
-	// TODO: Change this
 	Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback) {
-		test = test || function (resource) { return true; };
-
-		var filteredRelations = this.relations.filter(test);
+		var filteredRelations = (typeof test === 'function')?this.relations.filter(test):this.relations;
 
 		async.map(filteredRelations, function(relation, asyncCallback) {
 			// We have a relation. Get the resource
@@ -50,49 +31,58 @@ var ResourceLibrary = (function() {
 	};
 
 	Resource.prototype.getTranscripts = function(callback, additionalTest) {
-		var _this = this;
-		var test = function (relation) {
-			var isTranscript = relation.type == "transcriptOf" && relation.objectId == _this.id;
-			var passesAdditionalTest = true;
-			if (additionalTest)
-				passesAdditionalTest = additionalTest(relation);
-			return isTranscript && passesAdditionalTest;
-		};
-		this.getRelations(function () {
-			_this.loadResourcesFromRelations("subjectId", test, callback);
-		});
+		this.loadResourcesFromRelations("subjectId", function (relation) {
+			var isTranscript = relation.type == "transcriptOf" && relation.objectId == _this.id,
+				passTest = (typeof additionalTest === 'function')?additionalTest(relation):true;
+			return isTranscript && passTest;
+		}, callback);
 	};
 
 	Resource.prototype.getAnnotations = function(callback, additionalTest) {
-		var _this = this;
-		var test = function (relation) {
-			var isAnnotations = relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations";
-			var passesAdditionalTest = true;
-			if (additionalTest)
-				passesAdditionalTest = additionalTest(relation);
-			return isAnnotations && passesAdditionalTest;
-		};
-		this.getRelations(function () {
-			_this.loadResourcesFromRelations("subjectId", test, callback);
-		});
+		this.loadResourcesFromRelations("subjectId", function (relation) {
+			var isAnnotations = relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations",
+				passTest = (typeof additionalTest === 'function')?additionalTest(relation):true;
+			return isAnnotations && passTest;
+		}, callback);
 	};
+	
+	/* Native promises don't quite work yet.
+	function getResourcePromise(id){
+		var xhr = new XMLHttpRequest();
+		return new Promise(function(resolve, reject){
+			xhr.addEventListener("load", function(){
+				if(this.status >= 200 && this.status < 400){
+					try {
+						resolve(new Resource(JSON.parse(this.responseText).resource, id));
+					}catch(e){
+						reject(e);
+					}
+				}else{
+					reject(new Error(this.responseText));
+				}
+			}, false);
+			xhr.addEventListener("error", function(){ reject(new Error("Request Failed")); }, false);
+			xhr.addEventListener("abort", function(){ reject(new Error("Request Aborted")); }, false);
+			xhr.open("GET",baseUrl + "resources/" + id + "?" + Date.now().toString(36), {dataType: "json"},true);
+			xhr.send()
+		});
+	}*/
+	
+	function getResourcePromise(id){
+		return $.ajax(
+			baseUrl + "resources/" + id + "?" + Date.now().toString(36),
+			{dataType: "json"}
+		).then(function(data){
+			return new Resource(data.resource, id);
+		});
+	}
 
 	return {
-		setBaseUrl: function(url) {
-			baseUrl = url;
-		},
+		setBaseUrl: function(url) { baseUrl = url; },
 		load: function (id, callback) {
-			if(!reqcache.hasOwnProperty(id)) {
-				reqcache[id] = $.ajax(baseUrl + "resources/" + id + "?" + Date.now().toString(36), {dataType: "json"});
-			}
-			reqcache[id].then(function(data){
-				if(!rescache.hasOwnProperty(id)){
-					rescache[id] = new Resource(data.resource, id);
-				}
-				if(typeof callback === 'function'){
-					callback(rescache[id]);
-				}
-			});
+			if(!reqcache.hasOwnProperty(id)){ reqcache[id] = getResourcePromise(id); }
+			if(typeof callback === 'function'){ reqcache[id].then(callback); }
+			return reqcache[id];
 		},
 		Resource: Resource
 	};
