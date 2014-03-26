@@ -24,11 +24,16 @@
         // Set up events
         element.addEventListener('click',function(e){
             e.stopPropagation();
-            if(fullScreen){
-                element.dispatchEvent(new Event("exitfullscreen",{bubbles:true,cancelable:true}));
-            }else{
-                element.dispatchEvent(new Event("enterfullscreen",{bubbles:true,cancelable:true}));
-            }
+			fullScreen = !fullScreen;
+			if(fullScreen){
+				element.title = "Exit Fullscreen";
+				element.classList.add("active");
+				element.dispatchEvent(new Event("enterfullscreen",{bubbles:true,cancelable:true}));
+			}else{
+				element.title = "Enter Fullscreen";
+				element.classList.remove("active");
+				element.dispatchEvent(new Event("exitfullscreen",{bubbles:true,cancelable:true}));
+			}
         },false);
 
         // Be able to set the playing attribute
@@ -36,14 +41,14 @@
             enumerable: true,
             set: function (value) {
                 fullScreen = !!value;
-                if(fullScreen){
-                    element.title = "exit fullscreen";
-                    element.classList.add("active");
-                }else{
-                    element.title = "enter fullscreen";
-                    element.classList.remove("active");
-                }
-                return fullScreen;
+				if(fullScreen){
+					element.title = "Exit Fullscreen";
+					element.classList.add("active");
+				}else{
+					element.title = "Enter Fullscreen";
+					element.classList.remove("active");
+				}
+				return fullScreen;
             },
             get: function () {
                 return fullScreen;

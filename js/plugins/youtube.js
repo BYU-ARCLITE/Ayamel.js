@@ -24,7 +24,7 @@
         if (url.substr(0, 10) === "youtube://") {
             return url.substr(10);
         }
-		match = watchReg.exec(url) || shortReg(url)
+		match = watchReg.exec(url) || shortReg.exec(url);
 		if(match){ return match[1]; }
         return "";
     }

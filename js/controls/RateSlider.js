@@ -21,7 +21,7 @@
         this.element = element;
         args.$holder.append($element);
 
-		slider.title = "playback speed";
+		slider.element.title = "playback speed";
         slider.addEventListener('levelchange',function(evt){
             rate = evt.detail.level;
             slider.level = rate;
