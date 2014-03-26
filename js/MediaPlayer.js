@@ -50,8 +50,6 @@
 		return pluginPlayer;
 	}
 
-
-
 	function MediaPlayer(args) {
 		var _this = this,
 			plugin, $element;
@@ -74,7 +72,7 @@
 		if(plugin === null){
 			$element.remove();
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
-		}
+		}		
 
 		this.$element = $element;
 		this.element = $element[0];
