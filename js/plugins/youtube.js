@@ -1,7 +1,7 @@
 (function (Ayamel, global) {
     "use strict";
 
-    var template = '<div><div id="youtubePlayer"></div></div>',
+    var template = '<div class="videoBox"><div id="youtubePlayer"></div></div>',
         captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
 		watchReg = /https?:\/\/www\.youtube\.com\/watch\?v=(.*)/i,
 		shortReg = /https?:\/\/youtu\.be\/(.*)/i,
