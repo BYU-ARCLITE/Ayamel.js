@@ -3,6 +3,8 @@
 
     var template = '<div><div id="youtubePlayer"></div></div>',
         captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
+		watchReg = /https?:\/\/www\.youtube\.com\/watch\?v=(.*)/i,
+		shortReg = /https?:\/\/youtu\.be\/(.*)/i,
         counter = 0;
 
     function genId(){
@@ -13,18 +15,17 @@
     function supportsFile(file) {
         return file.streamUri &&
             (file.streamUri.substr(0, 10) === "youtube://"
-            || file.streamUri.substr(0, 31) === "http://www.youtube.com/watch?v="
-            || file.streamUri.substr(0, 16) === "http://youtu.be/");
+            || watchReg.test(file.streamUri)
+            || shortReg.test(file.streamUri));
     }
 
     function getYouTubeId(url) {
+		var match;
         if (url.substr(0, 10) === "youtube://") {
             return url.substr(10);
-        } else if (url.substr(0, 31) === "http://www.youtube.com/watch?v=") {
-            return url.substr(31);
-        } else if (url.substr(0, 16) === "http://youtu.be/") {
-            return url.substr(16);
         }
+		match = watchReg.exec(url) || shortReg(url)
+		if(match){ return match[1]; }
         return "";
     }
 

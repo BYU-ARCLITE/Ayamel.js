@@ -10,7 +10,7 @@
 
     var template =
         '<div class="control volume">\
-            <div class="button mute"></div>\
+            <div class="button mute" title="mute"></div>\
         </div>';
 
     function VolumeSlider(args) {
@@ -28,6 +28,7 @@
         this.element = element;
         args.$holder.append($element);
 
+		slider.element.title = "volume";
         slider.addEventListener('levelchange',function(evt){
             volume = evt.detail.level;
             slider.level = volume;
@@ -39,10 +40,12 @@
             var newEvent;
             if (muted) {
                 muted = false;
+				element.title="unmute";
                 element.classList.remove("muted");
                 newEvent = new Event("unmute",{bubbles:true});
             } else {
                 muted = true;
+				element.title="mute";
                 element.classList.add("muted");
                 newEvent = new Event("mute",{bubbles:true});
             }

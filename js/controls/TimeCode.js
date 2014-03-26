@@ -8,7 +8,7 @@
 (function(Ayamel) {
     "use strict";
 
-    var template = '<div class="timeCode">00:00 / 00:00</div>';
+    var template = '<div class="timeCode" title="timecode">00:00 / 00:00</div>';
 
     //taken from VTT codec
     function generateTimeCode(time){
