@@ -8,7 +8,7 @@
 (function(Ayamel) {
     "use strict";
 
-    var template = '<div class="control button fullScreen"></div>';
+    var template = '<div class="control button fullScreen" title="enter fullscreen"></div>';
 
     function FullScreenButton(args) {
         var _this = this,
@@ -18,22 +18,35 @@
 
         this.$element = $element;
 		this.element = element;
-        args.$holder.append(this.$element);
+        args.$holder.append($element);
 
         // Set up events
-        this.$element.click(function (e) {
+        element.addEventListener('click',function(e){
             e.stopPropagation();
 			fullScreen = !fullScreen;
-            this.classList.toggle("active");
-            this.dispatchEvent(new Event(fullScreen?"enterfullscreen":"exitfullscreen",{bubbles:true,cancelable:true}));
-        });
+			if(fullscreen){
+				element.title = "exit fullscreen";
+				element.classList.add("active");
+				element.dispatchEvent(new Event("enterfullscreen",{bubbles:true,cancelable:true}));
+			}else{
+				element.title = "enter fullscreen";
+				element.classList.remove("active");
+				element.dispatchEvent(new Event("exitfullscreen",{bubbles:true,cancelable:true}));
+			}
+        },false);
 
         // Be able to set the playing attribute
         Object.defineProperty(this, "fullScreen", {
 			enumerable: true,
             set: function (value) {
                 fullScreen = !!value;
-                element.classList[fullScreen?'add':'remove']("active");
+				if(fullScreen){
+					element.title = "exit fullscreen";
+					element.classList.add("active");
+				}else{
+					element.title = "enter fullscreen";
+					element.classList.remove("active");
+				}
 				return fullScreen;
             },
 			get: function () {

@@ -20,6 +20,14 @@ var ResourceLibrary = (function() {
 	Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback) {
 		var filteredRelations = (typeof test === 'function')?this.relations.filter(test):this.relations;
 
+		/*
+		var p = Promise.all(filteredRelations.map(function(relation) {
+			return ResourceLibrary.load(relation[relationRole]);
+		}));
+		if(typeof callback ==='function'){ p.then(callback); }
+		return p;
+		*/
+		
 		async.map(filteredRelations, function(relation, asyncCallback) {
 			// We have a relation. Get the resource
 			ResourceLibrary.load(relation[relationRole], function (resource) {

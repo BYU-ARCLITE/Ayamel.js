@@ -10,7 +10,7 @@
 
     var template =
         '<div class="control button captions">\
-            <div class="icon"></div>\
+            <div class="icon" title="Caption Menu"></div>\
             <div class="captionsMenu">\
                 <div class="captionsMenuTipDark"></div>\
                 <div class="captionsMenuTip"></div>\

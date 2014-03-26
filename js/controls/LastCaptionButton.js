@@ -8,7 +8,7 @@
 (function(Ayamel) {
     "use strict";
 
-    var template = '<div class="control button lastCaption"></div>';
+    var template = '<div class="control button lastCaption" title="jump to previous cue"></div>';
 
     function LastCaptionButton(args) {
         var _this = this,

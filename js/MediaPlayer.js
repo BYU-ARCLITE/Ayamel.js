@@ -68,11 +68,13 @@
 			startTime: args.startTime,
 			endTime: args.endTime
 		});
-        plugin = pluginData[0];
-		if(plugin === null){
+
+		if(pluginData === null){
 			$element.remove();
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
-		}
+		}		
+		
+        plugin = pluginData[0];
 		
         this.$element = $element;
         this.element = $element[0];

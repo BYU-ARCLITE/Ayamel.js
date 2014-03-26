@@ -8,7 +8,7 @@
 (function(Ayamel) {
     "use strict";
 
-    var template = '<div class="control button play paused"></div>';
+    var template = '<div class="control button play paused" title="play"></div>';
 
     function PlayButton(args) {
         var _this = this,
@@ -34,7 +34,13 @@
             },
             set: function (value) {
                 playing = !!value;
-                $element[playing?'removeClass':'addClass']("paused");
+				if(playing){
+					element.title = "pause";
+					element.classList.remove('paused');
+				}else{
+					element.title = "play";
+					element.classList.add('paused');
+				}
                 return playing;
             }
         });
