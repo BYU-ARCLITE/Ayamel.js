@@ -8,7 +8,7 @@
 (function (Ayamel, TimedText) {
     "use strict";
 
-    Ayamel.utils.loadCaptionTrack = function (resource, callback) {
+    Ayamel.utils.loadCaptionTrack = function (resource, successcb, errorcb) {
 		if(!TimedText){ throw new Error("TimedText library not loaded."); }
 		if (resource instanceof TextTrack) {
 			callback(resource);
@@ -20,8 +20,11 @@
 						label: resource.title || "Untitled",
 						lang: (resource.languages && resource.languages.iso639_3 && resource.languages.iso639_3[0]) || "eng",
 						url: file.downloadUri,
-						success: callback
+						success: successcb,
+						error: errorcb
 					});
+				} else if(typeof errorcb === 'function') {
+					setTimeout(errorcb.bind(null, new Error("Unsupported MIME-Type")),0);
 				}
 			});
 		}

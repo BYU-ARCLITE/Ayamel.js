@@ -457,6 +457,7 @@
 		'vsd':"application/x-visio",
 		'vst':"application/x-visio",
 		'vsw':"application/x-visio",
+		'vtt':"text/vtt",
 		'w60':"application/wordperfect60",
 		'w61':"application/wordperfect61",
 		'w6w':"application/msword",
