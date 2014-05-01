@@ -76,10 +76,14 @@
                     _this.addTextTrack(track);
                     if(trackMap){ trackMap.set(track, resource); }
                     callback(null, track);
+                }, function (err) {
+                    callback(null, null);
                 });
             }, function (err, tracks) {
-                if (typeof args.captionTrackCallback === 'function')
-                    args.captionTrackCallback(tracks,trackMap);
+                if (typeof args.captionTrackCallback !== 'function') { return; }
+                args.captionTrackCallback(tracks.filter(function(track){
+                    return track !== null;
+                }),trackMap);
             });
         }
 
