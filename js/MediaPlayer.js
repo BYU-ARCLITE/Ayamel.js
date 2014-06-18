@@ -1,7 +1,7 @@
 (function(Ayamel) {
-    "use strict";
+	"use strict";
 
-    var template = '<div class="mediaPlayer"></div>',
+	var template = '<div class="mediaPlayer"></div>',
 	    BasicMediaPrototype = {
 			enterFullScreen: function(availableHeight) {
 				if (this.plugin) {
@@ -26,42 +26,44 @@
 
 	function loadPlugin(args){
 		var pluginModule, i,
+			pluginPlayer = null,
 			resource = args.resource,
 			registeredPlugins = Ayamel.mediaPlugins[resource.type] || {},
 			pluginPriority = Ayamel.prioritizedPlugins[resource.type] || [];
 
-        if (!pluginPriority.length) {
-            pluginPriority = Object.keys(registeredPlugins);
-        } else {
-            pluginPriority = pluginPriority.filter(function(name){
-                return registeredPlugins.hasOwnProperty(name);
-            });
-            [].push.apply(pluginPriority,Object.keys(registeredPlugins).filter(function(name){
-                return pluginPriority.indexOf(name) === -1;
-            }));
-        }
-        for(i = 0; pluginModule = registeredPlugins[pluginPriority[i]]; i++){
-            if (pluginModule.supports(resource)) {
-				return [pluginModule.install(args), pluginModule.features];
+		if (!pluginPriority.length) {
+			pluginPriority = Object.keys(registeredPlugins);
+		} else {
+			pluginPriority = pluginPriority.filter(function(name){
+				return registeredPlugins.hasOwnProperty(name);
+			});
+			[].push.apply(pluginPriority,Object.keys(registeredPlugins).filter(function(name){
+				return pluginPriority.indexOf(name) === -1;
+			}));
+		}
+		for(i = 0; i < pluginPriority.length && pluginPlayer == null; i++){
+			pluginModule = registeredPlugins[pluginPriority[i]];
+			if (pluginModule.supports(resource)) {
+				pluginPlayer = pluginModule.install(args);
 			}
-        }
-        return null;
+		}
+		return pluginPlayer;
 	}
-		
 
 
-    function MediaPlayer(args) {
-        var _this = this,
-			plugin, pluginData, $element;
+
+	function MediaPlayer(args) {
+		var _this = this,
+			plugin, $element;
 
 		if(!Ayamel.utils.hasTimeline(args.resource)){
 			throw new Error("Cannot create player for untimed media.");
 		}
-		
+
 		// Attempt to load the resource
 		$element = $(template);
-        args.$holder.append($element);
-        pluginData = loadPlugin({
+		args.$holder.append($element);
+		plugin = loadPlugin({
 			$holder: $element,
 			resource: args.resource,
 			aspectRatio: args.aspectRatio,
@@ -69,67 +71,65 @@
 			endTime: args.endTime
 		});
 
-		if(pluginData === null){
+		if(plugin === null){
 			$element.remove();
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
-		}		
-		
-        plugin = pluginData[0];
-		
-        this.$element = $element;
-        this.element = $element[0];
+		}
 
-        this.plugin = plugin;
-        this.$captionsElement = plugin.$captionsElement;
-        this.captionsElement = plugin.captionsElement;
+		this.$element = $element;
+		this.element = $element[0];
 
-        Object.defineProperties(this, {
-            duration: {
-                get: function () {
-                    return plugin.duration;
-                }
-            },
-            currentTime: {
-                get: function () {
-                    return plugin.currentTime;
-                },
-                set: function (time) {
-                    return plugin.currentTime = time;
-                }
-            },
-            muted: {
-                get: function () {
-                    return plugin.muted;
-                },
-                set: function (muted) {
-                    return plugin.muted = muted;
-                }
-            },
-            paused: {
-                get: function () {
-                    return plugin.paused;
-                }
-            },
-            playbackRate: {
-                get: function () {
-                    return plugin.playbackRate;
-                },
-                set: function (playbackRate) {
-                    return plugin.playbackRate = playbackRate;
-                }
-            },
-            volume: {
-                get: function () {
-                    return plugin.volume;
-                },
-                set: function (volume) {
-                    return plugin.volume = volume;
-                }
-            }
-        });
+		this.plugin = plugin;
+		this.$captionsElement = plugin.$captionsElement;
+		this.captionsElement = plugin.captionsElement;
 
-        args.featureCallback && args.featureCallback(pluginData[1]);
-    }
+		Object.defineProperties(this, {
+			duration: {
+				get: function () {
+					return plugin.duration;
+				}
+			},
+			currentTime: {
+				get: function () {
+					return plugin.currentTime;
+				},
+				set: function (time) {
+					return plugin.currentTime = time;
+				}
+			},
+			muted: {
+				get: function () {
+					return plugin.muted;
+				},
+				set: function (muted) {
+					return plugin.muted = muted;
+				}
+			},
+			paused: {
+				get: function () {
+					return plugin.paused;
+				}
+			},
+			playbackRate: {
+				get: function () {
+					return plugin.playbackRate;
+				},
+				set: function (playbackRate) {
+					return plugin.playbackRate = playbackRate;
+				}
+			},
+			volume: {
+				get: function () {
+					return plugin.volume;
+				},
+				set: function (volume) {
+					return plugin.volume = volume;
+				}
+			}
+		});
+
+		args.featureCallback && args.featureCallback(plugin.features);
+	}
 
 	MediaPlayer.prototype = Object.create(BasicMediaPrototype,{
 		paused: {
@@ -153,43 +153,43 @@
 			}
 		}
 	});
-	
+
 	function MediaViewer(args) {
-        var _this = this,
-			plugin, pluginData, $element;
+		var _this = this,
+			plugin, $element;
 
 		if(Ayamel.utils.hasTimeline(args.resource)){
 			throw new Error("Cannot create viewer for timed media.");
 		}
-	
+
 		// Attempt to load the resource
 		$element = $(template);
-        args.$holder.append($element);
-        pluginData = loadPlugin({
+		args.$holder.append($element);
+		plugin = loadPlugin({
 			$holder: $element,
 			resource: args.resource,
 			aspectRatio: args.aspectRatio
 		});
-        plugin = pluginData[0];
+
 		if(plugin === null){
 			$element.remove();
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
 		}
-		
-        this.$element = $element;
-        this.element = $element[0];
 
-        this.plugin = plugin;
-        this.$captionsElement = plugin.$captionsElement;
-        this.captionsElement = plugin.captionsElement;
+		this.$element = $element;
+		this.element = $element[0];
 
-        args.featureCallback && args.featureCallback(pluginData[1]);
-    }
+		this.plugin = plugin;
+		this.$captionsElement = plugin.$captionsElement;
+		this.captionsElement = plugin.captionsElement;
 
-    MediaViewer.prototype = BasicMediaPrototype;
-	
+		args.featureCallback && args.featureCallback(plugin.features);
+	}
+
+	MediaViewer.prototype = BasicMediaPrototype;
+
 	function createMedia(args) {
-        var resource = args.resource;
+		var resource = args.resource;
 		if(Ayamel.utils.hasTimeline(args.resource)){
 			return new MediaPlayer(args);
 		}else{
@@ -197,7 +197,7 @@
 		}
 	}
 
-    Ayamel.utils.createMedia = createMedia;
-    Ayamel.classes.MediaPlayer = MediaPlayer;
-    Ayamel.classes.MediaViewer = MediaViewer;
+	Ayamel.utils.createMedia = createMedia;
+	Ayamel.classes.MediaPlayer = MediaPlayer;
+	Ayamel.classes.MediaViewer = MediaViewer;
 }(Ayamel));
