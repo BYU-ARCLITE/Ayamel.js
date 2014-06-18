@@ -48,7 +48,7 @@ var Ayamel = (function() {
 			text_sequence: []
 		},
 
-        path: "/assets/Ayamel.js/",
+        path: "",
 
 		// Control widget classes will be registered here
         controls: {},
