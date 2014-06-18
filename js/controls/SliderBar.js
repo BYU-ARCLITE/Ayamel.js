@@ -9,8 +9,7 @@
         </div>';
 
     function SliderBar(args){
-        var _this = this,
-            max = isNaN(+args.max)?1:(+args.max),
+        var max = isNaN(+args.max)?1:(+args.max),
             min = +args.min||0,
             scale = 100/(max-min),
             value = Math.min(+args.level||0,max),
@@ -24,8 +23,6 @@
         this.$element = $element;
         this.element = element;
         args.$holder.append($element);
-
-        this.events = {};
 
         level.style.width = (value-min)*scale+"%";
 
@@ -42,21 +39,21 @@
             left = $level.offset().left + 7;
             lastX = event.pageX;
             val = pxToValue(lastX - left);
-            _this.dispatchEvent(new CustomEvent('scrubstart', {detail:{progress:val}}));
-            _this.dispatchEvent(new CustomEvent('levelchange', {detail:{level:val}}));
+            element.dispatchEvent(new CustomEvent('scrubstart', {detail:{progress:val}}));
+            element.dispatchEvent(new CustomEvent('levelchange', {detail:{level:val}}));
         },false);
         document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
-			var val;
+            var val;
             if (!moving) { return; }
             lastX = event.pageX;
-			val = pxToValue(lastX - left);
-            _this.dispatchEvent(new CustomEvent('scrubupdate', {detail:{progress:val}}));
-            _this.dispatchEvent(new CustomEvent('levelchange', {detail:{level:val}}));
+            val = pxToValue(lastX - left);
+            element.dispatchEvent(new CustomEvent('scrubupdate', {detail:{progress:val}}));
+            element.dispatchEvent(new CustomEvent('levelchange', {detail:{level:val}}));
         },false)
         document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function (event) {
             if (!moving) { return; }
             moving = false;
-            _this.dispatchEvent(new CustomEvent('scrubend', {detail:{progress:pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left)}}));
+            element.dispatchEvent(new CustomEvent('scrubend', {detail:{progress:pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left)}}));
         },false);
 
         Object.defineProperties(this,{
@@ -69,26 +66,24 @@
                 get: function(){
                     return value;
                 }
+            },
+            title: {
+                set: function(val){ return element.title = val; },
+                get: function(){ return element.title; }
             }
         });
     }
 
     SliderBar.prototype.dispatchEvent = function(evt){
-        var that = this, fns = this.events[evt.type];
-		evt.target = this;
-        fns && fns.forEach(function(cb){ try{cb.call(that,evt);}catch(ignore){} });
+        this.element.dispatchEvent(evt);
     };
 
     SliderBar.prototype.addEventListener = function(name, cb, capture){
-        if(this.events.hasOwnProperty(name)){ this.events[name].push(cb); }
-        else{ this.events[name] = [cb]; }
+        this.element.addEventListener(name, cb, capture);
     };
 
     SliderBar.prototype.removeEventListener = function(name, cb, capture){
-        var idx, fns = this.events[evt];
-        if(!(fns instanceof Array)){ return; }
-        idx = fns.indexOf(cb);
-        if(~idx){ fns.splice(idx,1); }
+        this.element.removeEventListener(name, cb, capture);
     };
 
     Ayamel.controls.slider = SliderBar;
