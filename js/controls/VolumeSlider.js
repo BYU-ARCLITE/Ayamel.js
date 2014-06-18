@@ -28,7 +28,7 @@
         this.element = element;
         args.$holder.append($element);
 
-		slider.element.title = "volume";
+		slider.title = "volume";
         slider.addEventListener('levelchange',function(evt){
             volume = evt.detail.level;
             slider.level = volume;
