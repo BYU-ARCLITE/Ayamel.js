@@ -36,7 +36,7 @@
         },false);
 
         // Allow muting
-        $element.children(".mute").click(function () {
+        element.querySelector(".mute").addEventListener('click',function(){
             var newEvent;
             if (muted) {
                 muted = false;
@@ -50,7 +50,7 @@
                 newEvent = new Event("mute",{bubbles:true});
             }
             element.dispatchEvent(newEvent);
-        });
+        },false);
 
         // Be able to set the muted & volume attributes
         Object.defineProperties(this, {

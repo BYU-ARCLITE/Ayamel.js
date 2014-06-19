@@ -29,11 +29,11 @@
         },false);
 
         // Allow resetting
-        $element.children(".speed").click(function () {
+        element.querySelector(".speed").addEventListener('click',function(){
             rate = 1;
             slider.level = 1;
             element.dispatchEvent(new CustomEvent("ratechange",{bubbles:true,cancelable:true,detail:{playbackRate:rate}}));
-        });
+        },false);
 
         // Be able to set the rate attribute
         Object.defineProperties(this, {
