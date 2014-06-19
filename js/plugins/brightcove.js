@@ -207,7 +207,7 @@
 			play: true,
 			rate: false,
 			timeCode: true,
-			volume: true
+			volume: false
 		},
 		mobile: {
 			captions: true,
@@ -216,7 +216,7 @@
 			play: true,
 			rate: false,
 			timeCode: false,
-			volume: true
+			volume: false
 		}
 	};
 
