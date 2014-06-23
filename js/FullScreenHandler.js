@@ -9,32 +9,33 @@
     "use strict";
 
     var pseudoFullScreen = false,
-		exitFullScreen,
-		requestFullScreen,
-		fullScreenElement,
-		isFullScreen,
-		getAvailableHeight,
-		getAvailableWidth,
-		eventFullScreen;
+        exitFullScreen,
+        requestFullScreen,
+        fullScreenElement,
+        isFullScreen,
+        getAvailableHeight,
+        getAvailableWidth,
+        eventFullScreen;
 
     // Setup the fullscreen functions
     if (typeof document.mozCancelFullScreen === 'function') {
         exitFullScreen = function () {
-            document.fullScreen && document.mozCancelFullScreen();
+            document.fullScreen;
+            document.mozCancelFullScreen();
             fullScreenElement = null;
         };
         requestFullScreen = function (element) {
             element.mozRequestFullScreen();
         };
-		isFullScreen = function () {
-			return document.fullScreen;
-		};
-		getAvailableHeight = function () {
-			return screen.height;
-		};
-		getAvailableWidth = function () {
-			return screen.width;
-		};
+        isFullScreen = function () {
+            return document.fullScreen;
+        };
+        getAvailableHeight = function () {
+            return screen.height;
+        };
+        getAvailableWidth = function () {
+            return screen.width;
+        };
         eventFullScreen = "mozfullscreenchange";
     } else if (typeof document.webkitCancelFullScreen === 'function') {
         exitFullScreen = function () {
@@ -47,37 +48,37 @@
         isFullScreen = function () {
             return document.webkitIsFullScreen;
         };
-		getAvailableHeight = function () {
-			return screen.height;
-		};
-		getAvailableWidth = function () {
-			return screen.width;
-		};
+        getAvailableHeight = function () {
+            return screen.height;
+        };
+        getAvailableWidth = function () {
+            return screen.width;
+        };
         eventFullScreen = "webkitfullscreenchange";
     } else {
         // Pseudo fullscreen
         exitFullScreen = function () {
-			var element = fullScreenElement;
+            var element = fullScreenElement;
             pseudoFullScreen = false;
             fullScreenElement = null;
             element.classList.remove("pseudoFullScreen");
             element.dispatchEvent(new CustomEvent("pseudofullscreenchange",{bubbles:true,cancelable:true}));
         };
-        requestFullScreen = function (element) {			
+        requestFullScreen = function (element) {
             pseudoFullScreen = true;
             fullScreenElement = element;
             element.classList.add("pseudoFullScreen");
             element.dispatchEvent(new CustomEvent("pseudofullscreenchange",{bubbles:true,cancelable:true}));
         };
-		isFullScreen = function () {
-			return pseudoFullScreen;
-		};
-		getAvailableHeight = function () {
-			return window.innerHeight;
-		};
-		getAvailableWidth = function () {
-			return window.innerWidth;
-		};
+        isFullScreen = function () {
+            return pseudoFullScreen;
+        };
+        getAvailableHeight = function () {
+            return window.innerHeight;
+        };
+        getAvailableWidth = function () {
+            return window.innerWidth;
+        };
         eventFullScreen = "pseudofullscreenchange";
     }
 

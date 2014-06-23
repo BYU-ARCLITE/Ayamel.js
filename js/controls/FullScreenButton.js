@@ -13,6 +13,7 @@
     function FullScreenButton(args) {
         var _this = this,
             fullScreen = false,
+            escpressed = false,
             $element = $(template),
             element = $element[0];
 
@@ -34,6 +35,15 @@
                 element.dispatchEvent(new Event("exitfullscreen",{bubbles:true,cancelable:true}));
             }
         },false);
+
+        // Checks if Esc key was pressed, but did not fire event
+        document.addEventListener("mozfullscreenchange", function(e) {
+            escpressed = !escpressed;
+            if(escpressed != fullScreen)
+            {
+                element.click();
+            }
+        }, false);
 
         // Be able to set the playing attribute
         Object.defineProperty(this, "fullScreen", {
