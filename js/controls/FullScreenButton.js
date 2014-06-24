@@ -24,26 +24,12 @@
         // Set up events
         element.addEventListener('click',function(e){
             e.stopPropagation();
-            fullScreen = !fullScreen;
             if(fullScreen){
-                element.title = "exit fullscreen";
-                element.classList.add("active");
-                element.dispatchEvent(new Event("enterfullscreen",{bubbles:true,cancelable:true}));
-            }else{
-                element.title = "enter fullscreen";
-                element.classList.remove("active");
                 element.dispatchEvent(new Event("exitfullscreen",{bubbles:true,cancelable:true}));
+            }else{
+                element.dispatchEvent(new Event("enterfullscreen",{bubbles:true,cancelable:true}));
             }
         },false);
-
-        // Checks if Esc key was pressed, but did not fire event
-        document.addEventListener("mozfullscreenchange", function(e) {
-            escpressed = !escpressed;
-            if(escpressed != fullScreen)
-            {
-                element.click();
-            }
-        }, false);
 
         // Be able to set the playing attribute
         Object.defineProperty(this, "fullScreen", {

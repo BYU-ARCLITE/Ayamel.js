@@ -20,15 +20,13 @@
     // Setup the fullscreen functions
     if (typeof document.mozCancelFullScreen === 'function') {
         exitFullScreen = function () {
-            document.fullScreen;
             document.mozCancelFullScreen();
-            fullScreenElement = null;
         };
         requestFullScreen = function (element) {
             element.mozRequestFullScreen();
         };
         isFullScreen = function () {
-            return document.fullScreen;
+            return document.mozFullScreenElement !== null;
         };
         getAvailableHeight = function () {
             return screen.height;
@@ -39,14 +37,13 @@
         eventFullScreen = "mozfullscreenchange";
     } else if (typeof document.webkitCancelFullScreen === 'function') {
         exitFullScreen = function () {
-            document.webkitIsFullScreen && document.webkitCancelFullScreen();
-            fullScreenElement = null;
+            document.webkitCancelFullScreen();
         };
         requestFullScreen = function (element) {
             element.webkitRequestFullScreen();
         };
         isFullScreen = function () {
-            return document.webkitIsFullScreen;
+            return document.webkitFullscreenElement !== null;
         };
         getAvailableHeight = function () {
             return screen.height;

@@ -201,34 +201,29 @@
             _this.captionRenderer.rebuildCaptions();
         });
 
-        // Enter/exit full screen when the button is pressed
+        // Handle changes to fullscreen mode
 
-         function fullScreenChangeHandler() {
-            if (!Ayamel.utils.FullScreen.isFullScreen) {
-                Ayamel.utils.FullScreen.exit(element);
-                _this.mediaPlayer.exitFullScreen();
-                _this.controlBar.fullScreen = false;
-            }
-        }
+        document.addEventListener(Ayamel.utils.FullScreen.fullScreenEvent,function(){
+            var availableHeight;
+			if(Ayamel.utils.FullScreen.isFullScreen){
+				// Figure out how much space we have for the media player to fill
+				availableHeight = Ayamel.utils.FullScreen.availableHeight
+					- _this.controlBar.$element.height();
+				_this.mediaPlayer.enterFullScreen(availableHeight);
+				_this.controlBar.fullScreen = true;
+			}else{
+				_this.mediaPlayer.exitFullScreen();
+				_this.controlBar.fullScreen = false;
+			}
+        },false);
 
+		//Enter/exit full screen when the button is pressed
         this.controlBar.addEventListener("enterfullscreen", function(event) {
-            // Figure out how much space we have for the media player to fill
-            var availableHeight = Ayamel.utils.FullScreen.availableHeight
-                - _this.controlBar.$element.height();
-
             Ayamel.utils.FullScreen.enter(element);
-            _this.mediaPlayer.enterFullScreen(availableHeight);
-
-            // Add an event listener for exiting due to external causes
-            element.addEventListener(Ayamel.utils.FullScreen.fullScreenEvent,fullScreenChangeHandler,false);
-
-            event.stopPropagation();
         });
 
         this.controlBar.addEventListener("exitfullscreen", function(event) {
             Ayamel.utils.FullScreen.exit();
-            _this.mediaPlayer.exitFullScreen();
-            element.removeEventListener(Ayamel.utils.FullScreen.fullScreenEvent,fullScreenChangeHandler,false);
         });
 
         this.controlBar.addEventListener("captionJump", function(event) {
