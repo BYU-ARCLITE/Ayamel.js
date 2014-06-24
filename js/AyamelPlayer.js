@@ -205,7 +205,7 @@
 
         document.addEventListener(Ayamel.utils.FullScreen.fullScreenEvent,function(){
             var availableHeight;
-			if(Ayamel.utils.FullScreen.isFullScreen){
+			if(Ayamel.utils.FullScreen.fullScreenElement === element){
 				// Figure out how much space we have for the media player to fill
 				availableHeight = Ayamel.utils.FullScreen.availableHeight
 					- _this.controlBar.$element.height();
