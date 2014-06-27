@@ -33,7 +33,7 @@
 			element.style.top = y+"px";
 			element.style.left = x+"px";
 			this.selection = s;
-			(Ayamel.FSElement()||document.body).appendChild(element);
+			(Ayamel.utils.FullScreen.fullScreenElement||document.body).appendChild(element);
 		};
 		this.close = function(){ element.parentNode.removeChild(element); };
 		this.filter = (typeof filter === 'function')?filter:function(s){return s;};
