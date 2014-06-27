@@ -1,12 +1,8 @@
-/**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 5/1/13
- * Time: 11:01 AM
- * To change this template use File | Settings | File Templates.
- */
 (function (Ayamel) {
     "use strict";
+	if(!Ayamel){
+		throw new Error("Ayamel Uninitialized");
+	}
 
     var pseudoFullScreen = false,
         exitFullScreen,
