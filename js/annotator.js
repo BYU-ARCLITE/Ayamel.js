@@ -1,4 +1,6 @@
-var Annotator = (function(){
+(function(Ayamel){
+    "use strict";
+
 	function anString(matchers,filter,modnode,text,offset){
 		var fragment, pos,
 			glen = matchers.length;
@@ -12,7 +14,7 @@ var Annotator = (function(){
 				do{	{					//set working string to part 3 until part 3 is zero-length
 						regex = matchers[index--];	//save stack depth by decreasing index until we find something
 						regex.lastIndex = pos;
-					} //this block loops based on the following while() & the enclosing do...while() 
+					} //this block loops based on the following while() & the enclosing do...while()
 					if(index === -1){ break; }
 					while(!!(regResult = regex.exec(text)) && (regex.lastIndex<=strlen)){
 							recloop(regResult.index+1,index); //part 1
@@ -32,10 +34,10 @@ var Annotator = (function(){
 			return fragment;
 		}
 	}
-	
+
 	function defaultFilter(s){ return document.createTextNode(s); }
 	function identity(n){ return n; }
-	
+
 	function fixConfig(config){
 		if(typeof config.index !== 'number'){config.index=0;}
 		if(typeof config.filter !== 'function'){config.filter = defaultFilter;}
@@ -54,7 +56,7 @@ var Annotator = (function(){
 			config.regexes = [];
 		}
 	}
-	
+
 	function gen_mod(attach,handler){
 		if(typeof attach === 'function'){ return attach; }
 		if(typeof handler !== 'function'){ throw new Error("No Annotation Handler Specified"); }
@@ -76,7 +78,7 @@ var Annotator = (function(){
 			return node;
 		};
 	}
-	
+
 	function anText(config,content){
 		fixConfig(config);
 		var offset = config.index,
@@ -87,13 +89,13 @@ var Annotator = (function(){
 				?anString(matchers,config.filter,modnode,content,offset)
 				:config.filter(document.createTextNode(content)));
 	}
-	
+
 	function anHTML(config,content){
 		fixConfig(config);
 		var matchers, text, root, nodes, n, len,
-			filter = config.filter, 
+			filter = config.filter,
 			modnode = gen_mod(config.attach,config.handler);
-			
+
 		if(content.cloneNode){
 			root = content.cloneNode(true);
 			text = content.textContent || content.nodeValue;
@@ -104,7 +106,7 @@ var Annotator = (function(){
 			[].forEach.call(n.childNodes,root.appendChild.bind(root));
 			text = content;
 		}
-		
+
 		matchers = config.regexes.filter(function(matcher){ return matcher.test(text); });
 		len = matchers.length;
 		nodes = [root];
@@ -119,25 +121,26 @@ var Annotator = (function(){
 		}
 		return root;
 	}
-	
-	return {
-		HTML: anHTML,
-		Text: anText,
-		getMatchers: function(glosses,languages){
-			var mlist = [];
-			Object.keys(glosses).forEach(function(lang){
-				try{
-					var lobj = glosses[lang],
-						match_gen = languages[lang].parser;
-					Object.keys(lobj).forEach(function(word){
-						Object.keys(lobj[word]).forEach(function(index){
-							mlist.push(match_gen(word,parseInt(index,10)));
-						});
+
+	function getMatchers(glosses,languages){
+		var mlist = [];
+		Object.keys(glosses).forEach(function(lang){
+			try{
+				var lobj = glosses[lang],
+					match_gen = languages[lang].parser;
+				Object.keys(lobj).forEach(function(word){
+					Object.keys(lobj[word]).forEach(function(index){
+						mlist.push(match_gen(word,parseInt(index,10)));
 					});
-				}catch(e){console.log("No parser for ",lang);}
-			});
-			return mlist;
-		}
+				});
+			}catch(e){console.log("No parser for ",lang);}
+		});
+		return mlist;
 	}
-	
-}());
+
+	Ayamel.utils.Annotator = Object.create({},{
+        HTML: { enumerable: true, value: anHTML },
+        Text:{ enumerable: true, value: anText },
+        getMatchers: { enumerable: true, value: getMatchers }
+    });
+}(Ayamel));
