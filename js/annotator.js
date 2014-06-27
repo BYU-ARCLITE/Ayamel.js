@@ -1,5 +1,8 @@
 (function(Ayamel){
     "use strict";
+	if(!Ayamel){
+		throw new Error("Ayamel Uninitialized");
+	}
 
 	function anString(matchers,filter,modnode,text,offset){
 		var fragment, pos,
