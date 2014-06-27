@@ -63,6 +63,7 @@
 
 		d_el = (typeof params.wrapper == 'function')?params.wrapper(c_el):c_el;
 		d_el.addEventListener("mouseup",textMouseup.bind(this),false);
+		d_el.addEventListener("touchend",textMouseup.bind(this),false);
 
 		Object.defineProperties(this,{
 			content: {

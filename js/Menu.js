@@ -25,7 +25,6 @@
 		}else{ throw new Error("Menu Not Displayable"); }
 
 		element.parentNode && element.parentNode.removeChild(element);
-		element.addEventListener("mouseup",function(e){e.stopPropagation();},false);
 
 		this.element = element;
 		Object.freeze(this);
@@ -43,12 +42,16 @@
 
 	Menu.prototype.close = function(){ this.element.parentNode.removeChild(this.element); };
 
-	document.addEventListener('mouseup', function(){
-		if(activeMenu){
-			activeMenu.close();
-			activeMenu = null;
-		}
-	},false);
+	function mouseUp(e){
+		if(!activeMenu){ return; }
+		var trg = e.target, elm = activeMenu.element;
+		if(trg === elm || (trg.compareDocumentPosition(elm) & Node.DOCUMENT_POSITION_CONTAINS)){ return; }
+		activeMenu.close();
+		activeMenu = null;
+	}
+	
+	document.addEventListener('mouseup', mouseUp, false);
+	document.addEventListener('touchend', mouseUp, false);
 
 	Ayamel.utils.Menu = Menu;
 }(Ayamel));
