@@ -8,6 +8,8 @@
 var Ayamel = (function() {
     "use strict";
 
+	var parseElement = document.createElement('div');
+
     return {
         aspectRatios: {
             standard:           1.33,   // 4:3
@@ -32,7 +34,7 @@ var Ayamel = (function() {
 			text: {},
 			text_sequence: {}
 		},
-		
+
         prioritizedPlugins: {
 			audio: [],
 			audio_sequence: [],
@@ -48,10 +50,10 @@ var Ayamel = (function() {
 
 		// Control widget classes will be registered here
         controls: {},
-		
+
         // Additional classes that will be defined will be contained here
         classes: {},
-		
+
 		// Utility functions & objects will be registered here
 		utils: {
 			hasTimeline: function(resource){
@@ -68,6 +70,18 @@ var Ayamel = (function() {
 				case 'text_sequence':
 				default:
 					return false;
+				}
+			},
+
+			parseHTML: function(text){
+				var frag;
+				parseElement.innerHTML = text;
+				if(parseElement.childNodes.length > 1){
+					frag = new DocumentFragment();
+					[].slice.call(parseElement.childNodes).forEach(frag.appendChild.bind(frag));
+					return frag;
+				}else{
+					return parseElement.firstChild;
 				}
 			}
 		}
