@@ -13,12 +13,10 @@
     function PlayButton(args) {
         var _this = this,
             playing = false,
-            $element = $(template),
-			element = $element[0];
+            element = Ayamel.utils.parseHTML(template);
 
-        this.$element = $element;
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
         // Set up events
         element.addEventListener('click',function (e) {

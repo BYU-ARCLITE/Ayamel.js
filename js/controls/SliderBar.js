@@ -13,16 +13,13 @@
             min = +args.min||0,
             scale = 100/(max-min),
             value = Math.min(+args.level||0,max),
-            $element = $(template),
-            element = $element[0],
-            $level = $element.find(".sliderLevel"),
-            level = $level[0],
+            element = Ayamel.utils.parseHTML(template),
+            level = element.querySelector(".sliderLevel"),
             left = 0, lastX = 0,
             moving = false;
 
-        this.$element = $element;
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
         level.style.width = (value-min)*scale+"%";
 
@@ -32,28 +29,29 @@
             return pc*(max-min)+min;
         }
 
-        element.addEventListener(Ayamel.utils.mobile.isMobile ? "touchstart" : "mousedown", function (event) {
+        element.addEventListener(Ayamel.utils.mobile.isMobile ? "touchstart" : "mousedown", function(event){
             var val, newEvent;
             if (moving) { return; }
             moving = true;
-            left = $level.offset().left + 7;
-            lastX = event.pageX;
+            left = level.getBoundingClientRect().left + 7;
+            lastX = event.clientX;
             val = pxToValue(lastX - left);
             element.dispatchEvent(new CustomEvent('scrubstart', {detail:{progress:val}}));
             element.dispatchEvent(new CustomEvent('levelchange', {detail:{level:val}}));
         },false);
-        document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
+
+        document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function(event){
             var val;
             if (!moving) { return; }
-            lastX = event.pageX;
+            lastX = event.clientX;
             val = pxToValue(lastX - left);
             element.dispatchEvent(new CustomEvent('scrubupdate', {detail:{progress:val}}));
             element.dispatchEvent(new CustomEvent('levelchange', {detail:{level:val}}));
         },false)
-        document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function (event) {
+        document.addEventListener(Ayamel.utils.mobile.isMobile ? "touchend" : "mouseup", function(event){
             if (!moving) { return; }
             moving = false;
-            element.dispatchEvent(new CustomEvent('scrubend', {detail:{progress:pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.pageX) - left)}}));
+            element.dispatchEvent(new CustomEvent('scrubend', {detail:{progress:pxToValue((Ayamel.utils.mobile.isMobile ? lastX : event.clientX) - left)}}));
         },false);
 
         Object.defineProperties(this,{

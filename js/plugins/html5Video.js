@@ -42,30 +42,26 @@
 			height, width,
 			startTime = +args.startTime || 0,
 			stopTime = +args.endTime || -1,
-			$element = $(template),
-			element = $element[0],
-			$captionsElement = $(captionHolderTemplate),
-			captionsElement = $captionsElement[0],
-			video = $element.children("video")[0];
+			element = Ayamel.utils.parseHTML(template),
+			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate),
+			video = element.querySelector("video");
 
 		// Create the element
-		this.$element = $element;
 		this.element = element;
-		args.$holder.append(element);
+		args.holder.appendChild(element);
 
 		this.video = video;
 
 		// Create a place for captions
-		this.$captionsElement = $captionsElement;
 		this.captionsElement = captionsElement;
-		args.$holder.append($captionsElement);
+		args.holder.appendChild(captionsElement);
 
 		// Set up the aspect ratio
 		//TODO: check for height overflow and resize smaller if necessary
 		args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-		width = $element.width();
+		width = element.clientWidth;
 		height = width / args.aspectRatio;
-		$element.height(height);
+		element.style.height = height + 'px';
 
 		// Load the source
 		file = findFile.call(this, args.resource);
@@ -151,13 +147,13 @@
 		this.video.pause();
 	};
 
-	Html5VideoPlayer.prototype.enterFullScreen = function(availableHeight) {
-		this.normalHeight = this.$element.height();
-		this.$element.height(availableHeight);
+    Html5VideoPlayer.prototype.enterFullScreen = function(availableHeight) {
+		this.normalHeight = this.element.clientHeight;
+		this.element.style.height = availableHeight + 'px';
 	};
 
-	Html5VideoPlayer.prototype.exitFullScreen = function() {
-		this.$element.height(this.normalHeight);
+    Html5VideoPlayer.prototype.exitFullScreen = function() {
+		this.element.style.height = this.normalHeight + 'px';
 	};
 
 	Html5VideoPlayer.prototype.features = {

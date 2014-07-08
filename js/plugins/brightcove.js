@@ -25,7 +25,7 @@
 	}
 
 	function generateBrightcoveTemplate(videoId) {
-		return '<object id="experience'+videoId+'" class="BrightcoveExperience">\
+		return Ayamel.utils.parseHTML('<object id="experience'+videoId+'" class="BrightcoveExperience">\
 				<param name="bgcolor" value="#FFFFFF" />\
 				<param name="width" value="100%" />\
 				<param name="height" value="100%" />\
@@ -38,7 +38,7 @@
 				<param name="templateLoadHandler" value="brightcoveTemplateLoaded" />\
 				<param name="@videoPlayer" value="' + videoId + '" />\
 				<param name="templateReadyHandler" value="brightcoveTemplateReady" />\
-			</object>';
+			</object>');
 	}
 
 	function BrightcoveVideoPlayer(args) {
@@ -47,32 +47,28 @@
 			stopTime = +args.endTime || -1,
 			file = findFile(args.resource),
 			videoId = file.streamUri.substr(13),
-			$element = $(template),
-			element = $element[0],
-			$captionsElement = $(captionHolderTemplate),
-			captionsElement = $captionsElement[0],
+			element = Ayamel.utils.parseHTML(template),
+			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate),
 			properties = {
 				duration: 0,
 				currentTime: 0,
 				paused: true
 			};
 
-		this.$element = $element;
 		this.element = element;
-		$element.append(generateBrightcoveTemplate(videoId));
-		args.$holder.append($element);
+		element.appendChild(generateBrightcoveTemplate(videoId));
+		args.holder.appendChild(element);
 
 		// Create a place for captions
-		this.$captionsElement = $captionsElement;
 		this.captionsElement = captionsElement;
-		args.$holder.append($captionsElement);
+		args.holder.appendChild(captionsElement);
 
 		// Set up the aspect ratio
 		//TODO: check for height overflow and resize smaller if necessary
 		args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-		width = $element.width();
+		width = element.clientWidth;
 		height = width / args.aspectRatio;
-		$element.height(height);
+		element.style.height = height +'px';
 
 		this.player = null;
 		this.properties = properties;
@@ -141,39 +137,39 @@
 			muted: {
 				get: function () {
 					return false;
-					//return this.$video[0].muted;
+					//return this.video.muted;
 				},
-				set: function (muted) {
+				set: function(muted){
 					return false;
-					//this.$video[0].muted = !!muted;
+					//this.video.muted = !!muted;
 				}
 			},
 			paused: {
-				get: function () {
+				get: function(){
 					return properties.paused;
 				}
 			},
 			playbackRate: {
-				get: function () {
+				get: function(){
 					return 1;
 				},
-				set: function (playbackRate) {
-					//this.$video[0].playbackRate = Number(playbackRate);
+				set: function(playbackRate){
+					//this.video.playbackRate = Number(playbackRate);
 					return 1;
 				}
 			},
 			readyState: {
-				get: function () {
-					return 0;//this.$video[0].readyState;
+				get: function(){
+					return 0;//this.video.readyState;
 				}
 			},
 			volume: {
-				get: function () {
-//                    return this.$video[0].volume;
+				get: function(){
+//                    return this.video.volume;
 					return 1;
 				},
-				set: function (volume) {
-//                    this.$video[0].volume = Number(volume);
+				set: function(volume){
+//                    this.video.volume = Number(volume);
 					return 1;
 				}
 			}
@@ -190,13 +186,13 @@
 		this.properties.paused = true;
 	};
 
-	BrightcoveVideoPlayer.prototype.enterFullScreen = function(availableHeight) {
-		this.normalHeight = this.$element.height();
-		this.$element.height(availableHeight);
+	BrightcoveVideoPlayer.prototype.enterFullScreen = function(availableHeight){
+		this.normalHeight = this.element.clientHeight;
+		this.element.style.height = availableHeight + 'px';
 	};
 
-	BrightcoveVideoPlayer.prototype.exitFullScreen = function() {
-		this.$element.height(this.normalHeight);
+	BrightcoveVideoPlayer.prototype.exitFullScreen = function(){
+		this.element.style.height = this.normalHeight + 'px';
 	};
 
 	BrightcoveVideoPlayer.prototype.features = {

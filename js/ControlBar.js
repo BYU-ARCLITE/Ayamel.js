@@ -7,7 +7,7 @@
             <div class="right"></div>\
         </div>';
 
-    function addComponent($controls, pluginFeatures, component) {
+    function addComponent(controls, pluginFeatures, component) {
         // Check to see if this component is supported by the plugin and device
         var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
         if (!pluginFeatures[device][component])
@@ -18,7 +18,7 @@
 
         this.components[component] = new constructor({
             parent: this,
-            $holder: $controls
+            holder: controls
         });
     }
 
@@ -27,21 +27,19 @@
             controlLists = args.components || {left:["play", "volume", "captions"], right:["rate", "fullScreen", "timeCode"]},
             components = {}, progressBar, timeCode,
             currentTime = 0, duration = 0,
-            element = document.createElement('div'),
-            $element = $(element);
+            element = document.createElement('div');
 
         element.className = "controlBar";
 
         // Create the ProgressBar
         progressBar = new Ayamel.classes.ProgressBar({
-            $holder: $element
+            holder: element
         });
 
-        $element.append(wtemplate);
+        element.appendChild(Ayamel.utils.parseHTML(wtemplate));
 
         this.element = element;
-        this.$element = $element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
         //set default values
         this.volume = 0;
@@ -54,14 +52,18 @@
         this.components = components;
 
         if(controlLists.left instanceof Array){
-            controlLists.left.forEach(addComponent.bind(this, $element.find(".left"), args.pluginFeatures));
+            controlLists.left.forEach(addComponent.bind(this, element.querySelector(".left"), args.pluginFeatures));
         }
         if(controlLists.right instanceof Array){
-            controlLists.right.forEach(addComponent.bind(this, $element.find(".right"), args.pluginFeatures));
+            controlLists.right.forEach(addComponent.bind(this, element.querySelector(".right"), args.pluginFeatures));
         }
 
         timeCode = components.timeCode || {};
         Object.defineProperties(this, {
+			height: {
+				enumerable: true,
+				get: function(){ return element.offsetHeight; }
+			},
             currentTime: {
                 enumerable: true,
                 set: function (value) {
@@ -70,9 +72,7 @@
                     timeCode.currentTime = currentTime;
                     return currentTime;
                 },
-                get: function () {
-                    return currentTime;
-                }
+                get: function(){ return currentTime; }
             },
             duration: {
                 enumerable: true,

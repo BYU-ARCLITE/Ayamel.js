@@ -45,29 +45,25 @@
             idstr = genId(),
             startTime = +args.startTime || 0,
             stopTime = +args.endTime || -1,
-            $element = $(template),
-            element = $element[0],
-            $captionsElement = $(captionHolderTemplate),
-            captionsElement = $captionsElement[0];
+            element = Ayamel.utils.parseHTML(template),
+            captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate);
 
         // Create the element
-        this.$element = $element;
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
         this.video = null;
 
         // Create a place for captions
-        this.$captionsElement = $captionsElement;
         this.captionsElement = captionsElement;
-        args.$holder.append($captionsElement);
+        args.holder.appendChild(captionsElement);
 
         // Set up the aspect ratio
         //TODO: check for height overflow and resize smaller if necessary
         args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-        width = $element.width();
+        width = element.clientWidth;
         height = width / args.aspectRatio;
-        $element.height(height);
+        element.style.height = height + 'px';
 
         // Include the YouTube API for a chromeless player
         // Docs here: https://developers.google.com/youtube/js_api_reference
@@ -80,12 +76,12 @@
         Object.defineProperties(this, {
             init: {
                 value: function() {
-                    var $video = this.$element.children("#"+idstr),
-                        video = $video[0],
+                    var video = element.querySelector("#"+idstr),
                         played = false,
                         playing = false;
 
-                    $video.width("100%").height("100%");
+                    video.style.height = "100%";
+					video.style.width = "100%";
 
                     this.video = video;
 
@@ -229,12 +225,12 @@
     };
 
     YouTubePlayer.prototype.enterFullScreen = function(availableHeight) {
-        this.normalHeight = this.$element.height();
-        this.$element.height(availableHeight);
+        this.normalHeight = this.element.clientHeight;
+        this.element.style.height = availableHeight + 'px';
     };
 
     YouTubePlayer.prototype.exitFullScreen = function() {
-        this.$element.height(this.normalHeight);
+        this.element.style.height = this.normalHeight + 'px';
     };
 
 	YouTubePlayer.prototype.features = {

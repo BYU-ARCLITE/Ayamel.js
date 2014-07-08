@@ -14,16 +14,14 @@
 
     function AyamelPlayer(args) {
         var _this = this,
-            $element = $(template),
-            element = $element[0],
+            element = Ayamel.utils.parseHTML(template),
             startTime = processTime(args.startTime || 0),
             endTime = processTime(args.endTime || -1),
             trackMap = window.Map?(new Map):null,
             pluginFeatures;
 
-        this.$element = $element;
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
         this.textTrackResources = trackMap;
 
@@ -35,7 +33,7 @@
 
         // Create the MediaPlayer
         this.mediaPlayer = new Ayamel.classes.MediaPlayer({
-            $holder: $element,
+            holder: element,
             resource: args.resource,
             aspectRatio: args.aspectRatio,
             startTime: startTime,
@@ -47,7 +45,7 @@
 
         // Create the ControlBar
         this.controlBar = new Ayamel.classes.ControlBar({
-            $holder: $element,
+            holder: element,
             components: args.components,
             pluginFeatures: pluginFeatures
         });
@@ -208,7 +206,7 @@
 			if(Ayamel.utils.FullScreen.fullScreenElement === element){
 				// Figure out how much space we have for the media player to fill
 				availableHeight = Ayamel.utils.FullScreen.availableHeight
-					- _this.controlBar.$element.height();
+					- _this.controlBar.height;
 				_this.mediaPlayer.enterFullScreen(availableHeight);
 				_this.controlBar.fullScreen = true;
 			}else{
