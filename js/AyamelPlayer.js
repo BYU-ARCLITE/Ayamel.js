@@ -21,7 +21,7 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			pluginFeatures, mediaPlayer, controlBar;
+			mediaPlayer, controlBar;
 
 		this.element = element;
 		args.holder.appendChild(element);
@@ -39,10 +39,7 @@
 			holder: element,
 			resource: args.resource,
 			startTime: startTime,
-			endTime: endTime,
-			featureCallback: function(features) {
-				pluginFeatures = features;
-			}
+			endTime: endTime
 		});
 		
 		this.mediaPlayer = mediaPlayer;
@@ -51,7 +48,7 @@
 		controlBar = new Ayamel.classes.ControlBar({
 			holder: element,
 			components: args.components,
-			pluginFeatures: pluginFeatures
+			pluginFeatures: mediaPlayer.plugin.features
 		});
 		this.controlBar = controlBar;
 
@@ -85,10 +82,13 @@
 					});
 				});
 			})).then(function(tracks){
-				if(typeof args.captionTrackCallback !== 'function'){ return; }
-				args.captionTrackCallback(tracks.filter(function(track){
-					return track !== null;
-				}),trackMap);
+				element.dispatchEvent(new CustomEvent('loadtexttracks', {
+					bubbles:true,
+					detail: {
+						tracks: tracks.filter(function(track){ return track !== null; }),
+						resources: trackMap
+					}
+				}));
 			});
 		}
 

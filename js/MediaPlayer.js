@@ -109,7 +109,6 @@
 			}
 		});
 
-		args.featureCallback && args.featureCallback(plugin.features);
 	}
 
 	MediaPlayer.prototype = Object.create(BasicMediaPrototype,{
@@ -153,8 +152,6 @@
 
 		this.plugin = plugin;
 		this.captionsElement = plugin.captionsElement;
-
-		args.featureCallback && args.featureCallback(plugin.features);
 	}
 
 	MediaViewer.prototype = BasicMediaPrototype;
