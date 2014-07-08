@@ -33,30 +33,26 @@
 		var _this = this,
 			playing = false,
 			swfPath = Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.16.swf",
-			$element = $(template),
-			element = $element[0],
-			$captionsElement = $(captionHolderTemplate),
-			captionsElement = $captionsElement[0],
+			element = Ayamel.utils.parseHTML(template),
+			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate),
 			startTime = +args.startTime || 0,
 			stopTime = +args.endTime || -1,
 			width, height, player;
 
 		// Create the element
-		this.$element = $element;
 		this.element = element;
-		args.$holder.append($element);
+		args.holder.appendChild(element);
 
 		// Create a place for captions
-		this.$captionsElement = $captionsElement;
 		this.captionsElement = captionsElement;
-		args.$holder.append($captionsElement);
+		args.holder.appendChild(captionsElement);
 
 		// Set up the aspect ratio
 		//TODO: check for height overflow and resize smaller if necessary
 		args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-		width = $element.width();
+		width = element.clientWidth;
 		height = width / args.aspectRatio;
-		$element.height(height);
+		element.style.height = height + 'px';
 
 		function fireTimeEvents() {
 			if (!playing) { return; }
@@ -173,7 +169,7 @@
 					return 1;
 				},
 				set: function (playbackRate) {
-					//this.$video[0].playbackRate = Number(playbackRate);
+					//this.video.playbackRate = Number(playbackRate);
 					return 1;
 				}
 			},
@@ -204,12 +200,12 @@
 	};
 
 	FlashVideoPlayer.prototype.enterFullScreen = function(availableHeight) {
-		this.normalHeight = this.$element.height();
-		this.$element.height(availableHeight);
+		this.normalHeight = this.element.clientHeight;
+		this.element.style.height = availableHeight + 'px';
 	};
 
 	FlashVideoPlayer.prototype.exitFullScreen = function() {
-		this.$element.height(this.normalHeight);
+		this.element.style.height = this.normalHeight + 'px';
 	};
 
 	FlashVideoPlayer.prototype.features = {

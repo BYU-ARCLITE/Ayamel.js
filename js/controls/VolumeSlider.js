@@ -17,16 +17,14 @@
         var _this = this,
             volume = 1,
             muted = false,
-            $element = $(template),
-            element = $element[0],
+            element = Ayamel.utils.parseHTML(template),
             slider = new Ayamel.controls.slider({
-                $holder: $element,
+                holder: element,
                 level: 1
             });
 
-        this.$element = $element;
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
 		slider.element.title = "volume";
         slider.addEventListener('levelchange',function(evt){

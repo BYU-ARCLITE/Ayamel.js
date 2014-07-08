@@ -19,13 +19,11 @@
         </div>';
 
     function CaptionsMenu(args) {
-        var $element = $(template),
-            element = $element[0],
-            menu = $element.children(".captionsMenu")[0];
+        var element = Ayamel.utils.parseHTML(template),
+            menu = element.querySelector(".captionsMenu");
 
-        this.$element = $element;
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
         this.length = 0;
 
         // Set up clicking to show the menu
@@ -43,21 +41,27 @@
 
     CaptionsMenu.prototype.addTrack = function(track) {
         // Create the menu entry
-        var _this = this,
-            $track = $('<div class="captionsMenuEntry">' + track.label + ' (' + track.language + ')</div>');
-        this.$element.find(".noCaptionTracks").remove();
-        this.$element.children(".captionsMenu").append($track);
-        if (track.mode === "showing") { $track.addClass("active"); }
+        var that = this, emptyMessage,
+			element = this.element,
+            item = document.createElement('div');
+		item.classList.add("captionsMenuEntry");
+		item.textContent = track.label + ' (' + track.language + ')';
+		
+		emptyMessage = element.querySelector(".noCaptionTracks");
+		if(emptyMessage !== null){ emptyMessage.parentNode.removeChild(emptyMessage); }
+		
+        element.querySelector(".captionsMenu").appendChild(item);
+        if (track.mode === "showing") { item.classList.add("active"); }
         this.length++;
 
         // Set up clicking here because we have the track in scope
-        $track.click(function (e) {
-            var active = this.classList.contains("active");
+        item.addEventListener('click', function(e){
+            var active = item.classList.contains("active");
             e.stopPropagation();
-            if(_this.length === 1){ _this.element.classList.remove("active"); }
-            this.classList.toggle("active");
+            if(that.length === 1){ element.classList.remove("active"); }
+            item.classList.toggle("active");
             track.mode = active?'disabled':'showing';
-            _this.element.dispatchEvent(new CustomEvent(
+            element.dispatchEvent(new CustomEvent(
                 active?"disabletrack":"enabletrack",
                 {bubbles:true,cancelable:true,detail:{track:track}}
             ));

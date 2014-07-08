@@ -8,8 +8,6 @@
 (function(Ayamel) {
     "use strict";
 
-    var template = '<div class="timeCode" title="timecode">00:00 / 00:00</div>';
-
     //taken from VTT codec
     function generateTimeCode(time){
         var seconds = Math.floor(time),
@@ -27,16 +25,19 @@
         var _this = this,
             duration = 0, currentTime = 0,
             durationText = "00:00", currentTimeText = "00:00",
-            $element = $(template),
-            element = $element[0];
+            element = document.createElement('div');
+
+        element.classList.add("timeCode");
+        element.title = "timecode";
 
         function updateText() {
             element.textContent = currentTimeText + " / " + durationText;
         }
 
-        this.$element = $element;
+        updateText();
+
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
         Object.defineProperties(this, {
             currentTime: {

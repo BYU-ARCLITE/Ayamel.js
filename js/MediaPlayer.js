@@ -50,19 +50,23 @@
 		return pluginPlayer;
 	}
 
+
 	function MediaPlayer(args) {
 		var _this = this,
-			plugin, $element;
+			plugin, element;
 
 		if(!Ayamel.utils.hasTimeline(args.resource)){
 			throw new Error("Cannot create player for untimed media.");
 		}
 
 		// Attempt to load the resource
-		$element = $(template);
-		args.$holder.append($element);
+		element = Ayamel.utils.parseHTML(template);
+
+		//needs to be in the document before loading a plugin
+		//so the plugin can examine the displayed size
+		args.holder.appendChild(element);
 		plugin = loadPlugin({
-			$holder: $element,
+			holder: element,
 			resource: args.resource,
 			aspectRatio: args.aspectRatio,
 			startTime: args.startTime,
@@ -70,15 +74,11 @@
 		});
 
 		if(plugin === null){
-			$element.remove();
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
 		}		
 
-		this.$element = $element;
-		this.element = $element[0];
-
+		this.element = element;
 		this.plugin = plugin;
-		this.$captionsElement = plugin.$captionsElement;
 		this.captionsElement = plugin.captionsElement;
 
 		Object.defineProperties(this, {
@@ -154,31 +154,29 @@
 
 	function MediaViewer(args) {
 		var _this = this,
-			plugin, $element;
+			plugin, element;
 
 		if(Ayamel.utils.hasTimeline(args.resource)){
 			throw new Error("Cannot create viewer for timed media.");
 		}
 
 		// Attempt to load the resource
-		$element = $(template);
-		args.$holder.append($element);
+		element = Ayamel.utils.parseHTML(template);
 		plugin = loadPlugin({
-			$holder: $element,
+			holder: element,
 			resource: args.resource,
 			aspectRatio: args.aspectRatio
 		});
 
 		if(plugin === null){
-			$element.remove();
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
 		}
 
-		this.$element = $element;
-		this.element = $element[0];
+		args.holder.appendChild(element);
+
+		this.element = element;
 
 		this.plugin = plugin;
-		this.$captionsElement = plugin.$captionsElement;
 		this.captionsElement = plugin.captionsElement;
 
 		args.featureCallback && args.featureCallback(plugin.features);

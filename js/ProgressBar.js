@@ -21,15 +21,13 @@
             min = +args.min||0,
             scale = 100/(max-min),
             value = Math.min(+args.progress||0,max),
-            $element = $(template),
-            element = $element[0],
-            level = $element.find(".progressLevel")[0],
+            element = Ayamel.utils.parseHTML(template),
+            level = element.querySelector(".progressLevel"),
             left = 0, lastX = 0,
             moving = false;
 
-        this.$element = $element;
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
         level.style.width = (value-min)*scale+"%";
 
@@ -39,12 +37,12 @@
             return pc*(max-min)+min;
         }
 
-        element.addEventListener(Ayamel.utils.mobile.isMobile ? "touchstart" : "mousedown", function (event) {
+        element.addEventListener(Ayamel.utils.mobile.isMobile ? "touchstart" : "mousedown", function(event){
             if (moving) { return; }
-            left = $element.offset().left + 10;
+            left = element.getBoundingClientRect().left + 10;
             moving = true;
 
-            lastX = event.pageX;
+            lastX = event.clientX;
             value = pxToValue(lastX - left);
             level.style.width = (value-min)*scale+"%";
 
@@ -53,7 +51,7 @@
             event.stopPropagation();
         }, false);
 
-        document.body.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function (event) {
+        document.body.addEventListener(Ayamel.utils.mobile.isMobile ? "touchmove" : "mousemove", function(event){
             if (!moving) { return; }
 
             lastX = event.pageX;

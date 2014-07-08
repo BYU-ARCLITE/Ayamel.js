@@ -45,22 +45,18 @@
         var file, _this = this,
             startTime = +args.startTime || 0,
             stopTime = +args.endTime || -1,
-            $element = $(template),
-            element = $element[0],
-            $captionsElement = $element.find(".audioCaptionHolder"),
-            captionsElement = $captionsElement[0],
+            element = Ayamel.utils.parseHTML(template),
+            captionsElement = element.querySelector(".audioCaptionHolder"),
             audio = new Audio();
 
-        this.$element = $element;
         this.element = element;
-        args.$holder.append($element);
+        args.holder.appendChild(element);
 
         this.audio = audio;
 
         // Create a place for captions
-        this.$captionsElement = $captionsElement;
         this.captionsElement = captionsElement;
-//        args.$holder.append($captionsElement);
+//        args.holder.appendChild(captionsElement);
 
         // Load the source
         file = findFile.call(this, args.resource);
@@ -141,13 +137,13 @@
     };
 
     Html5AudioPlayer.prototype.enterFullScreen = function(availableHeight) {
-        this.normalHeight = this.$element.height();
-        this.$element.height(availableHeight);
-    };
+		this.normalHeight = this.element.clientHeight;
+		this.element.style.height = availableHeight + 'px';
+	};
 
     Html5AudioPlayer.prototype.exitFullScreen = function() {
-        this.$element.height(this.normalHeight);
-    };
+		this.element.style.height = this.normalHeight + 'px';
+	};
 
 	Html5AudioPlayer.prototype.features = {
 		desktop: {
