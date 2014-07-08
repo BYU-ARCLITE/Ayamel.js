@@ -19,9 +19,11 @@
 			removeEventListener: function(event, callback) {
 				this.element.removeEventListener(event, callback, false);
 			},
-			get readyState () {
-				return this.plugin.readyState;
-			}
+			get readyState(){ return this.plugin.readyState; },
+			get height(){ return this.plugin.height; },
+			set height(h){ return this.plugin.height = h; },
+			get width(){ return this.plugin.width; },
+			set width(w){ return this.plugin.width = w; }
 		};
 
 	function loadPlugin(args){
@@ -68,7 +70,6 @@
 		plugin = loadPlugin({
 			holder: element,
 			resource: args.resource,
-			aspectRatio: args.aspectRatio,
 			startTime: args.startTime,
 			endTime: args.endTime
 		});
@@ -83,46 +84,28 @@
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function () {
-					return plugin.duration;
-				}
+				get: function(){ return plugin.duration; }
 			},
 			currentTime: {
-				get: function () {
-					return plugin.currentTime;
-				},
-				set: function (time) {
-					return plugin.currentTime = time;
-				}
+				get: function(){ return plugin.currentTime; },
+				set: function(time){ return plugin.currentTime = time; }
 			},
 			muted: {
-				get: function () {
-					return plugin.muted;
-				},
-				set: function (muted) {
-					return plugin.muted = muted;
-				}
+				get: function(){ return plugin.muted; },
+				set: function(muted){ return plugin.muted = muted; }
 			},
 			paused: {
-				get: function () {
-					return plugin.paused;
-				}
+				get: function(){ return plugin.paused; }
 			},
 			playbackRate: {
-				get: function () {
-					return plugin.playbackRate;
-				},
-				set: function (playbackRate) {
+				get: function(){ return plugin.playbackRate; },
+				set: function(playbackRate){
 					return plugin.playbackRate = playbackRate;
 				}
 			},
 			volume: {
-				get: function () {
-					return plugin.volume;
-				},
-				set: function (volume) {
-					return plugin.volume = volume;
-				}
+				get: function(){ return plugin.volume; },
+				set: function(volume){ return plugin.volume = volume; }
 			}
 		});
 
@@ -131,24 +114,16 @@
 
 	MediaPlayer.prototype = Object.create(BasicMediaPrototype,{
 		paused: {
-			get: function () {
-				return this.plugin.paused;
-			}
+			get: function(){ return this.plugin.paused; }
 		},
 		duration: {
-			get: function () {
-				return this.plugin.duration;
-			}
+			get: function (){ return this.plugin.duration; }
 		},
 		play: {
-			value: function () {
-				this.plugin.play();
-			}
+			value: function(){ this.plugin.play(); }
 		},
 		pause: {
-			value: function () {
-				this.plugin.pause();
-			}
+			value: function(){ this.plugin.pause(); }
 		}
 	});
 

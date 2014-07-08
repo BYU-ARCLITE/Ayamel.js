@@ -83,6 +83,27 @@ var Ayamel = (function() {
 				}else{
 					return parseElement.firstChild;
 				}
+			},
+			
+			fitAspectRatio: function(element, aspectRatio, maxWidth, maxHeight){
+				var pHeight;
+
+				// Probe for maximum extents
+				element.style.width = "100%";
+				element.style.height = "100%";
+				maxWidth = Math.min(element.clientWidth, maxWidth);
+				maxHeight = Math.min(element.clientHeight, maxHeight);
+
+				// Figure out proportional heights / widths
+				// and assign accordingly
+				pHeight = maxWidth / aspectRatio;
+				if(pHeight > maxHeight){
+					element.style.width = maxHeight * aspectRatio + "px";
+					element.style.height = maxHeight + "px";
+				}else{
+					element.style.width = maxWidth + "px";
+					element.style.height = pHeight + "px";
+				}
 			}
 		}
     };

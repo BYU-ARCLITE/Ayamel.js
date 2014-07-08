@@ -7,7 +7,8 @@
  */
 (function (Ayamel,global) {
 
-	var template = "<div class='videoBox'><div id='flowplayerHolder'></div></div>",
+	var counter = 0,
+		template = "<div class='videoBox'><div></div></div>",
 		captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
 		installed = false,
 		supportedMimeTypes = [
@@ -31,6 +32,7 @@
 
 	function FlashVideoPlayer(args) {
 		var _this = this,
+			flowId = "flowVideoHolder"+(counter++).toString(36),
 			playing = false,
 			swfPath = Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.16.swf",
 			element = Ayamel.utils.parseHTML(template),
@@ -41,18 +43,12 @@
 
 		// Create the element
 		this.element = element;
+		element.firstChild.id = flowId;
 		args.holder.appendChild(element);
 
 		// Create a place for captions
 		this.captionsElement = captionsElement;
 		args.holder.appendChild(captionsElement);
-
-		// Set up the aspect ratio
-		//TODO: check for height overflow and resize smaller if necessary
-		args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-		width = element.clientWidth;
-		height = width / args.aspectRatio;
-		element.style.height = height + 'px';
 
 		function fireTimeEvents() {
 			if (!playing) { return; }
@@ -76,7 +72,7 @@
 		}
 
 		// Create the player
-		player = flowplayer("flowplayerHolder", {
+		player = flowplayer(flowId, {
 			src: swfPath,
 			wmode: "opaque"
 		}, {
@@ -187,24 +183,40 @@
 					player.setVolume(volume);
 					return volume;
 				}
+			},
+			height: {
+				get: function(){ return element.clientHeight; },
+				set: function(h){
+					h = +h || element.clientHeight;
+					element.style.height = h + "px";
+					return h;
+				}
+			},
+			width: {
+				get: function(){ return element.clientWidth; },
+				set: function(w){
+					w = +w || element.clientWidth;
+					element.style.width = w + "px";
+					return w;
+				}
 			}
 		});
 	}
 
-	FlashVideoPlayer.prototype.play = function() {
+	FlashVideoPlayer.prototype.play = function(){
 		this.player.play();
 	};
 
-	FlashVideoPlayer.prototype.pause = function() {
+	FlashVideoPlayer.prototype.pause = function(){
 		this.player.pause();
 	};
 
-	FlashVideoPlayer.prototype.enterFullScreen = function(availableHeight) {
+	FlashVideoPlayer.prototype.enterFullScreen = function(availableHeight){
 		this.normalHeight = this.element.clientHeight;
 		this.element.style.height = availableHeight + 'px';
 	};
 
-	FlashVideoPlayer.prototype.exitFullScreen = function() {
+	FlashVideoPlayer.prototype.exitFullScreen = function(){
 		this.element.style.height = this.normalHeight + 'px';
 	};
 

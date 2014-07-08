@@ -39,7 +39,6 @@
 
 	function Html5VideoPlayer(args) {
 		var _this = this, file,
-			height, width,
 			startTime = +args.startTime || 0,
 			stopTime = +args.endTime || -1,
 			element = Ayamel.utils.parseHTML(template),
@@ -55,13 +54,6 @@
 		// Create a place for captions
 		this.captionsElement = captionsElement;
 		args.holder.appendChild(captionsElement);
-
-		// Set up the aspect ratio
-		//TODO: check for height overflow and resize smaller if necessary
-		args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-		width = element.clientWidth;
-		height = width / args.aspectRatio;
-		element.style.height = height + 'px';
 
 		// Load the source
 		file = findFile.call(this, args.resource);
@@ -87,72 +79,76 @@
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function () {
+				get: function(){
 //                    var stop = stopTime === -1 ? video.duration : stopTime;
 //                    return stop - startTime;
 					return video.duration;
 				}
 			},
 			currentTime: {
-				get: function () {
+				get: function(){
 					return video.currentTime;// - startTime;
 				},
-				set: function (time) {
+				set: function(time){
 					return video.currentTime = (+time||0);// + startTime;
 				}
 			},
 			muted: {
-				get: function () {
-					return video.muted;
-				},
-				set: function (muted) {
-					return video.muted = !!muted;
-				}
+				get: function(){ return video.muted; },
+				set: function(muted){ return video.muted = !!muted; }
 			},
 			paused: {
-				get: function () {
-					return video.paused;
-				}
+				get: function(){ return video.paused; }
 			},
 			playbackRate: {
-				get: function () {
-					return video.playbackRate;
-				},
-				set: function (playbackRate) {
+				get: function(){ return video.playbackRate; },
+				set: function(playbackRate){
 					playbackRate = +playbackRate
 					return video.playbackRate = isNaN(playbackRate)?1:playbackRate;
 				}
 			},
 			readyState: {
-				get: function () {
-					return video.readyState;
-				}
+				get: function(){ return video.readyState; }
 			},
 			volume: {
-				get: function () {
-					return video.volume;
-				},
-				set: function (volume) {
+				get: function(){ return video.volume; },
+				set: function(volume){
 					return video.volume = +volume||0;
+				}
+			},
+			height: {
+				get: function(){ return element.clientHeight; },
+				set: function(h){
+					h = +h || element.clientHeight;
+					element.style.height = h + "px";
+					return h;
+				}
+			},
+			width: {
+				get: function(){ return element.clientWidth; },
+				set: function(w){
+					w = +w || element.clientWidth;
+					element.style.width = w + "px";
+					return w;
 				}
 			}
 		});
 	}
 
-	Html5VideoPlayer.prototype.play = function() {
+	Html5VideoPlayer.prototype.play = function(){
 		this.video.play();
 	};
 
-	Html5VideoPlayer.prototype.pause = function() {
+	Html5VideoPlayer.prototype.pause = function(){
 		this.video.pause();
 	};
 
-    Html5VideoPlayer.prototype.enterFullScreen = function(availableHeight) {
+	Html5VideoPlayer.prototype.enterFullScreen = function(availableHeight){
 		this.normalHeight = this.element.clientHeight;
 		this.element.style.height = availableHeight + 'px';
 	};
 
-    Html5VideoPlayer.prototype.exitFullScreen = function() {
+	Html5VideoPlayer.prototype.exitFullScreen = function(){
 		this.element.style.height = this.normalHeight + 'px';
 	};
 
