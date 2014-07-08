@@ -8,8 +8,7 @@
 (function (Ayamel) {
 	"use strict";
 
-	var template = "<div class='videoBox'></div>",
-		captionHolderTemplate = '<div class="videoCaptionHolder"></div>';
+	var counter = 0;
 
 	function supportsFile(file) {
 		return file.streamUri && file.streamUri.substr(0,13) === "brightcove://";
@@ -24,8 +23,10 @@
 		return null;
 	}
 
-	function generateBrightcoveTemplate(videoId) {
-		return Ayamel.utils.parseHTML('<object id="experience'+videoId+'" class="BrightcoveExperience">\
+	function generateBrightcoveTemplate(videoId){
+		return Ayamel.utils.parseHTML('<div class="videoBox"><object id="brightcoveExperience'
+		+ (counter++).toString(36)
+		+ '" class="BrightcoveExperience">\
 				<param name="bgcolor" value="#FFFFFF" />\
 				<param name="width" value="100%" />\
 				<param name="height" value="100%" />\
@@ -38,17 +39,17 @@
 				<param name="templateLoadHandler" value="brightcoveTemplateLoaded" />\
 				<param name="@videoPlayer" value="' + videoId + '" />\
 				<param name="templateReadyHandler" value="brightcoveTemplateReady" />\
-			</object>');
+			</object></div>');
 	}
 
 	function BrightcoveVideoPlayer(args) {
-		var _this = this, width, height,
+		var _this = this,
 			startTime = +args.startTime || 0,
 			stopTime = +args.endTime || -1,
 			file = findFile(args.resource),
 			videoId = file.streamUri.substr(13),
-			element = Ayamel.utils.parseHTML(template),
-			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate),
+			element = generateBrightcoveTemplate(videoId),
+			captionsElement = document.createElement('div'),
 			properties = {
 				duration: 0,
 				currentTime: 0,
@@ -56,19 +57,12 @@
 			};
 
 		this.element = element;
-		element.appendChild(generateBrightcoveTemplate(videoId));
 		args.holder.appendChild(element);
 
 		// Create a place for captions
 		this.captionsElement = captionsElement;
+		captionsElement.className = "videoCaptionHolder";
 		args.holder.appendChild(captionsElement);
-
-		// Set up the aspect ratio
-		//TODO: check for height overflow and resize smaller if necessary
-		args.aspectRatio = args.aspectRatio || Ayamel.aspectRatios.hdVideo;
-		width = element.clientWidth;
-		height = width / args.aspectRatio;
-		element.style.height = height +'px';
 
 		this.player = null;
 		this.properties = properties;
@@ -169,8 +163,24 @@
 					return 1;
 				},
 				set: function(volume){
-//                    this.video.volume = Number(volume);
+//                    this.video.volume = +volume;
 					return 1;
+				}
+			},
+			height: {
+				get: function(){ return element.clientHeight; },
+				set: function(h){
+					h = +h || element.clientHeight;
+					element.style.height = h + "px";
+					return h;
+				}
+			},
+			width: {
+				get: function(){ return element.clientWidth; },
+				set: function(w){
+					w = +w || element.clientWidth;
+					element.style.width = w + "px";
+					return w;
 				}
 			}
 		});
