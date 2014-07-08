@@ -67,18 +67,20 @@
         }
 
         // Load the caption tracks
-        if (args.captionTracks) {
-            async.map(args.captionTracks, function (resource, callback) {
-                Ayamel.utils.loadCaptionTrack(resource, function (track, mime) {
-                    track.mime = mime;
-                    _this.addTextTrack(track);
-                    if(trackMap){ trackMap.set(track, resource); }
-                    callback(null, track);
-                }, function (err) {
-                    callback(null, null);
-                });
-            }, function (err, tracks) {
-                if (typeof args.captionTrackCallback !== 'function') { return; }
+        if(args.captionTracks){
+			Promise.all(args.captionTracks.map(function(resource){
+                return new Promise(function(resolve, reject){
+					Ayamel.utils.loadCaptionTrack(resource, function(track, mime){
+						track.mime = mime;
+						_this.addTextTrack(track);
+						if(trackMap){ trackMap.set(track, resource); }
+						resolve(track);
+					}, function(err){
+						resolve(null);
+					});
+				});
+            })).then(function(tracks){
+                if(typeof args.captionTrackCallback !== 'function'){ return; }
                 args.captionTrackCallback(tracks.filter(function(track){
                     return track !== null;
                 }),trackMap);

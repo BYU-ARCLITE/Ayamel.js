@@ -19,23 +19,11 @@ var ResourceLibrary = (function() {
 
 	Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback) {
 		var filteredRelations = (typeof test === 'function')?this.relations.filter(test):this.relations;
-
-		/*
 		var p = Promise.all(filteredRelations.map(function(relation) {
 			return ResourceLibrary.load(relation[relationRole]);
 		}));
 		if(typeof callback ==='function'){ p.then(callback); }
 		return p;
-		*/
-		
-		async.map(filteredRelations, function(relation, asyncCallback) {
-			// We have a relation. Get the resource
-			ResourceLibrary.load(relation[relationRole], function (resource) {
-				asyncCallback(null, resource);
-			});
-		}, function (err, results) {
-			callback(results);
-		});
 	};
 
 	Resource.prototype.getTranscripts = function(callback, additionalTest) {
@@ -53,8 +41,8 @@ var ResourceLibrary = (function() {
 			return isAnnotations && passTest;
 		}, callback);
 	};
-	
-	/* Native promises don't quite work yet.
+
+
 	function getResourcePromise(id){
 		var xhr = new XMLHttpRequest();
 		return new Promise(function(resolve, reject){
@@ -73,15 +61,6 @@ var ResourceLibrary = (function() {
 			xhr.addEventListener("abort", function(){ reject(new Error("Request Aborted")); }, false);
 			xhr.open("GET",baseUrl + "resources/" + id + "?" + Date.now().toString(36), {dataType: "json"},true);
 			xhr.send()
-		});
-	}*/
-	
-	function getResourcePromise(id){
-		return $.ajax(
-			baseUrl + "resources/" + id + "?" + Date.now().toString(36),
-			{dataType: "json"}
-		).then(function(data){
-			return new Resource(data.resource, id);
 		});
 	}
 
