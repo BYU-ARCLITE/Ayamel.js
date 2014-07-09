@@ -1,5 +1,5 @@
 (function(Ayamel){
-    "use strict";
+	"use strict";
 	if(!Ayamel){
 		throw new Error("Ayamel Uninitialized");
 	}
@@ -77,6 +77,7 @@
 			info.style && Object.keys(info.style).forEach(function(name){
 				node.style[name] = info.style[name];
 			});
+			if(info.className){ node.className = info.className; }
 			node.addEventListener('click', handler.bind(null,info.data,lang,str,loc));
 			return node;
 		};
@@ -124,13 +125,38 @@
 		}
 		return root;
 	}
-
-	function getMatchers(glosses,languages){
+	
+	function overwrite_exec(i,j){
+		return function exec(s){
+			var ret,
+				res = RegExp.prototype.exec.call(this,s);
+			if(res){
+				ret = [res[i],res[j]];
+				ret.index = res.index;
+				return ret;
+			}
+			return null;
+		};
+	}
+	
+	var parse_default = (function(){
+		var latin_non_word = "\\s~`'\";:.,/?><[\\]{}\\\\|)(*&^%$#@!=\\-—",
+			rf = "(?:^|["+latin_non_word+"])(",
+			rl = ")(?=$|["+latin_non_word+"])",
+			exec = overwrite_exec(1,1);
+		return function(word){
+			var regex = RegExp(rf+word.replace(/[\-\/\\?.*\^$\[{()|+]/g,"\\$&")+rl,'gim');
+			regex.exec = exec;
+			return regex;
+		};
+	}());
+	
+	function getMatchers(glosses,parsers){
 		var mlist = [];
 		Object.keys(glosses).forEach(function(lang){
 			try{
 				var lobj = glosses[lang],
-					match_gen = languages[lang].parser;
+					match_gen = parsers[lang] || parse_default;
 				Object.keys(lobj).forEach(function(word){
 					Object.keys(lobj[word]).forEach(function(index){
 						mlist.push(match_gen(word,parseInt(index,10)));
@@ -142,8 +168,8 @@
 	}
 
 	Ayamel.utils.Annotator = Object.create({},{
-        HTML: { enumerable: true, value: anHTML },
-        Text:{ enumerable: true, value: anText },
-        getMatchers: { enumerable: true, value: getMatchers }
-    });
+		HTML: { enumerable: true, value: anHTML },
+		Text:{ enumerable: true, value: anText },
+		getMatchers: { enumerable: true, value: getMatchers }
+	});
 }(Ayamel));
