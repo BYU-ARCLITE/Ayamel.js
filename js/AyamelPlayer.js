@@ -78,10 +78,26 @@
 				this.captionRenderer.appendCueCanvasTo = this.mediaPlayer.captionsElement;
 			}else{
 				renderCue = args.renderCue || function(renderedCue, area){
-					var cue = renderedCue.cue,
-						txt = new Ayamel.Text({
-							content: cue.getCueAsHTML(renderedCue.kind === 'subtitles')
-						});
+					var txt, aconf, annotate,
+						cue = renderedCue.cue;
+					if(args.annotations){
+						aconf = {
+							regexes: Ayamel.utils.Annotator.getMatchers(args.annotations,{}),
+							attach: args.annotations,
+							handler: function(data, lang, text, index){
+								element.dispatchEvent(new CustomEvent("annotation", {
+									bubbles: true,
+									detail: {data: data, lang: lang, text: text, index: index}
+								}));
+							}
+						};
+						annotate = function(n){ return Ayamel.utils.Annotator.HTML(aconf, n); }
+					}
+					
+					txt = new Ayamel.Text({
+						content: cue.getCueAsHTML(renderedCue.kind === 'subtitles'),
+						processor: annotate
+					});
 
 					// Attach the translator
 					if(that.translator){
@@ -97,12 +113,6 @@
 							});
 						},false);
 					}
-
-					// Add annotations
-					//if(args.annotator){
-						//Yuck
-						//args.annotator.annotate(txt.displayElement);
-					//}
 
 					renderedCue.node = txt.displayElement;
 				};
