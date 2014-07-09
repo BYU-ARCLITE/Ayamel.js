@@ -13,7 +13,7 @@
 	}
 
 	function AyamelPlayer(args) {
-		var _this = this,
+		var that = this,
 			element = Ayamel.utils.parseHTML(template),
 			startTime = processTime(args.startTime || 0),
 			endTime = processTime(args.endTime || -1),
@@ -21,7 +21,7 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			mediaPlayer, controlBar;
+			mediaPlayer, controlBar, renderCue;
 
 		this.element = element;
 		args.holder.appendChild(element);
@@ -52,6 +52,24 @@
 		});
 		this.controlBar = controlBar;
 
+		// Create the Translator
+		this.targetLang = args.targetLang || "eng";
+		if(args.translate){
+			this.translator = new Ayamel.utils.Translator(translationEndpoint,translationKey);
+            // Forward Events
+            this.translator.addEventListener("translate", function(event){
+                element.dispatchEvent(new CustomEvent("translate", {bubbles: true, detail: event.detail}));
+            });
+			this.translator.addEventListener("translation", function(event){
+                element.dispatchEvent(new CustomEvent("translation", {bubbles: true, detail: event.detail}));
+			});
+			this.translator.addEventListener("error", function(event){
+                element.dispatchEvent(new CustomEvent("translationError", {bubbles: true, detail: event.detail}));
+			});
+		}else{
+			this.translator = null;
+		}
+		
 		// Create the caption renderer
 		if (mediaPlayer.captionsElement) {
 			if(args.captionRenderer instanceof TimedText.CaptionRenderer){
@@ -59,38 +77,66 @@
 				this.captionRenderer.target = this.mediaPlayer.captionsElement;
 				this.captionRenderer.appendCueCanvasTo = this.mediaPlayer.captionsElement;
 			}else{
+				renderCue = args.renderCue || function(renderedCue, area){
+					var cue = renderedCue.cue,
+						txt = new Ayamel.Text({
+							content: cue.getCueAsHTML(renderedCue.kind === 'subtitles')
+						});
+
+					// Attach the translator
+					if(that.translator){
+						txt.addEventListener('selection',function(event){
+							that.translator.translate({
+								srcLang: cue.track.language,
+								destLang: that.targetLang,
+								text: event.detail.fragment.textContent.trim(),
+								data: {
+									cue: cue,
+									sourceType: "caption"
+								}
+							});
+						},false);
+					}
+
+					// Add annotations
+					//if(args.annotator){
+						//Yuck
+						//args.annotator.annotate(txt.displayElement);
+					//}
+
+					renderedCue.node = txt.displayElement;
+				};
+		
 				this.captionRenderer = new TimedText.CaptionRenderer({
-					target: this.mediaPlayer.captionsElement,
-					appendCueCanvasTo: this.mediaPlayer.captionsElement,
-					renderCue: args.renderCue
+					target: mediaPlayer.captionsElement,
+					appendCueCanvasTo: mediaPlayer.captionsElement,
+					renderCue: renderCue
 				});
 			}
 			this.captionRenderer.bindMediaElement(mediaPlayer);
 		}
 
 		// Load the caption tracks
-		if(args.captionTracks){
-			Promise.all(args.captionTracks.map(function(resource){
-				return new Promise(function(resolve, reject){
-					Ayamel.utils.loadCaptionTrack(resource, function(track, mime){
-						track.mime = mime;
-						_this.addTextTrack(track);
-						if(trackMap){ trackMap.set(track, resource); }
-						resolve(track);
-					}, function(err){
-						resolve(null);
-					});
+		Promise.all((args.captionTracks||[]).map(function(resource){
+			return new Promise(function(resolve, reject){
+				Ayamel.utils.loadCaptionTrack(resource, function(track, mime){
+					track.mime = mime;
+					that.addTextTrack(track);
+					if(trackMap){ trackMap.set(track, resource); }
+					resolve(track);
+				}, function(err){
+					resolve(null);
 				});
-			})).then(function(tracks){
-				element.dispatchEvent(new CustomEvent('loadtexttracks', {
-					bubbles:true,
-					detail: {
-						tracks: tracks.filter(function(track){ return track !== null; }),
-						resources: trackMap
-					}
-				}));
 			});
-		}
+		})).then(function(tracks){
+			element.dispatchEvent(new CustomEvent('loadtexttracks', {
+				bubbles:true,
+				detail: {
+					tracks: tracks.filter(function(track){ return track !== null; }),
+					resources: trackMap
+				}
+			}));
+		});
 
 		/*
 		 * ==========================================================================================
@@ -143,7 +189,7 @@
 		// When the user is done scrubbing, seek to that position
 		controlBar.addEventListener("scrubend", function(event){
 			// If we have been lying to the control bar, then keep that in mind
-			var length = (endTime === -1 ? _this.mediaPlayer.duration : endTime) - startTime;
+			var length = (endTime === -1 ? that.mediaPlayer.duration : endTime) - startTime;
 			mediaPlayer.currentTime = event.detail.progress * length + startTime;
 		});
 
@@ -188,11 +234,11 @@
 		// Enable/disable caption tracks when clicked in the caption menu
 		controlBar.addEventListener("enabletrack", function(event){
 			event.detail.track.mode = "showing";
-			_this.captionRenderer.rebuildCaptions();
+			that.captionRenderer.rebuildCaptions();
 		});
 		controlBar.addEventListener("disabletrack", function(event){
 			event.detail.track.mode = "disabled";
-			_this.captionRenderer.rebuildCaptions();
+			that.captionRenderer.rebuildCaptions();
 		});
 
 		// Handle changes to fullscreen mode
@@ -222,11 +268,11 @@
 
 		controlBar.addEventListener("captionJump", function(){
 			// Find the first visible track
-			var track = _this.captionRenderer.tracks.filter(function(track){return track.mode === "showing";})[0];
+			var track = that.captionRenderer.tracks.filter(function(track){return track.mode === "showing";})[0];
 			if (track) {
 				// Move forward or back a caption
 				var traversal = Ayamel.utils.CaptionsTranversal[event.detail.direction];
-				_this.currentTime = traversal(track, _this.currentTime);
+				that.currentTime = traversal(track, that.currentTime);
 			}
 		});
 
