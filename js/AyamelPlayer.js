@@ -41,7 +41,7 @@
 			startTime: startTime,
 			endTime: endTime
 		});
-		
+
 		this.mediaPlayer = mediaPlayer;
 
 		// Create the ControlBar
@@ -56,44 +56,43 @@
 		this.targetLang = args.targetLang || "eng";
 		if(args.translate){
 			this.translator = new Ayamel.utils.Translator(translationEndpoint,translationKey);
-            // Forward Events
-            this.translator.addEventListener("translate", function(event){
-                element.dispatchEvent(new CustomEvent("translate", {bubbles: true, detail: event.detail}));
-            });
+			// Forward Events
+			this.translator.addEventListener("translate", function(event){
+				element.dispatchEvent(new CustomEvent("translate", {bubbles: true, detail: event.detail}));
+			});
 			this.translator.addEventListener("translation", function(event){
-                element.dispatchEvent(new CustomEvent("translation", {bubbles: true, detail: event.detail}));
+				element.dispatchEvent(new CustomEvent("translation", {bubbles: true, detail: event.detail}));
 			});
 			this.translator.addEventListener("error", function(event){
-                element.dispatchEvent(new CustomEvent("translationError", {bubbles: true, detail: event.detail}));
+				element.dispatchEvent(new CustomEvent("translationError", {bubbles: true, detail: event.detail}));
 			});
 		}else{
 			this.translator = null;
 		}
-		
+
 		// Create the caption renderer
-		if (mediaPlayer.captionsElement) {
+		if(mediaPlayer.captionsElement){
 			if(args.captionRenderer instanceof TimedText.CaptionRenderer){
 				this.captionRenderer = args.captionRenderer;
 				this.captionRenderer.target = this.mediaPlayer.captionsElement;
 				this.captionRenderer.appendCueCanvasTo = this.mediaPlayer.captionsElement;
 			}else{
 				renderCue = args.renderCue || function(renderedCue, area){
-					var txt, aconf, annotate,
+					var txt, annotator, annotate,
 						cue = renderedCue.cue;
 					if(args.annotations){
-						aconf = {
-							regexes: Ayamel.utils.Annotator.getMatchers(args.annotations,{}),
-							attach: args.annotations,
+						annotator = new Ayamel.Annotator({
 							handler: function(data, lang, text, index){
 								element.dispatchEvent(new CustomEvent("annotation", {
 									bubbles: true,
 									detail: {data: data, lang: lang, text: text, index: index}
 								}));
 							}
-						};
-						annotate = function(n){ return Ayamel.utils.Annotator.HTML(aconf, n); }
+						}, args.annotations);
+						//TODO: Handle index management when cues are displayed out of order
+						annotate = annotator.HTML.bind(annotator);
 					}
-					
+
 					txt = new Ayamel.Text({
 						content: cue.getCueAsHTML(renderedCue.kind === 'subtitles'),
 						processor: annotate
@@ -116,7 +115,7 @@
 
 					renderedCue.node = txt.displayElement;
 				};
-		
+
 				this.captionRenderer = new TimedText.CaptionRenderer({
 					target: mediaPlayer.captionsElement,
 					appendCueCanvasTo: mediaPlayer.captionsElement,
@@ -364,7 +363,7 @@
 					}
 					return maxWidth;
 				}
-			
+
 			},
 			maxHeight: {
 				get: function(){ return maxHeight; },
@@ -378,13 +377,13 @@
 				}
 			}
 		});
-		
+
 		this.resize = function(w, h){
 			maxWidth = +w || maxWidth;
 			maxHeight = +h || maxHeight;
 			this.resetSize();
 		};
-		
+
 		this.resetSize();
 	}
 
@@ -413,11 +412,11 @@
 		this.element.removeEventListener(event, callback, !!capture);
 	};
 
-	
+
 	AyamelPlayer.prototype.resetSize = function(){
 		Ayamel.utils.fitAspectRatio(this.element, this.aspectRatio, this.maxWidth, this.maxHeight);
 		this.mediaPlayer.height = this.element.offsetHeight;
 	};
-	
+
 	Ayamel.classes.AyamelPlayer = AyamelPlayer;
 }(Ayamel));
