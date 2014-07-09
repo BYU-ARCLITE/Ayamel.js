@@ -60,12 +60,14 @@
 		}
 	}
 
-	function gen_mod(attach,handler){
-		if(typeof attach === 'function'){ return attach; }
-		if(typeof handler !== 'function'){ throw new Error("No Annotation Handler Specified"); }
+	function gen_mod(config){
+		if(typeof config.attach === 'function'){ return config.attach; }
+		if(typeof config.handler !== 'function'){ throw new Error("No Annotation Handler Specified"); }
+		var handler = config.handler,
+			anns = config.annotations;
 		return function(n,lang,str,loc){
 			var node,
-				word = attach[lang][str]||attach[lang][str.toLowerCase()],
+				word = anns[lang][str]||anns[lang][str.toLowerCase()],
 				info = word[loc]||word.global;
 			if(n.nodeType === Node.ELEMENT_NODE){
 				node = n;
@@ -84,9 +86,8 @@
 	}
 
 	function anText(config,content){
-		fixConfig(config);
 		var offset = config.index,
-			modnode = gen_mod(config.attach,config.handler),
+			modnode = gen_mod(config),
 			matchers = config.regexes.filter(function(matcher){ return matcher.test(content); });
 		config.index += content.length;
 		return (matchers.length
@@ -95,10 +96,9 @@
 	}
 
 	function anHTML(config,content){
-		fixConfig(config);
 		var matchers, text, root, nodes, n, len,
 			filter = config.filter,
-			modnode = gen_mod(config.attach,config.handler);
+			modnode = gen_mod(config);
 
 		if(content.cloneNode){
 			root = content.cloneNode(true);
@@ -125,7 +125,7 @@
 		}
 		return root;
 	}
-	
+
 	function overwrite_exec(i,j){
 		return function exec(s){
 			var ret,
@@ -138,7 +138,7 @@
 			return null;
 		};
 	}
-	
+
 	var parse_default = (function(){
 		var latin_non_word = "\\s~`'\";:.,/?><[\\]{}\\\\|)(*&^%$#@!=\\-—",
 			rf = "(?:^|["+latin_non_word+"])(",
@@ -150,26 +150,66 @@
 			return regex;
 		};
 	}());
-	
+
 	function getMatchers(glosses,parsers){
 		var mlist = [];
 		Object.keys(glosses).forEach(function(lang){
-			try{
-				var lobj = glosses[lang],
-					match_gen = parsers[lang] || parse_default;
-				Object.keys(lobj).forEach(function(word){
-					Object.keys(lobj[word]).forEach(function(index){
-						mlist.push(match_gen(word,parseInt(index,10)));
-					});
+			var lobj = glosses[lang],
+				match_gen = parsers[lang] || parse_default;
+			Object.keys(lobj).forEach(function(word){
+				Object.keys(lobj[word]).forEach(function(index){
+					mlist.push(match_gen(word,parseInt(index,10)));
 				});
-			}catch(e){console.log("No parser for ",lang);}
+			});
 		});
 		return mlist;
 	}
 
-	Ayamel.utils.Annotator = Object.create({},{
-		HTML: { enumerable: true, value: anHTML },
-		Text:{ enumerable: true, value: anText },
-		getMatchers: { enumerable: true, value: getMatchers }
-	});
+	function Annotator(config, annotations){
+		var regexes, parsers = config.parsers || {};
+		this.filter = (typeof config.filter === 'function')?config.filter:defaultFilter;
+		this.attach = (typeof config.attach === 'function')?config.attach:null;
+		this.handler = (typeof config.handler === 'function')?config.handler:null;
+		this.index = +config.index||0;
+		Object.defineProperties(this,{
+			annotations: {
+				enumerable: true,
+				get: function(){ return annotations; },
+				set: function(a){
+					regexes = getMatchers(a, parsers);
+					return annotations = a;
+				}
+			},
+			parsers: {
+				enumerable: true,
+				get: function(){ return parsers; },
+				set: function(p){
+					regexes = getMatchers(annotations, p);
+					return parsers = p;
+				}
+			}
+		});
+	}
+
+	Annotator.prototype.HTML = function(content){
+		return anHTML(this, content);
+	};
+
+	Annotator.prototype.Text = function(content){
+		return anText(this, content);
+	};
+
+	Annotator.HTML = function(config, content){
+		fixConfig(config);
+		return anHTML(config, content);
+	};
+
+	Annotator.Text = function(config, content){
+		fixConfig(config);
+		return anText(config, content);
+	};
+
+	Annotator.getMatchers = getMatchers;
+
+	Ayamel.Annotator = Annotator;
 }(Ayamel));
