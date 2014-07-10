@@ -17,7 +17,7 @@
 			element = Ayamel.utils.parseHTML(template),
 			startTime = processTime(args.startTime || 0),
 			endTime = processTime(args.endTime || -1),
-			trackMap = new Map, indexMap = new Map,
+			resMap = new Map, indexMap = new Map, mimeMap = new Map,
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
@@ -26,7 +26,8 @@
 		this.element = element;
 		args.holder.appendChild(element);
 
-		this.textTrackResources = trackMap;
+		this.textTrackResources = resMap;
+		this.textTrackMimes = mimeMap;
 
 		/*
 		 * ==========================================================================================
@@ -140,9 +141,10 @@
 					var i, cue, offset = 0,
 						cueList = track.cues;
 
-					track.mime = mime;
 					that.addTextTrack(track);
-					trackMap.set(track, resource);
+
+					mimeMap.set(track, mime);
+					resMap.set(track, resource);
 
 					for(i = 0; cue = cueList[i]; i++){
 						indexMap.set(cueList[i], offset);
@@ -159,7 +161,8 @@
 				bubbles:true,
 				detail: {
 					tracks: tracks.filter(function(track){ return track !== null; }),
-					resources: trackMap
+					resources: resMap,
+					mimes: mimeMap
 				}
 			}));
 		});
