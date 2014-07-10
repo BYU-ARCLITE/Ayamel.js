@@ -17,7 +17,7 @@
 			element = Ayamel.utils.parseHTML(template),
 			startTime = processTime(args.startTime || 0),
 			endTime = processTime(args.endTime || -1),
-			trackMap = window.Map?(new Map):null,
+			trackMap = new Map, indexMap = new Map,
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
@@ -70,6 +70,19 @@
 			this.translator = null;
 		}
 
+		if(args.annotations){
+			this.annotator = new Ayamel.Annotator({
+				handler: function(data, lang, text, index){
+					element.dispatchEvent(new CustomEvent("annotation", {
+						bubbles: true,
+						detail: {data: data, lang: lang, text: text, index: index}
+					}));
+				}
+			}, args.annotations);
+		}else{
+			this.annotator = null;
+		}
+
 		// Create the caption renderer
 		if(mediaPlayer.captionsElement){
 			if(args.captionRenderer instanceof TimedText.CaptionRenderer){
@@ -78,19 +91,14 @@
 				this.captionRenderer.appendCueCanvasTo = this.mediaPlayer.captionsElement;
 			}else{
 				renderCue = args.renderCue || function(renderedCue, area){
-					var txt, annotator, annotate,
+					var txt, annotate,
 						cue = renderedCue.cue;
-					if(args.annotations){
-						annotator = new Ayamel.Annotator({
-							handler: function(data, lang, text, index){
-								element.dispatchEvent(new CustomEvent("annotation", {
-									bubbles: true,
-									detail: {data: data, lang: lang, text: text, index: index}
-								}));
-							}
-						}, args.annotations);
-						//TODO: Handle index management when cues are displayed out of order
-						annotate = annotator.HTML.bind(annotator);
+
+					if(that.annotator){
+						annotate = function(n){
+							that.annotator.index = indexMap.get(cue);
+							return that.annotator.HTML(n);
+						};
 					}
 
 					txt = new Ayamel.Text({
@@ -129,9 +137,18 @@
 		Promise.all((args.captionTracks||[]).map(function(resource){
 			return new Promise(function(resolve, reject){
 				Ayamel.utils.loadCaptionTrack(resource, function(track, mime){
+					var i, cue, offset = 0,
+						cueList = track.cues;
+
 					track.mime = mime;
 					that.addTextTrack(track);
-					if(trackMap){ trackMap.set(track, resource); }
+					trackMap.set(track, resource);
+
+					for(i = 0; cue = cueList[i]; i++){
+						indexMap.set(cueList[i], offset);
+						offset += cueList[i].getCueAsHTML().textContent;
+					}
+
 					resolve(track);
 				}, function(err){
 					resolve(null);
