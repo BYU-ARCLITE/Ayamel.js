@@ -59,8 +59,10 @@
 
 		// Include the YouTube API for a chromeless player
 		// Docs here: https://developers.google.com/youtube/js_api_reference
+		// We don't know proper height and width here, so just put in a default;
+		// it'll be overwritten later anyway.
 		swfobject.embedSWF("http://www.youtube.com/apiplayer?enablejsapi=1&version=3",
-			"youtubePlayer", width, height, "8", null, null,
+			"youtubePlayer", 800, 600, "8", null, null,
 			{ allowScriptAccess: "always", wmode: "transparent" }, { id: idstr });
 
 		//TODO: Set up properties object to allow interactions before YouTube has loaded
@@ -274,6 +276,5 @@
 			});
 		}
 	};
-
 
 }(Ayamel, window));

@@ -2,7 +2,7 @@
 	"use strict";
 
 	var template = '<div class="mediaPlayer"></div>',
-	    BasicMediaPrototype = {
+		BasicMediaPrototype = {
 			enterFullScreen: function(availableHeight) {
 				if (this.plugin) {
 					this.plugin.enterFullScreen(availableHeight);
@@ -52,7 +52,6 @@
 		return pluginPlayer;
 	}
 
-
 	function MediaPlayer(args) {
 		var _this = this,
 			plugin, element;
@@ -75,6 +74,7 @@
 		});
 
 		if(plugin === null){
+			args.holder.removeChild(element);
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
 		}		
 
