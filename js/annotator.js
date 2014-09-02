@@ -13,24 +13,24 @@
 			fragment = document.createDocumentFragment();
 			pos = 0;
 			(function recloop(strlen,index){
-				var regex,regResult;	//divide working string into 3 parts, accumulate 1&2 into the dom tree
+				var matcher,matchResult;	//divide working string into 3 parts, accumulate 1&2 into the dom tree
 				do{	{					//set working string to part 3 until part 3 is zero-length
-						regex = matchers[index--];	//save stack depth by decreasing index until we find something
-						regex.lastIndex = pos;
+						matcher = matchers[index--];	//save stack depth by decreasing index until we find something
+						matcher.lastIndex = pos;
 					} //this block loops based on the following while() & the enclosing do...while()
 					if(index === -1){ break; }
-					while(!!(regResult = regex.exec(text)) && (regex.lastIndex<=strlen)){
-							recloop(regResult.index+1,index); //part 1
-							fragment.appendChild(modnode(filter(regResult[0]),regex.lang,regResult[1],offset+regResult.index+1)); //part 2
-							pos = regex.lastIndex;
+					while(!!(matchResult = matcher.exec(text)) && (matcher.lastIndex<=strlen)){
+							recloop(matchResult.index+1,index); //part 1
+							fragment.appendChild(modnode(filter(matchResult[0]),matcher.lang,matchResult[1],offset+matchResult.index+1,matcher.info)); //part 2
+							pos = matcher.lastIndex;
 					}
 				}while(true);
-				while(!!(regResult = regex.exec(text)) && (regex.lastIndex<=strlen)){
-					if(regResult.index > 0 && pos <= regResult.index){
-						fragment.appendChild(filter(text.substring(pos,regResult.index+1)));	//part 1
+				while(!!(matchResult = matcher.exec(text)) && (matcher.lastIndex<=strlen)){
+					if(matchResult.index > 0 && pos <= matchResult.index){
+						fragment.appendChild(filter(text.substring(pos,matchResult.index+1)));	//part 1
 					}
-					fragment.appendChild(modnode(filter(regResult[0]),regex.lang,regResult[1],offset+regResult.index+1));	//part 2
-					pos = regex.lastIndex;
+					fragment.appendChild(modnode(filter(matchResult[0]),matcher.lang,matchResult[1],offset+matchResult.index+1,matcher.info));	//part 2
+					pos = matcher.lastIndex;
 				}
 				if(pos<strlen){fragment.appendChild(filter(text.substring(pos,strlen)));}
 			}(text.length,glen-1));
@@ -38,37 +38,12 @@
 		}
 	}
 
-	function defaultFilter(s){ return document.createTextNode(s); }
-	function identity(n){ return n; }
-
-	function fixConfig(config){
-		if(typeof config.index !== 'number'){config.index=0;}
-		if(typeof config.filter !== 'function'){config.filter = defaultFilter;}
-		if(typeof config.attach !== 'function' && typeof config.attach !== 'object'){config.attach = identity;}
-		if(config.regexes instanceof Array){
-			config.regexes = config.regexes.map(function(matcher){
-				var flags = "g";
-				if((matcher instanceof RegExp) && !matcher.global){
-					if(matcher.multiline){ flags+="m"; }
-					if(matcher.ignoreCase){ flags+="i"; }
-					return new RegExp(matcher.source,flags);
-				}
-				return matcher;
-			});
-		}else{
-			config.regexes = [];
-		}
-	}
-
-	function gen_mod(config){
+	function getmod(config){
 		if(typeof config.attach === 'function'){ return config.attach; }
 		if(typeof config.handler !== 'function'){ throw new Error("No Annotation Handler Specified"); }
-		var handler = config.handler,
-			anns = config.annotations;
-		return function(n,lang,str,loc){
-			var node,
-				word = anns[lang][str]||anns[lang][str.toLowerCase()],
-				info = word[loc]||word.global;
+		var handler = config.handler;
+		return function(n,lang,str,loc,info){
+			var node;
 			if(n.nodeType === Node.ELEMENT_NODE){
 				node = n;
 			}else{
@@ -87,18 +62,17 @@
 
 	function anText(config,content){
 		var offset = config.index,
-			modnode = gen_mod(config),
-			matchers = config.regexes.filter(function(matcher){ return matcher.test(content); });
+			matchers = config.matchers.filter(function(m){ return m.test(content); });
 		config.index += content.length;
 		return (matchers.length
-				?anString(matchers,config.filter,modnode,content,offset)
+				?anString(matchers,config.filter,getmod(config),content,offset)
 				:config.filter(document.createTextNode(content)));
 	}
 
 	function anHTML(config,content){
 		var matchers, text, root, nodes, n, len,
 			filter = config.filter,
-			modnode = gen_mod(config);
+			modnode = getmod(config);
 
 		if(content.cloneNode){
 			root = content.cloneNode(true);
@@ -111,7 +85,7 @@
 			text = content;
 		}
 
-		matchers = config.regexes.filter(function(matcher){ return matcher.test(text); });
+		matchers = config.matchers.filter(function(m){ return m.test(text); });
 		len = matchers.length;
 		nodes = [root];
 		while(n = nodes.shift()) switch(n.nodeType){
@@ -151,32 +125,51 @@
 		};
 	}());
 
+	function Matcher(regex, lang, info){
+		Object.defineProperties(this,{
+			regex: { value: regex },
+			lang: { value: lang },
+			info: { value: info },
+			lastIndex: {
+				get: function(){ return regex.lastIndex; },
+				set: function(i){ return regex.lastIndex = i; }
+			}
+		});
+	}
+
+	Matcher.prototype.test = function(s){ return this.regex.test(s); };
+	Matcher.prototype.exec = function(s){ return this.regex.exec(s); };
+
 	function getMatchers(glosses,parsers){
 		var mlist = [];
 		Object.keys(glosses).forEach(function(lang){
 			var lobj = glosses[lang],
-				match_gen = parsers[lang] || parse_default;
+				gen_regex = parsers[lang] || parse_default;
 			Object.keys(lobj).forEach(function(word){
-				Object.keys(lobj[word]).forEach(function(index){
-					mlist.push(match_gen(word,parseInt(index,10)));
+				var wobj = lobj[word];
+				Object.keys(wobj).forEach(function(index){
+					mlist.push(new Matcher(gen_regex(word,parseInt(index,10)), lang, wobj[index]));
 				});
 			});
 		});
 		return mlist;
 	}
 
+	function defaultFilter(s){ return document.createTextNode(s); }
+
 	function Annotator(config, annotations){
-		var regexes, parsers = config.parsers || {};
+		var parsers = config.parsers || {};
 		this.filter = (typeof config.filter === 'function')?config.filter:defaultFilter;
 		this.attach = (typeof config.attach === 'function')?config.attach:null;
 		this.handler = (typeof config.handler === 'function')?config.handler:null;
+		this.matchers = getMatchers(annotations, parsers);
 		this.index = +config.index||0;
 		Object.defineProperties(this,{
 			annotations: {
 				enumerable: true,
 				get: function(){ return annotations; },
 				set: function(a){
-					regexes = getMatchers(a, parsers);
+					this.matchers = getMatchers(a, parsers);
 					return annotations = a;
 				}
 			},
@@ -184,7 +177,7 @@
 				enumerable: true,
 				get: function(){ return parsers; },
 				set: function(p){
-					regexes = getMatchers(annotations, p);
+					this.matchers = getMatchers(annotations, p);
 					return parsers = p;
 				}
 			}
@@ -198,18 +191,6 @@
 	Annotator.prototype.Text = function(content){
 		return anText(this, content);
 	};
-
-	Annotator.HTML = function(config, content){
-		fixConfig(config);
-		return anHTML(config, content);
-	};
-
-	Annotator.Text = function(config, content){
-		fixConfig(config);
-		return anText(config, content);
-	};
-
-	Annotator.getMatchers = getMatchers;
 
 	Ayamel.Annotator = Annotator;
 }(Ayamel));
