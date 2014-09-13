@@ -77,7 +77,7 @@ var Ayamel = (function() {
 				var frag;
 				parseElement.innerHTML = text;
 				if(parseElement.childNodes.length > 1){
-					frag = new DocumentFragment();
+                    frag = document.createDocumentFragment();
 					[].slice.call(parseElement.childNodes).forEach(frag.appendChild.bind(frag));
 					return frag;
 				}else{
