@@ -224,38 +224,38 @@
 
 		// Play the media when the play button is pressed
 		controlBar.addEventListener("play", function(){
-			event.stopPropagation();
+            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.play();
 		});
 
 		// Pause the media when the pause button is pressed
 		controlBar.addEventListener("pause", function(){
-			event.stopPropagation();
+            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.pause();
 		});
 
 		// Change the volume when the volume controls are adjusted
 		controlBar.addEventListener("volumechange", function(event){
-			event.stopPropagation();
+            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.volume = event.detail.volume;
 			controlBar.volume = mediaPlayer.volume;
 		});
 
 		// Change the playback rate when the rate controls are adjusted
 		controlBar.addEventListener("ratechange", function(event){
-			event.stopPropagation();
+            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.playbackRate = event.detail.playbackRate;
 			controlBar.playbackRate = mediaPlayer.playbackRate;
 		});
 
 		// Mute/unmute the media when the mute button is pressed
 		controlBar.addEventListener("mute", function(){
-			event.stopPropagation();
+            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.muted = true;
 			controlBar.muted = mediaPlayer.muted;
 		});
 		controlBar.addEventListener("unmute", function(){
-			event.stopPropagation();
+            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.muted = false;
 			controlBar.muted = mediaPlayer.muted;
 		});
@@ -295,7 +295,7 @@
 			Ayamel.utils.FullScreen.exit();
 		});
 
-		controlBar.addEventListener("captionJump", function(){
+		controlBar.addEventListener("captionJump", function(event){
 			// Find the first visible track
 			var track = that.captionRenderer.tracks.filter(function(track){return track.mode === "showing";})[0];
 			if (track) {

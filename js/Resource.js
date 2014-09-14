@@ -59,7 +59,7 @@ var ResourceLibrary = (function() {
 			}, false);
 			xhr.addEventListener("error", function(){ reject(new Error("Request Failed")); }, false);
 			xhr.addEventListener("abort", function(){ reject(new Error("Request Aborted")); }, false);
-			xhr.open("GET",baseUrl + "resources/" + id + "?" + Date.now().toString(36), {dataType: "json"},true);
+			xhr.open("GET",baseUrl + "resources/" + id + "?" + Date.now().toString(36),true);
             xhr.send();
 		});
 	}
