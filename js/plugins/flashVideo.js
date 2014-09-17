@@ -44,6 +44,7 @@
 		// Create the element
 		this.element = element;
 		element.firstChild.id = flowId;
+        element.firstChild.style = "height:100%;";  // So that the flowPlayer will show up in Mac-Firefox
 		args.holder.appendChild(element);
 
 		// Create a place for captions
