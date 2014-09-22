@@ -21,7 +21,7 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			mediaPlayer, controlBar, renderCue;
+			mediaPlayer, controlBar, resizeWidth, renderCue;
 
 		this.element = element;
 		args.holder.appendChild(element);
@@ -404,7 +404,11 @@
 			this.resetSize();
 		};
 
-		this.resetSize();
+		// Resize until it fills the most space avaliable
+		do {
+			resizeWidth = this.width;
+			this.resetSize();
+		} while (this.width != resizeWidth);
 	}
 
 	AyamelPlayer.prototype.addTextTrack = function(track){
