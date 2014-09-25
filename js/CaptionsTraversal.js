@@ -8,29 +8,37 @@
 (function(Ayamel) {
 	"use strict";
 
-
 	Ayamel.utils.CaptionsTranversal = {
 
 		// Find the cue which most recently ended and move to its beginning
-		back: function(track, currentTime) {
-			var cue = track.cues
-				.filter(function(cue) {return cue.endTime < currentTime}) // Take only those before the given time
-				.sort(function (a,b) {return b.endTime - a.endTime})[0]; // Sort by end time with latest being first and take the first one
-			if (cue)
-				return cue.startTime;
-			else
-				return 0;
+		back: function(track, currentTime){
+			var i, cue, cueTime,
+				startTime = 0, endTime = 0,
+				cues = track.cues;
+			for(i = 0; cue = cues[i]; i++){
+				cueTime = cue.endTime;
+				//if we knew that cues were always sorted, we could break early
+				if(cueTime < currentTime && cueTime > endTime){
+					endTime = cueTime;
+					startTime = cue.startTime;
+				}
+			}
+			return startTime;
 		},
 
 		// Find the cue which is closest to being played and move to its beginning
-		forward: function(track, currentTime) {
-			var cue = track.cues
-				.filter(function(cue) {return cue.startTime > currentTime}) // Take only those after the given time
-				.sort(function (a,b) {return a.startTime - b.startTime})[0]; // Sort by start time with earliest being first and take the first one
-			if (cue)
-				return cue.startTime;
-			else
-				return currentTime;
+		forward: function(track, currentTime){
+			var i, cue, cueTime,
+				startTime = 1/0,
+				cues = track.cues;
+			for(i = 0; cue = cues[i]; i++){
+				cueTime = cue.startTime;
+				//if we knew that cues were always sorted, we could break early
+				if(cueTime > currentTime && cueTime < startTime){
+					startTime = cueTime;
+				}
+			}
+			return isFinite(startTime)?startTime:currentTime;
 		}
 	};
 })(Ayamel);
