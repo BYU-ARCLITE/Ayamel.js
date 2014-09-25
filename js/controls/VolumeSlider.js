@@ -38,12 +38,12 @@
             var newEvent;
             if (muted) {
                 muted = false;
-				element.title="unmute";
+                element.title="mute";
                 element.classList.remove("muted");
                 newEvent = new Event("unmute",{bubbles:true});
             } else {
                 muted = true;
-				element.title="mute";
+                element.title="unmute";
                 element.classList.add("muted");
                 newEvent = new Event("mute",{bubbles:true});
             }
