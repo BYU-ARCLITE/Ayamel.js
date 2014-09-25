@@ -5,7 +5,7 @@
  * Time: 8:34 AM
  * To change this template use File | Settings | File Templates.
  */
-(function (Ayamel,global) {
+(function(Ayamel,global){
 
 	var counter = 0,
 		template = "<div class='videoBox'><div></div></div>",
@@ -16,21 +16,21 @@
 			"video/x-flv"
 		];
 
-	function supportsFile(file) {
+	function supportsFile(file){
 		var mime = file.mime.split(";")[0];
 		return supportedMimeTypes.indexOf(mime) >= 0;
 	}
 
-	function findFile(resource) {
-		for (var i=0; i<resource.content.files.length; i += 1) {
+	function findFile(resource){
+		for (var i=0; i<resource.content.files.length; i += 1){
 			var file = resource.content.files[i];
-			if (supportsFile(file))
+			if(supportsFile(file))
 				return file;
 		}
 		return null;
 	}
 
-	function FlashVideoPlayer(args) {
+	function FlashVideoPlayer(args){
 		var _this = this,
 			flowId = "flowVideoHolder"+(counter++).toString(36),
 			playing = false,
@@ -51,13 +51,13 @@
 		this.captionsElement = captionsElement;
 		args.holder.appendChild(captionsElement);
 
-		function fireTimeEvents() {
-			if (!playing) { return; }
+		function fireTimeEvents(){
+			if(!playing){ return; }
 			// Make sure that we are playing within bounds (give a buffer because flash vid isn't perfect)
-			if (startTime !== 0 && player.getTime() < startTime - 0.5) {
+			if(startTime !== 0 && player.getTime() < startTime - 0.5){
 				player.seek(startTime);
 			}
-			if (stopTime !== -1 && player.getTime() >= stopTime - 0.1) {
+			if(stopTime !== -1 && player.getTime() >= stopTime - 0.1){
 				player.seek(startTime);
 				player.stop();
 			}
@@ -88,32 +88,32 @@
 				scaling: "fit",
 
 				// Set up clip events
-				onFinish: function() {
+				onFinish: function(){
 					playing = false;
 					element.dispatchEvent(new Event('ended',{bubbles:true,cancelable:true}));
 				},
-				onMetaData: function() {
+				onMetaData: function(){
 					element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:true}));
 				},
-				onPause: function() {
+				onPause: function(){
 					playing = false;
 					element.dispatchEvent(new Event('pause',{bubbles:true,cancelable:true}));
 				},
-				onResume: function() {
+				onResume: function(){
 					playing = true;
 					element.dispatchEvent(new Event('play',{bubbles:true,cancelable:true}));
 					fireTimeEvents();
 				},
-				onStart: function() {
+				onStart: function(){
 					playing = true;
 					element.dispatchEvent(new Event('play',{bubbles:true,cancelable:true}));
 					fireTimeEvents();
 				},
-				onStop: function() {
+				onStop: function(){
 					playing = false;
 					element.dispatchEvent(new Event('pause',{bubbles:true,cancelable:true}));
 				},
-				onVolume: function () {
+				onVolume: function(){
 					element.dispatchEvent(new Event('volumechange',{bubbles:true,cancelable:true}));
 				}
 			},
@@ -127,18 +127,18 @@
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function () {
+				get: function(){
 //                    var stop = stopTime === -1 ? player.getClip().fullDuration : stopTime;
 //                    return stop - startTime;
 					return player.getClip().fullDuration;
 				}
 			},
 			currentTime: {
-				get: function () {
+				get: function(){
 //                    return player.getTime() - startTime;
 					return player.getTime();
 				},
-				set: function (time) {
+				set: function(time){
 					time = Math.floor((+time||0) * 100) / 100;
 //                    player.seek(time + startTime);
 					player.seek(time);
@@ -147,39 +147,39 @@
 				}
 			},
 			muted: {
-				get: function () {
-					return player.getVolume() === 0;
+				get: function(){
+					return muted;
 				},
-				set: function (muted) {
+				set: function(muted){
 					muted = !!muted;
 					player[muted?'mute':'unmute']();
 					return muted;
 				}
 			},
 			paused: {
-				get: function () {
+				get: function(){
 					return player.isPaused();
 				}
 			},
 			playbackRate: {
-				get: function () {
+				get: function(){
 					return 1;
 				},
-				set: function (playbackRate) {
+				set: function(playbackRate){
 					//this.video.playbackRate = Number(playbackRate);
 					return 1;
 				}
 			},
 			readyState: {
-				get: function () {
+				get: function(){
 					return player.getState();
 				}
 			},
 			volume: {
-				get: function () {
+				get: function(){
 					return player.getVolume() / 100;
 				},
-				set: function (volume) {
+				set: function(volume){
 					volume = (+volume||0) * 100;
 					player.setVolume(volume);
 					return volume;
@@ -243,7 +243,7 @@
 	};
 
 	Ayamel.mediaPlugins.video.flash = {
-		install: function(args) {
+		install: function(args){
 			if(!Ayamel.path){
 				console.log('Missing Ayamel Library Path');
 				return null;
@@ -254,7 +254,7 @@
 			}
 			return new FlashVideoPlayer(args);
 		},
-		supports: function(resource) {
+		supports: function(resource){
 
 			// Ensure that the browser supports flash
 			var hasFlash = false;
@@ -265,7 +265,7 @@
 			}
 
 			// Check that there is a supported resource
-			return hasFlash && resource.content.files.some(function (file) {
+			return hasFlash && resource.content.files.some(function(file){
 				return (resource.type === "video" && supportsFile(file));
 			});
 		}
