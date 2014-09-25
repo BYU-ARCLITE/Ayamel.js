@@ -6,9 +6,9 @@
  * To change this template use File | Settings | File Templates.
  */
 (function (Ayamel, TimedText) {
-    "use strict";
+	"use strict";
 
-    Ayamel.utils.loadCaptionTrack = function(resource, successcb, errorcb){
+	Ayamel.utils.loadCaptionTrack = function(resource, successcb, errorcb){
 		var supportedFiles, file;
 		if(!TimedText){ throw new Error("TimedText library not loaded."); }
 		if(resource instanceof TextTrack){
