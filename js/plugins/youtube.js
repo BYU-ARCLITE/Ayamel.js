@@ -21,9 +21,9 @@
 
 	function getYouTubeId(url) {
 		var match;
-        if (url.substr(0, 10) === "youtube://") {
-            return url.substr(10);
-        }
+		if (url.substr(0, 10) === "youtube://") {
+			return url.substr(10);
+		}
 		match = watchReg.exec(url) || shortReg.exec(url);
 		if(match){ return match[1]; }
 		return "";

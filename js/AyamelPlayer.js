@@ -224,38 +224,38 @@
 
 		// Play the media when the play button is pressed
 		controlBar.addEventListener("play", function(){
-            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.play();
 		});
 
 		// Pause the media when the pause button is pressed
 		controlBar.addEventListener("pause", function(){
-            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.pause();
 		});
 
 		// Change the volume when the volume controls are adjusted
 		controlBar.addEventListener("volumechange", function(event){
-            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.volume = event.detail.volume;
 			controlBar.volume = mediaPlayer.volume;
 		});
 
 		// Change the playback rate when the rate controls are adjusted
 		controlBar.addEventListener("ratechange", function(event){
-            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.playbackRate = event.detail.playbackRate;
 			controlBar.playbackRate = mediaPlayer.playbackRate;
 		});
 
 		// Mute/unmute the media when the mute button is pressed
 		controlBar.addEventListener("mute", function(){
-            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.muted = true;
 			controlBar.muted = mediaPlayer.muted;
 		});
 		controlBar.addEventListener("unmute", function(){
-            try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
 			mediaPlayer.muted = false;
 			controlBar.muted = mediaPlayer.muted;
 		});

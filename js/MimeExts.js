@@ -1,5 +1,5 @@
 (function(Ayamel){
-    "use strict";
+	"use strict";
 	var ext2mime = {
 		'3dm':"x-world/x-3dmf",
 		'3dmf':"x-world/x-3dmf",

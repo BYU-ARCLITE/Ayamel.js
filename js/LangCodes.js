@@ -1,5 +1,5 @@
 (function(Ayamel){
-    "use strict";
+	"use strict";
 	//TODO: Dynamically load from the most up-to-date copy of the iso639 registry
 	var langCodes = {
 	aaa:{part2b:"",part2t:"",part1:"",scope:"I",type:"L",name:"Ghotuo"},
@@ -7962,7 +7962,7 @@
 	};
 	
 	Ayamel.utils.langCodes = langCodes;
-    Ayamel.utils.p1map = p1map;
+	Ayamel.utils.p1map = p1map;
 	Ayamel.utils.getLangName = function(ncode,lcode){
 		if(!langCodes.hasOwnProperty(ncode)){
 			throw new Error("Invalid Part 3 Language Code");
