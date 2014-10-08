@@ -557,7 +557,7 @@
 			(typeof def === 'string')?def:'application/octet-stream';
 	};
 	Ayamel.utils.mimeFromFilename = function(name,def){
-		return Ayamel.utils.mimeForExtension(name.substr(name.lastIndexOf('.')),def);
+		return Ayamel.utils.mimeForExtension(name.substr(name.lastIndexOf('.')+1),def);
 	};
 	
 	//TODO: isImage, isVideo, isText, isAudio
