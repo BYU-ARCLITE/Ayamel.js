@@ -411,6 +411,13 @@
 		} while (this.width != resizeWidth);
 	}
 
+	Object.defineProperties(AyamelPlayer.prototype,{
+		textTracks: {
+			get: function(){ return this.captionRenderer?this.captionRenderer.tracks:[]; },
+			enumerable: true
+		}
+	});
+
 	AyamelPlayer.prototype.addTextTrack = function(track){
 		if(!this.captionRenderer){ return; }
 		if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
@@ -418,6 +425,21 @@
 		if (this.controlBar.components.captions) {
 			this.controlBar.components.captions.addTrack(track);
 		}
+	};
+
+	AyamelPlayer.prototype.removeTextTrack = function(track){
+		if(!this.captionRenderer){ return; }
+		if(this.captionRenderer.tracks.indexOf(track) === -1){ return; }
+		this.captionRenderer.removeTextTrack(track);
+		if (this.controlBar.components.captions) {
+			this.controlBar.components.captions.rebuild(this.captionRenderer.tracks);
+		}
+	};
+
+	AyamelPlayer.prototype.refreshCaptionMenu = function(){
+		if(!this.captionRenderer){ return; }
+		if (!this.controlBar.components.captions){ return; }
+		this.controlBar.components.captions.rebuild(this.captionRenderer.tracks);
 	};
 
 	AyamelPlayer.prototype.play = function(){
