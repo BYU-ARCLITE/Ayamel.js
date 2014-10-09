@@ -68,5 +68,20 @@
         });
     };
 
+    CaptionsMenu.prototype.rebuild = function(tracks) {
+		var item = document.createElement('div'),
+			menu = this.element.querySelector(".captionsMenu");
+		[].forEach.call(this.element.querySelectorAll(".captionsMenu .captionsMenuEntry"),
+			function(el){ el.parentNode.removeChild(el); }
+		);
+		if(!tracks){
+			item.classList.add("noCaptionTracks");
+			item.textContent = "No Captions Available.";
+			menu.appendChild(item);
+		}else{
+			tracks.forEach(this.addTrack,this);
+		}
+    };
+
     Ayamel.controls.captions = CaptionsMenu;
 }(Ayamel));
