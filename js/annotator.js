@@ -50,11 +50,13 @@
 				node = document.createElement('span');
 				node.appendChild(n);
 			}
-			if(info.classList){ node.className = info.classList.join(' '); }
-			info.style && Object.keys(info.style).forEach(function(name){
+			if(info.className){ node.className = info.className; }
+			else{
+				node.className = (info.classList || config.classList || []).join(' ');
+			}
+			Object.keys(info.style || config.style || {}).forEach(function(name){
 				node.style[name] = info.style[name];
 			});
-			if(info.className){ node.className = info.className; }
 			node.addEventListener('click', handler.bind(null,info.data,lang,str,loc));
 			return node;
 		};
@@ -134,11 +136,16 @@
 
 	function Annotator(config, annotations){
 		var parsers = config.parsers || Annotator.parsers;
+
+		this.classList = (config.classList instanceof Array)?config.classList:[];
+		this.style = (config.style instanceof Object)?config.style:{};
+
 		this.filter = (typeof config.filter === 'function')?config.filter:defaultFilter;
 		this.attach = (typeof config.attach === 'function')?config.attach:null;
 		this.handler = (typeof config.handler === 'function')?config.handler:null;
 		this.matchers = getMatchers(annotations, parsers);
 		this.index = +config.index||0;
+		
 		Object.defineProperties(this,{
 			annotations: {
 				enumerable: true,

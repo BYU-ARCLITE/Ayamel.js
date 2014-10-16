@@ -73,14 +73,16 @@
 
 		if(args.annotations){
 			this.annotator = new Ayamel.Annotator({
-				parsers: args.parsers,
+				parsers: args.annotations.parsers,
+				classList: args.annotations.classList,
+				style: args.annotations.style,
 				handler: function(data, lang, text, index){
 					element.dispatchEvent(new CustomEvent("annotation", {
 						bubbles: true,
 						detail: {data: data, lang: lang, text: text, index: index}
 					}));
 				}
-			}, args.annotations);
+			}, args.annotations.data);
 		}else{
 			this.annotator = null;
 		}
