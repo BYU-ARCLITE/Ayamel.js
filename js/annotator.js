@@ -118,6 +118,7 @@
 	Matcher.prototype.exec = function(s){ return this.regex.exec(s); };
 
 	function getMatchers(glosses,parsers){
+		if(!(glosses instanceof Object)){ return []; }
 		var mlist = [];
 		Object.keys(glosses).forEach(function(lang){
 			var lobj = glosses[lang],
@@ -136,6 +137,7 @@
 
 	function Annotator(config, annotations){
 		var parsers = config.parsers || Annotator.parsers;
+		if(!(annotations instanceof Object)){ annotations = null; }
 
 		this.classList = (config.classList instanceof Array)?config.classList:[];
 		this.style = (config.style instanceof Object)?config.style:{};
@@ -145,20 +147,26 @@
 		this.handler = (typeof config.handler === 'function')?config.handler:null;
 		this.matchers = getMatchers(annotations, parsers);
 		this.index = +config.index||0;
-		
+
 		Object.defineProperties(this,{
 			annotations: {
 				enumerable: true,
 				get: function(){ return annotations; },
 				set: function(a){
-					this.matchers = getMatchers(a, parsers);
-					return annotations = a;
+					if(a instanceof Object){
+						this.matchers = getMatchers(a, parsers);
+						return annotations = a;
+					}else{
+						this.matchers = [];
+						return annotations = null;
+					}
 				}
 			},
 			parsers: {
 				enumerable: true,
 				get: function(){ return parsers; },
 				set: function(p){
+					if(!(p instanceof Object)){ p = {}; }
 					this.matchers = getMatchers(annotations, p);
 					return parsers = p;
 				}
@@ -172,6 +180,10 @@
 
 	Annotator.prototype.Text = function(content){
 		return anText(this, content);
+	};
+
+	Annotator.prototype.refresh = function(){
+		this.matchers = getMatchers(this.annotations, this.parsers);
 	};
 
 	/****************************************
