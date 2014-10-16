@@ -100,31 +100,6 @@
 		return root;
 	}
 
-	function overwrite_exec(i,j){
-		return function exec(s){
-			var ret,
-				res = RegExp.prototype.exec.call(this,s);
-			if(res){
-				ret = [res[i],res[j]];
-				ret.index = res.index;
-				return ret;
-			}
-			return null;
-		};
-	}
-
-	var parse_default = (function(){
-		var latin_non_word = "\\s~`'\";:.,/?><[\\]{}\\\\|)(*&^%$#@!=\\-—",
-			rf = "(?:^|["+latin_non_word+"])(",
-			rl = ")(?=$|["+latin_non_word+"])",
-			exec = overwrite_exec(1,1);
-		return function(word){
-			var regex = RegExp(rf+word.replace(/[\-\/\\?.*\^$\[{()|+]/g,"\\$&")+rl,'gim');
-			regex.exec = exec;
-			return regex;
-		};
-	}());
-
 	function Matcher(regex, lang, info){
 		Object.defineProperties(this,{
 			regex: { value: regex },
@@ -158,7 +133,7 @@
 	function defaultFilter(s){ return document.createTextNode(s); }
 
 	function Annotator(config, annotations){
-		var parsers = config.parsers || {};
+		var parsers = config.parsers || Annotator.parsers;
 		this.filter = (typeof config.filter === 'function')?config.filter:defaultFilter;
 		this.attach = (typeof config.attach === 'function')?config.attach:null;
 		this.handler = (typeof config.handler === 'function')?config.handler:null;
@@ -190,6 +165,77 @@
 
 	Annotator.prototype.Text = function(content){
 		return anText(this, content);
+	};
+
+	/****************************************
+	 * Language-Specific Word-Breaking Code *
+	 ****************************************/
+
+	function overwrite_exec(i,j){
+		return function exec(s){
+			var ret,
+				res = RegExp.prototype.exec.call(this,s);
+			if(res){
+				ret = [res[i],res[j]];
+				ret.index = res.index;
+				return ret;
+			}
+			return null;
+		};
+	}
+
+	var parse_default = (function(){
+		var latin_non_word = "\\s~`'\";:.,/?><[\\]{}\\\\|)(*&^%$#@!=\\-—",
+			rf = "(?:^|["+latin_non_word+"])(",
+			rl = ")(?=$|["+latin_non_word+"])",
+			exec = overwrite_exec(1,1);
+		return function(word){
+			var regex = RegExp(rf+word.replace(/[\-\/\\?.*\^$\[{()|+]/g,"\\$&")+rl,'gim');
+			regex.exec = exec;
+			return regex;
+		};
+	}());
+
+	function parse_no_spaces(word){
+		var lastIndex=0,
+			wlen=word.length;
+		return {
+			test:function(s){
+				return s.indexOf(word)>=0;
+			},
+			exec:function(s){
+				var ret, index = s.indexOf(word,lastIndex);
+				if(index>=0){
+					lastIndex = index+wlen;
+					ret = [word,word];
+					ret.index = index-1;
+					return ret;
+				}
+				return null;
+			},
+			get lastIndex(){return lastIndex;},
+			set lastIndex(i){lastIndex=+i||0;}
+		};
+	}
+
+	Annotator.parsers = {
+		zho: parse_no_spaces,
+		jpn: parse_no_spaces,
+		ara: (function(){
+			//ARABIC FULL STOP - U+06D4 ARABIC QUESTION MARK - U+061F ARABIC COMMA - U+060C ARABIC SEMICOLON - U+061B ARABIC DECIMAL SEPARATOR - U+066B
+			var arpunctuation = "\\s\\u06D4\\u061F\\u060C\\u061B\\u066B\\u061E!.",
+				arletters = "\\u0600-\\u06FF\\u0750-\\u077F\\uFB50-\\uFDFF\\uFE70-\\uFEFF",
+				arprefixes = "\\u0600-\\u06FF\\u0750-\\u077F\\uFB50-\\uFDFF\\uFE70-\\uFEFF",
+				rf = "(?:^|[^"+arletters+"])(["+arprefixes+"]?(",
+				rl = "))(?=$|["+arpunctuation+"]|[^"+arletters+"])",
+				exec = overwrite_exec(2,1);
+
+			return function(word){
+				var regex = RegExp(rf+word.replace(/[\-\/\\?.*\^$\[{()|+]/g,"\\$&")+rl,'gim');
+				regex.exec = exec;
+				return regex;
+			};
+		}())
 	};
 
 	Ayamel.Annotator = Annotator;
