@@ -71,7 +71,7 @@
 			this.translator = null;
 		}
 
-		if(args.annotations){
+		if(args.annotations.data){
 			this.annotator = new Ayamel.Annotator({
 				parsers: args.annotations.parsers,
 				classList: args.annotations.classList,
