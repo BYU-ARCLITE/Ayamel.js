@@ -4,6 +4,9 @@
 		throw new Error("Ayamel Uninitialized");
 	}
 
+	//re-useable span element for parsing HTML strings.
+	var pspan = document.createElement('span');
+
 	function anString(matchers,filter,modnode,text,offset){
 		var fragment, pos,
 			glen = matchers.length;
@@ -62,6 +65,7 @@
 		};
 	}
 
+	//content must be a string
 	function anText(config,content){
 		var offset = config.index,
 			matchers = config.matchers.filter(function(m){ return m.test(content); });
@@ -71,20 +75,27 @@
 				:config.filter(document.createTextNode(content)));
 	}
 
+	//content could be an HTML string, a document, an element, or a text node,
 	function anHTML(config,content){
 		var matchers, text, root, nodes, n, len,
 			filter = config.filter,
 			modnode = getmod(config);
 
 		if(content.cloneNode){
-			root = content.cloneNode(true);
-			text = content.textContent || content.nodeValue;
+			if(content.nodeType === Node.TEXT_NODE){
+				text = content.nodeValue;
+				root = document.createDocumentFragment();
+				root.appendChild(content.cloneNode(true));
+			}else{
+				//Documents and elements can be root nodes
+				text = content.textContent;
+				root = content.cloneNode(true);
+			}
 		}else{
-			n = document.createElement('span');
-			n.innerHTML = content;
-			root = document.createDocumentFragment();
-			[].forEach.call(n.childNodes,root.appendChild.bind(root));
 			text = content;
+			pspan.innerHTML = text;
+			root = document.createDocumentFragment();
+			[].forEach.call(pspan.childNodes,root.appendChild.bind(root));
 		}
 
 		matchers = config.matchers.filter(function(m){ return m.test(text); });
