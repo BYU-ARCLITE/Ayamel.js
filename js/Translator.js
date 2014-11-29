@@ -54,12 +54,16 @@
 						destLang: Ayamel.utils.upgradeLangCode(destLang),
 						data: params.data
 					};
-				that.e.dispatchEvent(new CustomEvent("translation", {
-					bubbles: true,
-					cancelable: true,
-					detail: data
-				}));
-				resolve(data);
+				if (data.translations === void 0) {  // Make sure we actually recieved translations
+					this.dispatchEvent(new Event("error")); 
+				} else {
+					that.e.dispatchEvent(new CustomEvent("translation", {
+						bubbles: true,
+						cancelable: true,
+						detail: data
+					}));
+					resolve(data);
+				}
 			},false);
 
 			xhr.addEventListener('timeout',function(){ err("Timeout"); }, false);
