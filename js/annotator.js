@@ -88,7 +88,11 @@
 				root.appendChild(content.cloneNode(true));
 			}else{
 				//Documents and elements can be root nodes
-				text = content.textContent;
+				//Some jiggering is necessary to get around
+				//the lack of innerHTML on doc fragments
+				pspan.innerHTML = "";
+				pspan.appendChild(content.cloneNode(true))
+				text = pspan.innerHTML;
 				root = content.cloneNode(true);
 			}
 		}else{
