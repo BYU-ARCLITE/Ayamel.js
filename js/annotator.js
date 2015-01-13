@@ -17,22 +17,22 @@
 			pos = 0;
 			(function recloop(strlen,index){
 				var matcher,matchResult;	//divide working string into 3 parts, accumulate 1&2 into the dom tree
-				do{	{					//set working string to part 3 until part 3 is zero-length
+				do{	{						//set working string to part 3 until part 3 is zero-length
 						matcher = matchers[index--];	//save stack depth by decreasing index until we find something
 						matcher.lastIndex = pos;
 					} //this block loops based on the following while() & the enclosing do...while()
 					if(index === -1){ break; }
 					while(!!(matchResult = matcher.exec(text)) && (matcher.lastIndex<=strlen)){
-							recloop(matchResult.index+1,index); //part 1
-							fragment.appendChild(modnode(filter(matchResult[0]),matcher.lang,matchResult[1],offset+matchResult.index+1,matcher.info)); //part 2
+							if(matchResult.index > 0){ recloop(matchResult.index,index); } //part 1
+							fragment.appendChild(modnode(filter(matchResult[0]),matcher.lang,matchResult[1],offset+matchResult.index,matcher.info)); //part 2
 							pos = matcher.lastIndex;
 					}
 				}while(true);
 				while(!!(matchResult = matcher.exec(text)) && (matcher.lastIndex<=strlen)){
 					if(matchResult.index > 0 && pos <= matchResult.index){
-						fragment.appendChild(filter(text.substring(pos,matchResult.index+1)));	//part 1
+						fragment.appendChild(filter(text.substring(pos,matchResult.index))); //part 1
 					}
-					fragment.appendChild(modnode(filter(matchResult[0]),matcher.lang,matchResult[1],offset+matchResult.index+1,matcher.info));	//part 2
+					fragment.appendChild(modnode(filter(matchResult[0]),matcher.lang,matchResult[1],offset+matchResult.index,matcher.info)); //part 2
 					pos = matcher.lastIndex;
 				}
 				if(pos<strlen){fragment.appendChild(filter(text.substring(pos,strlen)));}
@@ -205,13 +205,13 @@
 	 * Language-Specific Word-Breaking Code *
 	 ****************************************/
 
-	function overwrite_exec(i,j){
+	function overwrite_exec(i,j,k){
 		return function exec(s){
 			var ret,
 				res = RegExp.prototype.exec.call(this,s);
 			if(res){
 				ret = [res[i],res[j]];
-				ret.index = res.index;
+				ret.index = res.index + res[k].length;
 				return ret;
 			}
 			return null;
@@ -220,9 +220,10 @@
 
 	var parse_default = (function(){
 		var latin_non_word = "\\s~`'\";:.,/?><[\\]{}\\\\|)(*&^%$#@!=\\-—",
-			rf = "(?:^|["+latin_non_word+"])(",
+			rf = "(^|["+latin_non_word+"])(",
 			rl = ")(?=$|["+latin_non_word+"])",
-			exec = overwrite_exec(1,1);
+			exec = overwrite_exec(2,2,1);
+
 		return function(word){
 			var regex = RegExp(rf+word.replace(/[\-\/\\?.*\^$\[{()|+]/g,"\\$&")+rl,'gim');
 			regex.exec = exec;
@@ -242,7 +243,7 @@
 				if(index>=0){
 					lastIndex = index+wlen;
 					ret = [word,word];
-					ret.index = index-1;
+					ret.index = index;
 					return ret;
 				}
 				return null;
@@ -260,9 +261,9 @@
 			var arpunctuation = "\\s\\u06D4\\u061F\\u060C\\u061B\\u066B\\u061E!.",
 				arletters = "\\u0600-\\u06FF\\u0750-\\u077F\\uFB50-\\uFDFF\\uFE70-\\uFEFF",
 				arprefixes = "\\u0600-\\u06FF\\u0750-\\u077F\\uFB50-\\uFDFF\\uFE70-\\uFEFF",
-				rf = "(?:^|[^"+arletters+"])(["+arprefixes+"]?(",
+				rf = "(^|[^"+arletters+"])(["+arprefixes+"]?(",
 				rl = "))(?=$|["+arpunctuation+"]|[^"+arletters+"])",
-				exec = overwrite_exec(2,1);
+				exec = overwrite_exec(3,2,1);
 
 			return function(word){
 				var regex = RegExp(rf+word.replace(/[\-\/\\?.*\^$\[{()|+]/g,"\\$&")+rl,'gim');
