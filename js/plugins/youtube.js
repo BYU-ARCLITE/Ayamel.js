@@ -1,32 +1,18 @@
 (function (Ayamel, global) {
 	"use strict";
 
-	var template = '<div class="videoBox"><div id="youtubePlayer"></div></div>',
-		captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
-		watchReg = /https?:\/\/www\.youtube\.com\/watch\?v=(.*)/i,
-		shortReg = /https?:\/\/youtu\.be\/(.*)/i,
-		counter = 0;
+	// https://developers.google.com/youtube/iframe_api_reference
 
-	function genId(){
-		counter++;
-		return "AyamelYTPlayer-"+counter.toString(36);
-	}
+	var template = '<div class="videoBox"><div></div></div>',
+		captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
+		watchReg = /https?:\/\/www\.youtube\.com\/watch\?v=(.{11})/i,
+		shortReg = /https?:\/\/youtu\.be\/(.{11})/i;
 
 	function supportsFile(file) {
 		return file.streamUri &&
 			(file.streamUri.substr(0, 10) === "youtube://"
 			|| watchReg.test(file.streamUri)
 			|| shortReg.test(file.streamUri));
-	}
-
-	function getYouTubeId(url) {
-		var match;
-		if (url.substr(0, 10) === "youtube://") {
-			return url.substr(10);
-		}
-		match = watchReg.exec(url) || shortReg.exec(url);
-		if(match){ return match[1]; }
-		return "";
 	}
 
 	function findFile(resource) {
@@ -39,9 +25,18 @@
 		return null;
 	}
 
+	function getYouTubeId(url) {
+		var match;
+		if (url.substr(0, 10) === "youtube://") {
+			return url.substr(10,11);
+		}
+		match = watchReg.exec(url) || shortReg.exec(url);
+		if(match){ return match[1]; }
+		return "";
+	}
+
 	function YouTubePlayer(args) {
 		var _this = this,
-			idstr = genId(),
 			startTime = +args.startTime || 0,
 			stopTime = +args.endTime || -1,
 			element = Ayamel.utils.parseHTML(template),
@@ -57,36 +52,74 @@
 		this.captionsElement = captionsElement;
 		args.holder.appendChild(captionsElement);
 
-		// Include the YouTube API for a chromeless player
-		// Docs here: https://developers.google.com/youtube/js_api_reference
-		// We don't know proper height and width here, so just put in a default;
-		// it'll be overwritten later anyway.
-		swfobject.embedSWF("http://www.youtube.com/apiplayer?enablejsapi=1&version=3",
-			"youtubePlayer", 800, 600, "8", null, null,
-			{ allowScriptAccess: "always", wmode: "transparent" }, { id: idstr });
-
 		//TODO: Set up properties object to allow interactions before YouTube has loaded
+
+		//Info on how properties & controls work: https://developers.google.com/youtube/js_api_reference
 
 		Object.defineProperties(this, {
 			init: {
 				value: function() {
-					var video = element.querySelector("#"+idstr),
-						played = false,
+					var played = false,
 						playing = false;
 
 					video.style.height = "100%";
 					video.style.width = "100%";
 
-					this.video = video;
-
-					// Load the source
-					video.loadVideoById({
+					// We don't know proper height and width here, so just put in a default;
+					this.video = new YT.Player(element.firstChild, {
+						height: '600',
+						width: '800',
 						videoId: getYouTubeId(findFile(args.resource).streamUri),
-						startSeconds: startTime,
-						endSeconds: stopTime === -1 ? undefined : stopTime,
-						suggestedQuality: "large"
-					});
-					video.pauseVideo();
+						playerVars: {
+							autoplay: 0,
+							cc_load_policy: 0,
+							controls: 0,
+							disablekb: 1,
+							enablejsapi: 1,
+							start: startTime,
+							end: stopTime === -1 ? undefined : stopTime,
+							iv_load_policy: 3,
+							modestbranding: 1,
+							origin: location.origin,
+							playsinline: 1,
+							rel: 0,
+							showinfo: 0,
+						},
+						events: {
+							onStateChange: function(data){
+								if(data === -1) { return; }
+								element.dispatchEvent(new Event({
+									0: "ended",
+									1: "play",
+									2: "pause",
+									3: "durationchange", //buffering
+									5: 'loading' //video cued
+								}[data],{bubbles:true,cancelable:true}));
+
+								// If we started playing then send out timeupdate events
+								if (data === 1) {
+									playing = true;
+									timeUpdate();
+								}else if(data === 0 || data === 2){
+									// If this is the first pause, then the duration is changed/loaded, so send out that event
+									if (!played) {
+										played = true;
+										element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:true}));
+									}
+
+									playing = false;
+								}
+							},
+							onError: function(err){
+								switch(err){
+								case 2: alert("Invalid video ID"); return;
+								case 100: alert("Video not found"); return;
+								case 101:
+								case 150: alert("This video can only be watched on YouTube"); return;
+								}
+							}
+						}
+					  });
 
 					function timeUpdate() {
 						var timeEvent = document.createEvent("HTMLEvents");
@@ -100,33 +133,6 @@
 							setTimeout(timeUpdate, 50);
 						}
 					}
-
-					// Set up events. Unfortunately the YouTube API requires the callback to be in the global namespace.
-					window.youtubeStateChange = function(data) {
-						if(data === -1) { return; }
-						element.dispatchEvent(new Event({
-							0: "ended",
-							1: "play",
-							2: "pause",
-							3: "durationchange",
-							5: 'loading'
-						}[data],{bubbles:true,cancelable:true}));
-
-						// If we started playing then send out timeupdate events
-						if (data === 1) {
-							playing = true;
-							timeUpdate();
-						}else if(data === 0 || data === 2){
-							// If this is the first pause, then the duration is changed/loaded, so send out that event
-							if (!played) {
-								played = true;
-								element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:true}));
-							}
-
-							playing = false;
-						}
-					};
-					video.addEventListener("onStateChange", "youtubeStateChange");
 				}
 			},
 			duration: {
@@ -210,6 +216,7 @@
 				set: function(h){
 					h = +h || element.clientHeight;
 					element.style.height = h + "px";
+					//element.firstChild.style.height = h + "px";
 					return h;
 				}
 			},
@@ -218,6 +225,7 @@
 				set: function(w){
 					w = +w || element.clientWidth;
 					element.style.width = w + "px";
+					//element.firstChild.style.width = w + "px";
 					return w;
 				}
 			}
@@ -250,7 +258,7 @@
 			fullScreen: true,
 			lastCaption: true,
 			play: true,
-			rate: false,
+			rate: true,
 			timeCode: true,
 			volume: true
 		},
@@ -260,16 +268,29 @@
 			fullScreen: true,
 			lastCaption: true,
 			play: true,
-			rate: false,
+			rate: true,
 			timeCode: true,
 			volume: false
 		}
 	};
 
+	//Load the IFrame Player API code
+	var tag = document.createElement('script'),
+		ready = false, inits = [];
+	tag.src = "https://www.youtube.com/iframe_api";
+	document.getElementsByTagName('head')[0].appendChild(tag);
+	global.onYouTubeIframeAPIReady = function(){
+		ready = true;
+		inits.forEach(function(init){ init(); });
+	};
+
+	//Register the plugin
 	Ayamel.mediaPlugins.video.youtube = {
 		install: function(args) {
 			var player = new YouTubePlayer(args);
-			global.onYouTubePlayerReady = player.init.bind(player);
+			//If it's ever asynchronous, it should always be asynchronous
+			if(ready){ setTimeout(player.init.bind(player),0); }
+			else{ inits.push(player.init.bind(player)); }
 			return player;
 		},
 		supports: function(resource) {
