@@ -138,6 +138,9 @@
 		Object.keys(glosses).forEach(function(lang){
 			var lobj = glosses[lang],
 				gen_regex = parsers[lang] || parse_default;
+			//Validation/sanitization;
+			//skip invalid keys rather than breaking on not-perfectly-valid documents
+			if((typeof lobj !== 'object') || (lobj instanceof String)){ return; }
 			Object.keys(lobj).forEach(function(word){
 				var wobj = lobj[word];
 				Object.keys(wobj).forEach(function(index){
