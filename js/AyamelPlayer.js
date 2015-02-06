@@ -220,9 +220,8 @@
 
 		// When the user is done scrubbing, seek to that position
 		controlBar.addEventListener("scrubend", function(event){
-			// If we have been lying to the control bar, then keep that in mind
-			var length = (endTime === -1 ? that.mediaPlayer.duration : endTime) - startTime;
-			mediaPlayer.currentTime = event.detail.progress * length + startTime;
+			var length = ((endTime === -1)?that.mediaPlayer.duration:endTime)-startTime
+			that.currentTime = event.detail.progress * length;
 		});
 
 		// Play the media when the play button is pressed
@@ -254,13 +253,13 @@
 		// Mute/unmute the media when the mute button is pressed
 		controlBar.addEventListener("mute", function(){
 			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
-			mediaPlayer.muted = true;
-			controlBar.muted = mediaPlayer.muted;
+			that.muted = true;
+			controlBar.muted = that.muted;
 		});
 		controlBar.addEventListener("unmute", function(){
 			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
-			mediaPlayer.muted = false;
-			controlBar.muted = mediaPlayer.muted;
+			that.muted = false;
+			controlBar.muted = that.muted;
 		});
 
 		// Enable/disable caption tracks when clicked in the caption menu
@@ -283,18 +282,22 @@
 					- controlBar.height;
 				mediaPlayer.enterFullScreen(availableHeight);
 				controlBar.fullScreen = true;
+				element.dispatchEvent(new CustomEvent('enterfullscreen',{bubbles:true}));
 			}else{
 				mediaPlayer.exitFullScreen();
 				controlBar.fullScreen = false;
+				element.dispatchEvent(new CustomEvent('exitfullscreen',{bubbles:true}));
 			}
 		},false);
 
 		//Enter/exit full screen when the button is pressed
-		controlBar.addEventListener("enterfullscreen", function(){
+		controlBar.addEventListener("enterfullscreen", function(e){
+			e.stopPropagation();
 			Ayamel.utils.FullScreen.enter(element);
 		});
 
-		controlBar.addEventListener("exitfullscreen", function(){
+		controlBar.addEventListener("exitfullscreen", function(e){
+			e.stopPropagation();
 			Ayamel.utils.FullScreen.exit();
 		});
 
@@ -317,15 +320,24 @@
 		Object.defineProperties(this, {
 			duration: {
 				get: function(){
-					return mediaPlayer.duration;
+					return (endTime === -1 ? that.mediaPlayer.duration : endTime)
+							- startTime;
 				}
 			},
 			currentTime: {
 				get: function(){
-					return mediaPlayer.currentTime;
+					return mediaPlayer.currentTime - startTime;
 				},
 				set: function(time){
-					return mediaPlayer.currentTime = time;
+					var newtime,
+						oldtime = mediaPlayer.currentTime - startTime;
+					mediaPlayer.currentTime = (+time||0) + startTime;
+					newtime = mediaPlayer.currentTime - startTime;
+					element.dispatchEvent(new CustomEvent('timejump', {
+						bubbles:true,
+						detail: { oldtime: oldtime, newtime: newtime }
+					}));
+					return newtime;
 				}
 			},
 			muted: {
@@ -333,7 +345,12 @@
 					return mediaPlayer.muted;
 				},
 				set: function(muted){
-					return mediaPlayer.muted = muted;
+					var m = mediaPlayer.muted;
+					mediaPlayer.muted = muted;
+					if(mediaPlayer.muted !== m){
+						element.dispatchEvent(new CustomEvent(m?'unmute':'mute', {bubbles:true}));
+						return !m;
+					}
 				}
 			},
 			paused: {
