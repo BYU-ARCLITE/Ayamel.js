@@ -164,6 +164,7 @@
 	Html5AudioPlayer.prototype.features = {
 		desktop: {
 			captions: true,
+			annotations: true,
 			fullScreen: false,
 			lastCaption: true,
 			play: true,
@@ -173,6 +174,7 @@
 		},
 		mobile: {
 			captions: true,
+			annotations: true,
 			fullScreen: false,
 			lastCaption: true,
 			play: true,

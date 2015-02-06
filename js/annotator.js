@@ -132,19 +132,21 @@
 	Matcher.prototype.test = function(s){ return this.regex.test(s); };
 	Matcher.prototype.exec = function(s){ return this.regex.exec(s); };
 
-	function getMatchers(glosses,parsers){
-		if(!(glosses instanceof Object)){ return []; }
-		var mlist = [];
-		Object.keys(glosses).forEach(function(lang){
-			var lobj = glosses[lang],
-				gen_regex = parsers[lang] || parse_default;
-			//Validation/sanitization;
-			//skip invalid keys rather than breaking on not-perfectly-valid documents
-			if((typeof lobj !== 'object') || (lobj instanceof String)){ return; }
-			Object.keys(lobj).forEach(function(word){
-				var wobj = lobj[word];
-				Object.keys(wobj).forEach(function(index){
-					mlist.push(new Matcher(gen_regex(word,parseInt(index,10)), lang, wobj[index]));
+	function getMatchers(setlist,parsers){
+		if(!(setlist instanceof Array)){ return []; }
+		setlist.forEach(function(annset){
+			var glosses = annset.glosses;
+			if(annset.mode !== "showing"){ return; }
+			Object.keys(glosses).forEach(function(lang){
+				lobj = glosses[lang];
+				//Validation/sanitization;
+				//skip invalid keys rather than breaking on not-perfectly-valid documents
+				if((typeof lobj !== 'object') || (lobj instanceof String)){ return; }
+				Object.keys(lobj).forEach(function(word){
+					var wobj = lobj[word];
+					Object.keys(wobj).forEach(function(index){
+						mlist.push(new Matcher(gen_regex(word,parseInt(index,10)), lang, wobj[index]));
+					});
 				});
 			});
 		});
@@ -171,12 +173,12 @@
 				enumerable: true,
 				get: function(){ return annotations; },
 				set: function(a){
-					if(a instanceof Object){
+					if(a instanceof Array){
 						this.matchers = getMatchers(a, parsers);
 						return annotations = a;
 					}else{
 						this.matchers = [];
-						return annotations = null;
+						return annotations = [];
 					}
 				}
 			},
@@ -274,6 +276,13 @@
 				return regex;
 			};
 		}())
+	};
+
+	Annotator.AnnSet = function(label, language, glosses){
+		this.label = ""+label;
+		this.language = ""+language;
+		this.glosses = glosses;
+		this.mode = "disabled";
 	};
 
 	Ayamel.Annotator = Annotator;
