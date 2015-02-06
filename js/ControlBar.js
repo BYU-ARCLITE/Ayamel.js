@@ -24,7 +24,7 @@
 
 	function ControlBar(args) {
 		var _this = this,
-			controlLists = args.components || {left:["play", "volume", "captions"], right:["rate", "fullScreen", "timeCode"]},
+			controlLists = args.components || {left:["play", "volume", "captions", "annotations"], right:["rate", "fullScreen", "timeCode"]},
 			components = {}, progressBar, timeCode,
 			currentTime = 0, duration = 0,
 			element = document.createElement('div');

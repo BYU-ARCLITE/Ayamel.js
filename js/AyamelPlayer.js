@@ -98,7 +98,7 @@
 					var txt, annotate,
 						cue = renderedCue.cue;
 
-					if(that.annotator){
+					if(that.annotations){
 						annotate = function(n){
 							that.annotator.index = indexMap.get(cue);
 							return that.annotator.HTML(n);
@@ -262,15 +262,25 @@
 			controlBar.muted = that.muted;
 		});
 
-		// Enable/disable caption tracks when clicked in the caption menu
+		// Rebuild captions when tracks are enabled or disabled.
 		controlBar.addEventListener("enabletrack", function(event){
-			event.detail.track.mode = "showing";
 			that.captionRenderer.rebuildCaptions();
 		});
 		controlBar.addEventListener("disabletrack", function(event){
-			event.detail.track.mode = "disabled";
 			that.captionRenderer.rebuildCaptions();
 		});
+
+		// Rebuild captions when annotation sets are enabled or disabled.
+		if(this.annotator){
+			controlBar.addEventListener("enableannset", function(event){
+				this.annotator.refresh();
+				that.captionRenderer.rebuildCaptions();
+			});
+			controlBar.addEventListener("disableannset", function(event){
+				this.annotator.refresh();
+				that.captionRenderer.rebuildCaptions();
+			});
+		}
 
 		// Handle changes to fullscreen mode
 
@@ -458,8 +468,49 @@
 
 	AyamelPlayer.prototype.refreshCaptionMenu = function(){
 		if(!this.captionRenderer){ return; }
-		if (!this.controlBar.components.captions){ return; }
+		if(!this.controlBar.components.captions){ return; }
 		this.controlBar.components.captions.rebuild(this.captionRenderer.tracks);
+	};
+
+	AyamelPlayer.prototype.addAnnSet = function(annset){
+		if(!this.annotator){ return; }
+		var list = this.annotator.annotations;
+		if(list.indexOf(annset) > -1){ return; }
+		list.push(annset);
+		if(annset.mode = "showing"){
+			this.annotator.refresh();
+			if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
+		}
+		if(this.controlBar.components.annotations){
+			this.controlBar.components.annotations.addSet(annset);
+		}
+	};
+
+	AyamelPlayer.prototype.removeAnnSet = function(annset){
+		if(!this.annotator){ return; }
+		var idx, list = this.annotator.annotations;
+		idx = list.indexOf(annset);
+		if(idx === -1){ return; }
+		list.splice(idx,1);
+		if(annset.mode = "showing"){
+			this.annotator.refresh();
+			if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
+		}
+		if(this.controlBar.components.annotations){
+			this.controlBar.components.annotations.rebuild(list);
+		}
+	};
+
+	AyamelPlayer.prototype.refreshAnnotations = function(){
+		if(!this.annotator){ return; }
+		this.annotator.refresh();
+		if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
+	};
+
+	AyamelPlayer.prototype.refreshAnnotationMenu = function(){
+		if(!this.annotator){ return; }
+		if(!this.controlBar.components.annotations){ return; }
+		this.controlBar.components.captions.rebuild(this.annotator.annotations);
 	};
 
 	AyamelPlayer.prototype.play = function(){

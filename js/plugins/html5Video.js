@@ -155,6 +155,7 @@
 	Html5VideoPlayer.prototype.features = {
 		desktop: {
 			captions: true,
+			annotations: true,
 			fullScreen: true,
 			lastCaption: true,
 			play: true,
@@ -164,6 +165,7 @@
 		},
 		mobile: {
 			captions: true,
+			annotations: true,
 			fullScreen: true,
 			lastCaption: true,
 			play: true,
