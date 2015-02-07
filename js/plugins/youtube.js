@@ -36,7 +36,7 @@
 	}
 
 	function YouTubePlayer(args) {
-		var _this = this,
+		var videoIsMuted = false,
 			startTime = +args.startTime || 0,
 			stopTime = +args.endTime || -1,
 			element = Ayamel.utils.parseHTML(template),
@@ -52,6 +52,16 @@
 		this.captionsElement = captionsElement;
 		args.holder.appendChild(captionsElement);
 
+		// Set up the duration
+		element.addEventListener("timeupdate", function(event) {
+			if (this.currentTime < startTime)
+				this.currentTime = startTime;
+			if (stopTime != -1 && this.currentTime > stopTime) {
+				this.pause();
+				this.currentTime = startTime;
+			}
+		}, false);
+
 		//TODO: Set up properties object to allow interactions before YouTube has loaded
 
 		//Info on how properties & controls work: https://developers.google.com/youtube/js_api_reference
@@ -62,13 +72,10 @@
 					var played = false,
 						playing = false;
 
-					video.style.height = "100%";
-					video.style.width = "100%";
-
 					// We don't know proper height and width here, so just put in a default;
 					this.video = new YT.Player(element.firstChild, {
-						height: '600',
-						width: '800',
+						height: "100%",
+						width: "100%",
 						videoId: getYouTubeId(findFile(args.resource).streamUri),
 						playerVars: {
 							autoplay: 0,
@@ -86,21 +93,21 @@
 							showinfo: 0,
 						},
 						events: {
-							onStateChange: function(data){
-								if(data === -1) { return; }
+							onStateChange: function(event){
+								if(event.data === -1) { return; }
 								element.dispatchEvent(new Event({
 									0: "ended",
 									1: "play",
 									2: "pause",
 									3: "durationchange", //buffering
 									5: 'loading' //video cued
-								}[data],{bubbles:true,cancelable:true}));
+								}[event.data],{bubbles:true,cancelable:true}));
 
 								// If we started playing then send out timeupdate events
-								if (data === 1) {
+								if (event.data === 1) {
 									playing = true;
 									timeUpdate();
-								}else if(data === 0 || data === 2){
+								}else if(event.data === 0 || event.data === 2){
 									// If this is the first pause, then the duration is changed/loaded, so send out that event
 									if (!played) {
 										played = true;
@@ -119,7 +126,7 @@
 								}
 							}
 						}
-					  });
+					});
 
 					function timeUpdate() {
 						var timeEvent = document.createEvent("HTMLEvents");
@@ -157,11 +164,12 @@
 			},
 			muted: {
 				get: function () {
-					return this.video ? this.video.isMuted() : false;
+					return videoIsMuted;
+					//return this.video ? this.video.isMuted() : false;
 				},
 				set: function (muted) {
 					if(!this.video){ return false; }
-					muted = !!muted;
+					videoIsMuted = muted = !!muted;
 					this.video[muted?'mute':'unMute']();
 					return muted;
 				}
