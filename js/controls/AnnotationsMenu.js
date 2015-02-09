@@ -21,10 +21,10 @@
 
 		// Set up clicking to show the menu
 		element.addEventListener('click', function(event){
-			event.stopPropagation();
 			element.classList.toggle("active");
 		},false);
-		document.addEventListener('click', function(){
+		document.addEventListener('click', function(event){
+			if(event.target === element || element.contains(event.target)){ return; }
 			element.classList.remove("active");
 		},false);
 		menu.addEventListener('click', function(event){

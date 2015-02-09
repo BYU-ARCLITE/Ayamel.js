@@ -133,12 +133,14 @@
 	Matcher.prototype.exec = function(s){ return this.regex.exec(s); };
 
 	function getMatchers(setlist,parsers){
-		if(!(setlist instanceof Array)){ return []; }
+		var mlist = [];
+		if(!(setlist instanceof Array)){ return mlist; }
 		setlist.forEach(function(annset){
 			var glosses = annset.glosses;
 			if(annset.mode !== "showing"){ return; }
 			Object.keys(glosses).forEach(function(lang){
-				lobj = glosses[lang];
+				var lobj = glosses[lang],
+					gen_regex = parsers[lang] || parse_default;
 				//Validation/sanitization;
 				//skip invalid keys rather than breaking on not-perfectly-valid documents
 				if((typeof lobj !== 'object') || (lobj instanceof String)){ return; }

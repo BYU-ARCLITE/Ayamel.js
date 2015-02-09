@@ -286,7 +286,7 @@
 	box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.4);
 }
 
-.ayamelPlayer .captions.active .menu {
+.ayamelPlayer .active .menu {
 	display: block;
 }
 

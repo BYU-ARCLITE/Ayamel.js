@@ -83,6 +83,13 @@
 					}));
 				}
 			}, args.annotations.data);
+
+			if(this.controlBar.components.annotations){
+				args.annotations.data.forEach(function(annset){
+					that.controlBar.components.annotations.addSet(annset);
+				});
+			}
+
 		}else{
 			this.annotator = null;
 		}
@@ -98,7 +105,7 @@
 					var txt, annotate,
 						cue = renderedCue.cue;
 
-					if(that.annotations){
+					if(that.annotator){
 						annotate = function(n){
 							that.annotator.index = indexMap.get(cue);
 							return that.annotator.HTML(n);
@@ -273,11 +280,11 @@
 		// Rebuild captions when annotation sets are enabled or disabled.
 		if(this.annotator){
 			controlBar.addEventListener("enableannset", function(event){
-				this.annotator.refresh();
+				that.annotator.refresh();
 				that.captionRenderer.rebuildCaptions();
 			});
 			controlBar.addEventListener("disableannset", function(event){
-				this.annotator.refresh();
+				that.annotator.refresh();
 				that.captionRenderer.rebuildCaptions();
 			});
 		}
