@@ -459,7 +459,7 @@
 		if(!this.captionRenderer){ return; }
 		if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
 		this.captionRenderer.addTextTrack(track);
-		if (this.controlBar.components.captions) {
+		if(this.controlBar.components.captions){
 			this.controlBar.components.captions.addTrack(track);
 		}
 	};
@@ -468,8 +468,8 @@
 		if(!this.captionRenderer){ return; }
 		if(this.captionRenderer.tracks.indexOf(track) === -1){ return; }
 		this.captionRenderer.removeTextTrack(track);
-		if (this.controlBar.components.captions) {
-			this.controlBar.components.captions.rebuild(this.captionRenderer.tracks);
+		if(this.controlBar.components.captions){
+			this.controlBar.components.captions.removeTrack(track);
 		}
 	};
 
@@ -481,31 +481,34 @@
 
 	AyamelPlayer.prototype.addAnnSet = function(annset){
 		if(!this.annotator){ return; }
-		var list = this.annotator.annotations;
-		if(list.indexOf(annset) > -1){ return; }
-		list.push(annset);
-		if(annset.mode = "showing"){
-			this.annotator.refresh();
-			if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
-		}
-		if(this.controlBar.components.annotations){
-			this.controlBar.components.annotations.addSet(annset);
+		var added = this.annotator.addSet(annset);
+		if(added){
+			if(this.captionRenderer && annset.mode === "showing"){
+				this.captionRenderer.rebuildCaptions(true);
+			}
+			if(this.controlBar.components.annotations){
+				this.controlBar.components.annotations.addSet(annset);
+			}
 		}
 	};
 
 	AyamelPlayer.prototype.removeAnnSet = function(annset){
 		if(!this.annotator){ return; }
-		var idx, list = this.annotator.annotations;
-		idx = list.indexOf(annset);
-		if(idx === -1){ return; }
-		list.splice(idx,1);
-		if(annset.mode = "showing"){
-			this.annotator.refresh();
-			if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
+		var removed = this.annotator.removeSet(annset);
+		if(removed){
+			if(this.captionRenderer && annset.mode === "showing"){
+				this.captionRenderer.rebuildCaptions(true);
+			}
+			if(this.controlBar.components.annotations){
+				this.controlBar.components.annotations.addSet(annset);
+			}
 		}
-		if(this.controlBar.components.annotations){
-			this.controlBar.components.annotations.rebuild(list);
-		}
+	};
+
+	AyamelPlayer.prototype.refreshAnnotationMenu = function(){
+		if(!this.annotator){ return; }
+		if(!this.controlBar.components.annotations){ return; }
+		this.controlBar.components.annotations.rebuild(this.annotator.annotations);
 	};
 
 	AyamelPlayer.prototype.refreshAnnotations = function(){

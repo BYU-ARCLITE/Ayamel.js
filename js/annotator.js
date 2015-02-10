@@ -159,7 +159,10 @@
 
 	function Annotator(config, annotations){
 		var parsers = config.parsers || Annotator.parsers;
-		if(!(annotations instanceof Object)){ annotations = null; }
+		if(!(annotations instanceof Array)){
+			annotations = (config.annotations instanceof Array)
+							?config.annotations:null;
+		}
 
 		this.classList = (config.classList instanceof Array)?config.classList:[];
 		this.style = (config.style instanceof Object)?config.style:{};
@@ -203,6 +206,21 @@
 	Annotator.prototype.Text = function(content){
 		return anText(this, content);
 	};
+
+	Annotator.addSet = function(annset){
+		if(this.annotations.indexOf(annset) > -1){ return false; }
+		this.annotations.push(annset);
+		if(annset.mode === "showing"){ this.refresh(); }
+		return true;
+	};
+
+	Annotator.removeSet = function(annset){
+		var idx = this.annotations.indexOf(annset);
+		if(idx === -1){ return false; }
+		this.annotations.splice(idx,1);
+		if(annset.mode === "showing"){ this.refresh(); }
+		return true;
+	}
 
 	Annotator.prototype.refresh = function(){
 		this.matchers = getMatchers(this.annotations, this.parsers);

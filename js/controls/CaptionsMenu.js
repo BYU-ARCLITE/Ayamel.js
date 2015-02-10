@@ -14,73 +14,91 @@
 			<div class="menu">\
 				<div class="menuTipDark"></div>\
 				<div class="menuTip"></div>\
-				<div class="noOptions">No captions available.</div>\
 			</div>\
 		</div>';
 
-	function CaptionsMenu(args) {
-		var element = Ayamel.utils.parseHTML(template),
-			menu = element.querySelector(".menu");
-
-		this.element = element;
-		args.holder.appendChild(element);
-		this.length = 0;
-
-		// Set up clicking to show the menu
-		element.addEventListener('click', function(event){
-			element.classList.toggle("active");
-		},false);
-		document.addEventListener('click', function(event){
-			if(event.target === element || element.contains(event.target)){ return; }
-			element.classList.remove("active");
-		},false);
-		menu.addEventListener('click', function(event){
-			event.stopPropagation();
-		},false);
-	}
-
-	CaptionsMenu.prototype.addTrack = function(track){
-		// Create the menu entry
-		var that = this, emptyMessage,
-			element = this.element,
+	function buildMenu(element, tracks){
+		var item, menu = element.querySelector('.menu');
+		if(tracks.length === 0){
 			item = document.createElement('div');
-		item.classList.add("menuEntry");
-		item.textContent = track.label + ' (' + track.language + ')';
-		
-		emptyMessage = element.querySelector(".noOptions");
-		if(emptyMessage !== null){ emptyMessage.parentNode.removeChild(emptyMessage); }
-		
-		element.querySelector(".menu").appendChild(item);
-		if (track.mode === "showing") { item.classList.add("active"); }
-		this.length++;
-
-		// Set up clicking here because we have the track in scope
-		item.addEventListener('click', function(e){
-			var active = item.classList.contains("active");
-			e.stopPropagation();
-			if(that.length === 1){ element.classList.remove("active"); }
-			item.classList.toggle("active");
-			track.mode = active?'disabled':'showing';
-			element.dispatchEvent(new CustomEvent(
-				active?"disabletrack":"enabletrack",
-				{bubbles:true,cancelable:true,detail:{track:track}}
-			));
-		});
-	};
-
-	CaptionsMenu.prototype.rebuild = function(tracks){
-		var item = document.createElement('div'),
-			menu = this.element.querySelector(".menu");
-		[].forEach.call(this.element.querySelectorAll(".menu .menuEntry"),
-			function(el){ el.parentNode.removeChild(el); }
-		);
-		if(!tracks){
 			item.classList.add("noOptions");
 			item.textContent = "No Captions Available.";
 			menu.appendChild(item);
 		}else{
-			tracks.forEach(this.addTrack,this);
+			tracks.forEach(function(track){
+				var item = document.createElement('div');
+				if(track.mode === "showing"){ item.classList.add("active"); }
+				item.classList.add("menuEntry");
+				item.textContent = track.label + ' (' + track.language + ')';
+				item.addEventListener('click', function(e){
+					var active = item.classList.contains("active");
+					item.classList.toggle("active");
+					track.mode = active?'disabled':'showing';
+					element.dispatchEvent(new CustomEvent(
+						active?"disabletrack":"enabletrack",
+						{bubbles:true,cancelable:true,detail:{track:track}}
+					));
+				});
+				menu.appendChild(item);
+			});
 		}
+		element.classList.add("active");
+	};
+
+	function hideMenu(element){
+		element.classList.remove("active");
+		[].forEach.call(element.querySelectorAll(".menu .menuEntry, .noOptions"),
+			function(el){ el.parentNode.removeChild(el); }
+		);
+	}
+
+	function CaptionsMenu(args) {
+		var that = this,
+			element = Ayamel.utils.parseHTML(template);
+
+		this.element = element;
+		args.holder.appendChild(element);
+		this.tracks = [];
+
+		// Set up clicking to show the menu
+		element.addEventListener('click', function(event){
+			if(element.classList.contains("active")){
+				hideMenu(element);
+			}else{
+				buildMenu(element, that.tracks);
+			}
+		},false);
+		document.addEventListener('click', function(event){
+			if(event.target === element || element.contains(event.target)){ return; }
+			hideMenu(element);
+		},false);
+		element.querySelector(".menu").addEventListener('click', function(event){
+			event.stopPropagation();
+		},false);
+	}
+
+	function refresh(element, tracks){
+		if(!element.classList.contains("active")){ return; }
+		hideMenu(element);
+		buildMenu(element, tracks);
+	}
+	
+	CaptionsMenu.prototype.addTrack = function(track){
+		if(this.tracks.indexOf(track) > -1){ return; }
+		this.tracks.push(track);
+		refresh(this.element, this.tracks);
+	};
+
+	CaptionsMenu.prototype.removeTrack = function(track){
+		var idx = this.tracks.indexOf(track);
+		if(idx === -1){ return; }
+		this.tracks.splice(idx,1);
+		refresh(this.element, this.tracks);
+	};
+
+	CaptionsMenu.prototype.rebuild = function(tracks){
+		this.tracks = tracks.slice();
+		refresh(this.element, tracks);
 	};
 
 	Ayamel.controls.captions = CaptionsMenu;

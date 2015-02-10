@@ -7,73 +7,91 @@
 			<div class="menu">\
 				<div class="menuTipDark"></div>\
 				<div class="menuTip"></div>\
-				<div class="noOptions">No annotations available.</div>\
 			</div>\
 		</div>';
 
+	function buildMenu(element, annsets){
+		var item, menu = element.querySelector('.menu');
+		if(annsets.length === 0){
+			item = document.createElement('div');
+			item.classList.add("noOptions");
+			item.textContent = "No Captions Available.";
+			menu.appendChild(item);
+		}else{
+			annsets.forEach(function(annset){
+				var item = document.createElement('div');
+				if(annset.mode === "showing"){ item.classList.add("active"); }
+				item.classList.add("menuEntry");
+				item.textContent = annset.label + ' (' + annset.language + ')';
+				item.addEventListener('click', function(e){
+					var active = item.classList.contains("active");
+					item.classList.toggle("active");
+					annset.mode = active?'disabled':'showing';
+					element.dispatchEvent(new CustomEvent(
+						active?"disableannset":"enableannset",
+						{bubbles:true,cancelable:true,detail:{annset:annset}}
+					));
+				});
+				menu.appendChild(item);
+			});
+		}
+		element.classList.add("active");
+	};
+
+	function hideMenu(element){
+		element.classList.remove("active");
+		[].forEach.call(element.querySelectorAll(".menu .menuEntry, .noOptions"),
+			function(el){ el.parentNode.removeChild(el); }
+		);
+	}
+
 	function AnnotationsMenu(args) {
-		var element = Ayamel.utils.parseHTML(template),
-			menu = element.querySelector(".menu");
+		var that = this,
+			element = Ayamel.utils.parseHTML(template);
 
 		this.element = element;
 		args.holder.appendChild(element);
-		this.length = 0;
+		this.annsets = [];
 
 		// Set up clicking to show the menu
 		element.addEventListener('click', function(event){
-			element.classList.toggle("active");
+			if(element.classList.contains("active")){
+				hideMenu(element);
+			}else{
+				buildMenu(element, that.annsets);
+			}
 		},false);
 		document.addEventListener('click', function(event){
 			if(event.target === element || element.contains(event.target)){ return; }
-			element.classList.remove("active");
+			hideMenu(element);
 		},false);
-		menu.addEventListener('click', function(event){
+		element.querySelector(".menu").addEventListener('click', function(event){
 			event.stopPropagation();
 		},false);
 	}
 
-	AnnotationsMenu.prototype.addSet = function(annset){
-		// Create the menu entry
-		var that = this, emptyMessage,
-			element = this.element,
-			item = document.createElement('div');
-		item.classList.add("menuEntry");
-		item.textContent = annset.label + ' (' + annset.language + ')';
-		
-		emptyMessage = element.querySelector(".noOptions");
-		if(emptyMessage !== null){ emptyMessage.parentNode.removeChild(emptyMessage); }
-		
-		element.querySelector(".menu").appendChild(item);
-		if (annset.mode === "showing") { item.classList.add("active"); }
-		this.length++;
+	function refresh(element, annsets){
+		if(!element.classList.contains("active")){ return; }
+		hideMenu(element);
+		buildMenu(element, annsets);
+	}
 
-		// Set up clicking here because we have the track in scope
-		item.addEventListener('click', function(e){
-			var active = item.classList.contains("active");
-			e.stopPropagation();
-			if(that.length === 1){ element.classList.remove("active"); }
-			item.classList.toggle("active");
-			annset.mode = active?'disabled':'showing';
-			element.dispatchEvent(new CustomEvent(
-				active?"disableannset":"enableannset",
-				{bubbles:true,cancelable:true,detail:{annset:annset}}
-			));
-		});
+	AnnotationsMenu.prototype.addSet = function(annset){
+		if(this.annsets.indexOf(annset) > -1){ return; }
+		this.annsets.push(annset);
+		refresh(this.element, this.annsets);
 	};
 
-	AnnotationsMenu.prototype.rebuild = function(sets){
-		var item = document.createElement('div'),
-			menu = this.element.querySelector(".menu");
-		[].forEach.call(this.element.querySelectorAll(".menu .menuEntry"),
-			function(el){ el.parentNode.removeChild(el); }
-		);
-		if(!sets){
-			item.classList.add("noOptions");
-			item.textContent = "No Annotations Available.";
-			menu.appendChild(item);
-		}else{
-			sets.forEach(this.addSet,this);
-		}
+	AnnotationsMenu.prototype.removeSet = function(annset){
+		var idx = this.annsets.indexOf(annset);
+		if(idx === -1){ return; }
+		this.annsets.splice(idx,1);
+		refresh(this.element, this.annsets);
+	};
+
+	AnnotationsMenu.prototype.rebuild = function(annsets){
+		this.annsets = annsets.slice();
+		refresh(this.element, annsets);
 	};
 
 	Ayamel.controls.annotations = AnnotationsMenu;
