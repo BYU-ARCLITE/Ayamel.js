@@ -42,9 +42,8 @@
 	}
 
 	function Html5AudioPlayer(args) {
-		var file, _this = this,
-			startTime = +args.startTime || 0,
-			stopTime = +args.endTime || -1,
+		var file,
+			startTime = args.startTime, endTime = args.endTime,
 			element = Ayamel.utils.parseHTML(template),
 			captionsElement = element.querySelector(".audioCaptionHolder"),
 			audio = new Audio();
@@ -56,7 +55,6 @@
 
 		// Create a place for captions
 		this.captionsElement = captionsElement;
-//        args.holder.appendChild(captionsElement);
 
 		// Load the source
 		file = findFile.call(this, args.resource);
@@ -71,57 +69,42 @@
 		});
 
 		// Set up the duration
-		element.addEventListener("timeupdate", function(event) {
-			if (audio.currentTime < startTime)
-				audio.currentTime = startTime;
-			if (stopTime != -1 && audio.currentTime > stopTime) {
+		element.addEventListener("timeupdate", function(event){
+			if (endTime > -1 && audio.currentTime >= endTime) {
 				audio.pause();
-				audio.currentTime = startTime;
+				element.dispatchEvent(new Event("ended",{bubbles:true,cancelable:false}));
 			}
 		}, false);
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function () {
-					var stop = stopTime === -1 ? audio.duration : stopTime;
-					return stop - startTime;
-				}
+				get: function(){ return audio.duration; }
 			},
 			currentTime: {
-				get: function () {
-					return audio.currentTime - startTime;
-				},
-				set: function (time) {
-					return audio.currentTime = (+time||0) + startTime;
+				get: function(){ return audio.currentTime; },
+				set: function(time){
+					return audio.currentTime = +time||0;
 				}
 			},
 			muted: {
-				get: function () {
-					return audio.muted;
-				},
-				set: function (muted) {
+				get: function(){ return audio.muted; },
+				set: function(muted){
 					return audio.muted = !!muted;
 				}
 			},
 			playbackRate: {
-				get: function () {
-					return audio.playbackRate;
-				},
-				set: function (playbackRate) {
+				get: function(){ return audio.playbackRate; },
+				set: function(playbackRate){
 					playbackRate = +playbackRate
 					return audio.playbackRate = isNaN(playbackRate)?1:playbackRate;
 				}
 			},
 			readyState: {
-				get: function () {
-					return audio.readyState;
-				}
+				get: function(){ return audio.readyState; }
 			},
 			volume: {
-				get: function () {
-					return audio.volume;
-				},
-				set: function (volume) {
+				get: function(){ return audio.volume; },
+				set: function(volume){
 					return audio.volume = +volume||0;
 				}
 			},
@@ -185,7 +168,7 @@
 	};
 
 	Ayamel.mediaPlugins.audio.html5 = {
-		install: function(args) {
+		install: function(args){
 			return new Html5AudioPlayer(args);
 		},
 		supports: function(resource) {

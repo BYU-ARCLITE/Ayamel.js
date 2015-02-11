@@ -36,9 +36,9 @@
 	}
 
 	function YouTubePlayer(args) {
-		var videoIsMuted = false,
-			startTime = +args.startTime || 0,
-			stopTime = +args.endTime || -1,
+		var that = this,
+			startTime = args.startTime, endTime = args.endTime,
+			videoTime = startTime, videoIsMuted = false,
 			element = Ayamel.utils.parseHTML(template),
 			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate);
 
@@ -52,17 +52,12 @@
 		this.captionsElement = captionsElement;
 		args.holder.appendChild(captionsElement);
 
-		// Set up the duration
 		element.addEventListener("timeupdate", function(event) {
-			if (this.currentTime < startTime)
-				this.currentTime = startTime;
-			if (stopTime != -1 && this.currentTime > stopTime) {
-				this.pause();
-				this.currentTime = startTime;
+			if(endTime > -1 && that.currentTime >= endTime){
+				that.pause();
+				element.dispatchEvent(new Event("ended",{bubbles:true,cancelable:false}));
 			}
 		}, false);
-
-		//TODO: Set up properties object to allow interactions before YouTube has loaded
 
 		//Info on how properties & controls work: https://developers.google.com/youtube/js_api_reference
 
@@ -72,7 +67,14 @@
 					var played = false,
 						playing = false;
 
-					// We don't know proper height and width here, so just put in a default;
+					function timeUpdate(){
+						videoTime = that.video.getCurrentTime();
+						element.dispatchEvent(new Event("timeupdate",{bubbles:true,cancelable:false}));
+						if(!playing){ return; }
+						if(Ayamel.utils.Animation){ Ayamel.utils.Animation.requestFrame(timeUpdate); }
+						else{ setTimeout(timeUpdate, 50); }
+					}
+
 					this.video = new YT.Player(element.firstChild, {
 						height: "100%",
 						width: "100%",
@@ -84,7 +86,7 @@
 							disablekb: 1,
 							enablejsapi: 1,
 							start: startTime,
-							end: stopTime === -1 ? undefined : stopTime,
+							end: endTime === -1 ? void 0 : endTime,
 							iv_load_policy: 3,
 							modestbranding: 1,
 							origin: location.origin,
@@ -101,7 +103,7 @@
 									2: "pause",
 									3: "durationchange", //buffering
 									5: 'loading' //video cued
-								}[event.data],{bubbles:true,cancelable:true}));
+								}[event.data],{bubbles:true,cancelable:false}));
 
 								// If we started playing then send out timeupdate events
 								if (event.data === 1) {
@@ -111,14 +113,17 @@
 									// If this is the first pause, then the duration is changed/loaded, so send out that event
 									if (!played) {
 										played = true;
-										element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:true}));
+										element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:false}));
 									}
 
 									playing = false;
 								}
 							},
-							onError: function(err){
-								switch(err){
+							onPlaybackRateChange: function(event){
+								element.dispatchEvent(new Event('ratechange',{bubbles:true,cancelable:false}));
+							},
+							onError: function(event){
+								switch(event.data){
 								case 2: alert("Invalid video ID"); return;
 								case 100: alert("Video not found"); return;
 								case 101:
@@ -127,63 +132,49 @@
 							}
 						}
 					});
-
-					function timeUpdate() {
-						var timeEvent = document.createEvent("HTMLEvents");
-						timeEvent.initEvent("timeupdate", true, true);
-						element.dispatchEvent(timeEvent);
-
-						if (!playing) { return; }
-						if(Ayamel.utils.Animation){
-							Ayamel.utils.Animation.requestFrame(timeUpdate);
-						}else{
-							setTimeout(timeUpdate, 50);
-						}
-					}
 				}
 			},
 			duration: {
-				get: function () {
-//                    var stop = stopTime === -1 ? this.video.getDuration() : stopTime;
-//                    return stop - startTime;
+				get: function(){
 					return this.video ? this.video.getDuration() : 0;
 				}
 			},
 			currentTime: {
-				get: function () {
-//                    return this.video.getCurrentTime() - startTime;
-					return this.video ? this.video.getCurrentTime() : 0;
-				},
-				set: function (time) {
-					if(!this.video){ return 0; }
-					time = Math.floor((+time||0)* 100) / 100;
-					this.video.seekTo(time);
-					this.element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:true}));
-					return time;
+				//The IFrame player seeks asynchronously, so to avoid stuttering
+				//we have to keep track of what the time *ought* to be ourselves.
+				get: function(){ return videoTime; },
+				set: function(time){
+					if(!this.video){ return startTime; }
+					videoTime = Math.floor((+time||0)* 100) / 100;
+					this.video.seekTo(videoTime);
+					element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:true}));
+					return videoTime;
 				}
 			},
 			muted: {
-				get: function () {
+				//The IFrame player seems not to produce any events notifying us
+				//about changes to the mute state, so we just have to trust it.
+				get: function(){
 					return videoIsMuted;
 					//return this.video ? this.video.isMuted() : false;
 				},
-				set: function (muted) {
+				set: function(muted){
 					if(!this.video){ return false; }
-					videoIsMuted = muted = !!muted;
-					this.video[muted?'mute':'unMute']();
-					return muted;
+					videoIsMuted = !!muted;
+					this.video[videoIsMuted?'mute':'unMute']();
+					return videoIsMuted;
 				}
 			},
 			paused: {
-				get: function () {
+				get: function(){
 					return this.video ? this.video.getPlayerState() !== 1 : true;
 				}
 			},
 			playbackRate: {
-				get: function () {
+				get: function(){
 					return this.video ? this.video.getPlaybackRate() : 1;
 				},
-				set: function (playbackRate) {
+				set: function(playbackRate){
 					if(!this.video){ return 1; }
 					var i, ratelist, best, next, bdist, ndist;
 					playbackRate = +playbackRate
@@ -204,15 +195,15 @@
 				}
 			},
 			readyState: {
-				get: function () {
+				get: function(){
 					return this.video ? this.video.getPlayerState() : 0;
 				}
 			},
 			volume: {
-				get: function () {
+				get: function(){
 					return this.video ? this.video.getVolume() / 100 : 1;
 				},
-				set: function (volume) {
+				set: function(volume){
 					if(!this.video){ return 1; }
 					volume = (+volume||0);
 					this.video.setVolume(volume * 100);
@@ -224,7 +215,6 @@
 				set: function(h){
 					h = +h || element.clientHeight;
 					element.style.height = h + "px";
-					//element.firstChild.style.height = h + "px";
 					return h;
 				}
 			},
@@ -233,7 +223,6 @@
 				set: function(w){
 					w = +w || element.clientWidth;
 					element.style.width = w + "px";
-					//element.firstChild.style.width = w + "px";
 					return w;
 				}
 			}

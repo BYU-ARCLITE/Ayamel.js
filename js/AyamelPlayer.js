@@ -3,10 +3,8 @@
 
 	var template = '<div class="ayamelPlayer"></div>';
 
-	function processTime(time) {
-		if (typeof time === "number") {
-			return time;
-		}
+	function processTime(time){
+		if(typeof time === "number"){ return time; }
 		return time.split(":").reduce(function(last, next){
 			return last * 60 + (+next||0);
 		}, 0);
@@ -205,17 +203,20 @@
 		//   Set up event listeners for the media player
 		// -----------------------------------------------
 
-		// Update the control bar when the media is playing
 		mediaPlayer.addEventListener("timeupdate", function(){
-			// It's ok to lie to the control bar about the time
-			controlBar.currentTime = mediaPlayer.currentTime - startTime;
+			controlBar.currentTime = mediaPlayer.currentTime;
 		});
 
-		// When duration changes (such as on a load), notify the control bar
 		mediaPlayer.addEventListener("durationchange", function(){
-			// It's ok to lie to the control bar about the time
-			var duration = endTime === -1 ? mediaPlayer.duration : endTime;
-			controlBar.duration = duration - startTime;
+			controlBar.duration = mediaPlayer.duration;
+		});
+
+		mediaPlayer.addEventListener("ratechange", function(){
+			controlBar.playbackRate = mediaPlayer.playbackRate;
+		});
+
+		mediaPlayer.addEventListener("volumechange", function(){
+			controlBar.volume = mediaPlayer.volume;
 		});
 
 		mediaPlayer.addEventListener("ended", function(){ controlBar.playing = false; }, false);
@@ -227,8 +228,7 @@
 
 		// When the user is done scrubbing, seek to that position
 		controlBar.addEventListener("scrubend", function(event){
-			var length = ((endTime === -1)?that.mediaPlayer.duration:endTime)-startTime
-			that.currentTime = event.detail.progress * length;
+			mediaPlayer.currentTime = event.detail.progress * mediaPlayer.duration;
 		});
 
 		// Play the media when the play button is pressed
@@ -336,20 +336,15 @@
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function(){
-					return (endTime === -1 ? that.mediaPlayer.duration : endTime)
-							- startTime;
-				}
+				get: function(){ return mediaPlayer.duration; }
 			},
 			currentTime: {
-				get: function(){
-					return mediaPlayer.currentTime - startTime;
-				},
+				get: function(){ return mediaPlayer.currentTime; },
 				set: function(time){
 					var newtime,
-						oldtime = mediaPlayer.currentTime - startTime;
-					mediaPlayer.currentTime = (+time||0) + startTime;
-					newtime = mediaPlayer.currentTime - startTime;
+						oldtime = mediaPlayer.currentTime;
+					mediaPlayer.currentTime = (+time||0);
+					newtime = mediaPlayer.currentTime;
 					element.dispatchEvent(new CustomEvent('timejump', {
 						bubbles:true,
 						detail: { oldtime: oldtime, newtime: newtime }
@@ -371,28 +366,20 @@
 				}
 			},
 			paused: {
-				get: function(){
-					return mediaPlayer.paused;
-				}
+				get: function(){ return mediaPlayer.paused; }
 			},
 			playbackRate: {
-				get: function(){
-					return mediaPlayer.playbackRate;
-				},
+				get: function(){ return mediaPlayer.playbackRate; },
 				set: function(playbackRate){
 					return mediaPlayer.playbackRate = playbackRate;
 				}
 			},
 			readyState: {
-				get: function(){
-					return mediaPlayer.readyState;
-				}
+				get: function(){ return mediaPlayer.readyState; }
 			},
 			volume: {
-				get: function(){
-					return mediaPlayer.volume;
-				},
-				set: function (volume) {
+				get: function(){ return mediaPlayer.volume; },
+				set: function(volume){
 					return mediaPlayer.volume = volume;
 				}
 			},

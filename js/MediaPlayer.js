@@ -53,7 +53,8 @@
 	}
 
 	function MediaPlayer(args) {
-		var _this = this,
+		var startTime = args.startTime,
+			endTime = args.endTime,
 			plugin, element;
 
 		if(!Ayamel.utils.hasTimeline(args.resource)){
@@ -69,8 +70,8 @@
 		plugin = loadPlugin({
 			holder: element,
 			resource: args.resource,
-			startTime: args.startTime,
-			endTime: args.endTime
+			startTime: startTime,
+			endTime: endTime
 		});
 
 		if(plugin === null){
@@ -84,11 +85,11 @@
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function(){ return plugin.duration; }
+				get: function(){ return endTime === -1 ? plugin.duration : (endTime - startTime); }
 			},
 			currentTime: {
-				get: function(){ return plugin.currentTime; },
-				set: function(time){ return plugin.currentTime = time; }
+				get: function(){ return plugin.currentTime - startTime; },
+				set: function(time){ return plugin.currentTime = time + startTime; }
 			},
 			muted: {
 				get: function(){ return plugin.muted; },
@@ -127,8 +128,7 @@
 	});
 
 	function MediaViewer(args) {
-		var _this = this,
-			plugin, element;
+		var plugin, element;
 
 		if(Ayamel.utils.hasTimeline(args.resource)){
 			throw new Error("Cannot create viewer for timed media.");
