@@ -38,9 +38,8 @@
 	}
 
 	function Html5VideoPlayer(args) {
-		var _this = this, file,
-			startTime = +args.startTime || 0,
-			stopTime = +args.endTime || -1,
+		var file,
+			startTime = args.startTime, endTime = args.endTime,
 			element = Ayamel.utils.parseHTML(template),
 			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate),
 			video = element.querySelector("video");
@@ -61,37 +60,27 @@
 
 		// Set up event propagation
 		Object.keys(events).forEach(function (eventName) {
-			video.addEventListener(eventName, function (event) {
-				element.dispatchEvent(new Event(events[eventName],{bubbles:true,cancelable:true}));
+			video.addEventListener(eventName, function(event){
 				event.stopPropagation();
+				element.dispatchEvent(new Event(events[eventName],{bubbles:true,cancelable:false}));
 			}, false);
 		});
 
 		// Set up the duration
 		element.addEventListener("timeupdate", function(event) {
-			if (video.currentTime < startTime)
-				video.currentTime = startTime;
-			if (stopTime != -1 && video.currentTime > stopTime) {
+			if(endTime > -1 && video.currentTime > endTime){
 				video.pause();
-				video.currentTime = startTime;
+				element.dispatchEvent(new Event("ended",{bubbles:true,cancelable:false}));
 			}
 		}, false);
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function(){
-//                    var stop = stopTime === -1 ? video.duration : stopTime;
-//                    return stop - startTime;
-					return video.duration;
-				}
+				get: function(){ return video.duration; }
 			},
 			currentTime: {
-				get: function(){
-					return video.currentTime;// - startTime;
-				},
-				set: function(time){
-					return video.currentTime = (+time||0);// + startTime;
-				}
+				get: function(){ return video.currentTime; },
+				set: function(time){ return video.currentTime = +time||0; }
 			},
 			muted: {
 				get: function(){ return video.muted; },
@@ -112,9 +101,7 @@
 			},
 			volume: {
 				get: function(){ return video.volume; },
-				set: function(volume){
-					return video.volume = +volume||0;
-				}
+				set: function(volume){ return video.volume = +volume||0; }
 			},
 			height: {
 				get: function(){ return element.clientHeight; },

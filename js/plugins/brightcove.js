@@ -1,11 +1,4 @@
-/**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 5/6/13
- * Time: 1:37 PM
- * To change this template use File | Settings | File Templates.
- */
-(function (Ayamel) {
+(function(Ayamel){
 	"use strict";
 
 	var counter = 0;
@@ -44,15 +37,14 @@
 
 	function BrightcoveVideoPlayer(args) {
 		var _this = this,
-			startTime = +args.startTime || 0,
-			stopTime = +args.endTime || -1,
+			startTime = args.startTime, endTime = args.endTime,
 			file = findFile(args.resource),
 			videoId = file.streamUri.substr(13),
 			element = generateBrightcoveTemplate(videoId),
 			captionsElement = document.createElement('div'),
 			properties = {
 				duration: 0,
-				currentTime: 0,
+				currentTime: startTime,
 				paused: true
 			};
 
@@ -98,9 +90,9 @@
 			}
 
 			Object.keys(events).forEach(function (brightcoveEvent) {
-				_this.player.addEventListener(brightcoveEvent, function(event) {
+				_this.player.addEventListener(brightcoveEvent, function(event){
 					updateProperties(event);
-					element.dispatchEvent(new Event(events[brightcoveEvent],{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event(events[brightcoveEvent],{bubbles:true,cancelable:false}));
 				});
 			});
 		};
@@ -108,64 +100,36 @@
 		// Create the player
 		brightcove.createExperiences();
 
-		//TODO: Set up the duration checking
-
 		Object.defineProperties(this, {
 			duration: {
-				get: function () {
-					var stop = stopTime === -1 ? properties.duration : stopTime;
-					return stop - startTime;
-				}
+				get: function(){ return properties.duration; }
 			},
 			currentTime: {
-				get: function () {
-					return properties.currentTime - startTime;
-				},
-				set: function (time) {
+				get: function(){ return properties.currentTime; },
+				set: function(time){
 					time = Math.floor(Number(time)* 100) / 100;
-					properties.currentTime = time + startTime;
+					properties.currentTime = time;
 					this.player && this.player.seek(properties.currentTime);
 					return time;
 				}
 			},
 			muted: {
-				get: function () {
-					return false;
-					//return this.video.muted;
-				},
-				set: function(muted){
-					return false;
-					//this.video.muted = !!muted;
-				}
+				get: function(){ return false; },
+				set: function(muted){ return false; }
 			},
 			paused: {
-				get: function(){
-					return properties.paused;
-				}
+				get: function(){ return properties.paused; }
 			},
 			playbackRate: {
-				get: function(){
-					return 1;
-				},
-				set: function(playbackRate){
-					//this.video.playbackRate = Number(playbackRate);
-					return 1;
-				}
+				get: function(){ return 1; },
+				set: function(playbackRate){ return 1; }
 			},
 			readyState: {
-				get: function(){
-					return 0;//this.video.readyState;
-				}
+				get: function(){ return 0; }
 			},
 			volume: {
-				get: function(){
-//                    return this.video.volume;
-					return 1;
-				},
-				set: function(volume){
-//                    this.video.volume = +volume;
-					return 1;
-				}
+				get: function(){ return 1; },
+				set: function(volume){ return 1; }
 			},
 			height: {
 				get: function(){ return element.clientHeight; },
@@ -229,12 +193,11 @@
 	};
 
 	Ayamel.mediaPlugins.video.brightcove = {
-		install: function(args) {
-			// Create the player
+		install: function(args){
 			return new BrightcoveVideoPlayer(args);
 		},
-		supports: function(resource) {
-			return resource.content.files.some(function (file) {
+		supports: function(resource){
+			return resource.content.files.some(function(file){
 				return (resource.type === "video" && supportsFile(file));
 			});
 		}

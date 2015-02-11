@@ -37,8 +37,7 @@
 			swfPath = Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.16.swf",
 			element = Ayamel.utils.parseHTML(template),
 			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate),
-			startTime = +args.startTime || 0,
-			stopTime = +args.endTime || -1,
+			startTime = args.startTime, endTime = args.endTime,
 			width, height, player;
 
 		// Create the element
@@ -57,13 +56,13 @@
 			if(startTime !== 0 && player.getTime() < startTime - 0.5){
 				player.seek(startTime);
 			}
-			if(stopTime !== -1 && player.getTime() >= stopTime - 0.1){
-				player.seek(startTime);
+			if(endTime > -1 && player.getTime() >= endTime - 0.1){
+				player.seek(endTime);
 				player.stop();
+				element.dispatchEvent(new Event('ended',{bubbles:true,cancelable:false}));
 			}
 
-
-			element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:true}));
+			element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:false}));
 
 			if(Ayamel.utils.Animation){
 				Ayamel.utils.Animation.requestFrame(fireTimeEvents);
@@ -90,31 +89,31 @@
 				// Set up clip events
 				onFinish: function(){
 					playing = false;
-					element.dispatchEvent(new Event('ended',{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event('ended',{bubbles:true,cancelable:false}));
 				},
 				onMetaData: function(){
-					element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:false}));
 				},
 				onPause: function(){
 					playing = false;
-					element.dispatchEvent(new Event('pause',{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event('pause',{bubbles:true,cancelable:false}));
 				},
 				onResume: function(){
 					playing = true;
-					element.dispatchEvent(new Event('play',{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event('play',{bubbles:true,cancelable:false}));
 					fireTimeEvents();
 				},
 				onStart: function(){
 					playing = true;
-					element.dispatchEvent(new Event('play',{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event('play',{bubbles:true,cancelable:false}));
 					fireTimeEvents();
 				},
 				onStop: function(){
 					playing = false;
-					element.dispatchEvent(new Event('pause',{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event('pause',{bubbles:true,cancelable:false}));
 				},
 				onVolume: function(){
-					element.dispatchEvent(new Event('volumechange',{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event('volumechange',{bubbles:true,cancelable:false}));
 				}
 			},
 			play: null,
@@ -127,29 +126,19 @@
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function(){
-//                    var stop = stopTime === -1 ? player.getClip().fullDuration : stopTime;
-//                    return stop - startTime;
-					return player.getClip().fullDuration;
-				}
+				get: function(){ return player.getClip().fullDuration; }
 			},
 			currentTime: {
-				get: function(){
-//                    return player.getTime() - startTime;
-					return player.getTime();
-				},
+				get: function(){ return player.getTime(); },
 				set: function(time){
 					time = Math.floor((+time||0) * 100) / 100;
-//                    player.seek(time + startTime);
 					player.seek(time);
-					element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:true}));
+					element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:false}));
 					return time;
 				}
 			},
 			muted: {
-				get: function(){
-					return muted;
-				},
+				get: function(){ return muted; },
 				set: function(muted){
 					muted = !!muted;
 					player[muted?'mute':'unmute']();
@@ -157,28 +146,17 @@
 				}
 			},
 			paused: {
-				get: function(){
-					return player.isPaused();
-				}
+				get: function(){ return player.isPaused(); }
 			},
 			playbackRate: {
-				get: function(){
-					return 1;
-				},
-				set: function(playbackRate){
-					//this.video.playbackRate = Number(playbackRate);
-					return 1;
-				}
+				get: function(){ return 1; },
+				set: function(playbackRate){ return 1; }
 			},
 			readyState: {
-				get: function(){
-					return player.getState();
-				}
+				get: function(){ return player.getState(); }
 			},
 			volume: {
-				get: function(){
-					return player.getVolume() / 100;
-				},
+				get: function(){ return player.getVolume() / 100; },
 				set: function(volume){
 					volume = (+volume||0) * 100;
 					player.setVolume(volume);
