@@ -38,7 +38,7 @@
 	function YouTubePlayer(args) {
 		var that = this,
 			startTime = args.startTime, endTime = args.endTime,
-			videoTime = startTime, videoIsMuted = false,
+			videoTime = startTime, videoIsMuted = false, ready = 0,
 			element = Ayamel.utils.parseHTML(template),
 			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate);
 
@@ -60,11 +60,12 @@
 		}, false);
 
 		//Info on how properties & controls work: https://developers.google.com/youtube/js_api_reference
+		//TODO: store control states until player is ready, instead of ignoring them before player is ready
 
 		Object.defineProperties(this, {
 			init: {
 				value: function() {
-					var played = false,
+					var loaded = false,
 						playing = false;
 
 					function timeUpdate(){
@@ -80,7 +81,7 @@
 						width: "100%",
 						videoId: getYouTubeId(findFile(args.resource).streamUri),
 						playerVars: {
-							autoplay: 0,
+							autoplay: 1,
 							cc_load_policy: 0,
 							controls: 0,
 							disablekb: 1,
@@ -95,28 +96,34 @@
 							showinfo: 0,
 						},
 						events: {
+							onReady: function(event){
+								ready = 4;
+								element.dispatchEvent(new Event("durationchange",{bubbles:true,cancelable:false}));
+							},
 							onStateChange: function(event){
-								if(event.data === -1) { return; }
-								element.dispatchEvent(new Event({
-									0: "ended",
-									1: "play",
-									2: "pause",
-									3: "durationchange", //buffering
-									5: 'loading' //video cued
-								}[event.data],{bubbles:true,cancelable:false}));
-
-								// If we started playing then send out timeupdate events
-								if (event.data === 1) {
-									playing = true;
-									timeUpdate();
-								}else if(event.data === 0 || event.data === 2){
-									// If this is the first pause, then the duration is changed/loaded, so send out that event
-									if (!played) {
-										played = true;
-										element.dispatchEvent(new Event('durationchange',{bubbles:true,cancelable:false}));
+								if(loaded){
+									switch(event.data){
+									case 0: element.dispatchEvent(new Event("ended",{bubbles:true,cancelable:false}));
+										playing = false;
+										break;
+									case 2: element.dispatchEvent(new Event("pause",{bubbles:true,cancelable:false}));
+										playing = false;
+										break;
+									case 1: element.dispatchEvent(new Event("play",{bubbles:true,cancelable:false}));
+										playing = true;
+										timeUpdate();
+										break;
+									//case 3: buffering
+									//case 5: video cued
 									}
-
-									playing = false;
+								}
+								//We don't want to auto-play, but the video won't actually load until it plays.
+								//If it's not loaded, then it will autoplay when you seek, so we need it to autoplay
+								//when it loads, but then immediately pause it. Then we can resume normal behavior.
+								else if(event.data === 1){
+									event.target.pauseVideo();
+								}else if(event.data === 2){
+									loaded = true;
 								}
 							},
 							onPlaybackRateChange: function(event){
@@ -144,7 +151,7 @@
 				//we have to keep track of what the time *ought* to be ourselves.
 				get: function(){ return videoTime; },
 				set: function(time){
-					if(!this.video){ return startTime; }
+					if(!this.readyState){ return startTime; }
 					videoTime = Math.floor((+time||0)* 100) / 100;
 					this.video.seekTo(videoTime);
 					element.dispatchEvent(new Event('timeupdate',{bubbles:true,cancelable:true}));
@@ -159,7 +166,7 @@
 					//return this.video ? this.video.isMuted() : false;
 				},
 				set: function(muted){
-					if(!this.video){ return false; }
+					if(!this.readyState){ return false; }
 					videoIsMuted = !!muted;
 					this.video[videoIsMuted?'mute':'unMute']();
 					return videoIsMuted;
@@ -175,7 +182,7 @@
 					return this.video ? this.video.getPlaybackRate() : 1;
 				},
 				set: function(playbackRate){
-					if(!this.video){ return 1; }
+					if(!this.readyState){ return 1; }
 					var i, ratelist, best, next, bdist, ndist;
 					playbackRate = +playbackRate
 					if(isNaN(playbackRate)){ playbackRate = 1; }
@@ -195,16 +202,14 @@
 				}
 			},
 			readyState: {
-				get: function(){
-					return this.video ? this.video.getPlayerState() : 0;
-				}
+				get: function(){ return ready; }
 			},
 			volume: {
 				get: function(){
 					return this.video ? this.video.getVolume() / 100 : 1;
 				},
 				set: function(volume){
-					if(!this.video){ return 1; }
+					if(!this.readyState){ return 1; }
 					volume = (+volume||0);
 					this.video.setVolume(volume * 100);
 					return volume;
@@ -230,12 +235,12 @@
 	}
 
 	YouTubePlayer.prototype.play = function(){
-		if(!this.video){ return; }
+		if(!this.readyState){ return; }
 		this.video.playVideo();
 	};
 
 	YouTubePlayer.prototype.pause = function(){
-		if(!this.video){ return; }
+		if(!this.readyState){ return; }
 		this.video.pauseVideo();
 	};
 
