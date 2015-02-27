@@ -245,9 +245,8 @@
 			}
 
 			// Check that there is a supported resource
-			return hasFlash && resource.content.files.some(function(file){
-				return (resource.type === "video" && supportsFile(file));
-			});
+			return hasFlash && resource.type === "video" &&
+					resource.content.files.some(supportsFile);
 		}
 	};
 
