@@ -172,9 +172,8 @@
 			return new Html5AudioPlayer(args);
 		},
 		supports: function(resource) {
-			return resource.content.files.some(function (file) {
-				return (resource.type === "audio" && supportsFile(file));
-			});
+			return resource.type === "audio" &&
+					resource.content.files.some(supportsFile);
 		}
 	};
 

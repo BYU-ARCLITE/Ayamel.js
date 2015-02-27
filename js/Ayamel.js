@@ -32,7 +32,8 @@ var Ayamel = (function() {
 			image: {},
 			image_sequence: {},
 			text: {},
-			text_sequence: {}
+			text_sequence: {},
+			fallbacks: {}
 		},
 
 		prioritizedPlugins: {

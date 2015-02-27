@@ -27,32 +27,44 @@
 		};
 
 	function loadPlugin(args){
-		var pluginModule, i,
+		var pluginModule, len, i,
 			pluginPlayer = null,
 			resource = args.resource,
-			registeredPlugins = Ayamel.mediaPlugins[resource.type] || {},
-			pluginPriority = Ayamel.prioritizedPlugins[resource.type] || [];
+			type = resource.type,
+			registeredPlugins = Ayamel.mediaPlugins[type] || {},
+			pluginPriority = Ayamel.prioritizedPlugins[type] || [],
+			prioritizedPlugins;
 
-		if (!pluginPriority.length) {
+		if(!pluginPriority.length){ //Use an arbitrary order when none is specified
 			pluginPriority = Object.keys(registeredPlugins);
-		} else {
+		}else{
+			//Check prioritized plugins first
 			pluginPriority = pluginPriority.filter(function(name){
 				return registeredPlugins.hasOwnProperty(name);
 			});
+			//Then check any left-overs in arbitrary order
 			[].push.apply(pluginPriority,Object.keys(registeredPlugins).filter(function(name){
 				return pluginPriority.indexOf(name) === -1;
 			}));
 		}
-		for(i = 0; i < pluginPriority.length && pluginPlayer == null; i++){
-			pluginModule = registeredPlugins[pluginPriority[i]];
-			if (pluginModule.supports(resource)) {
+
+		//Convert plugin names to plugin objects, and add fallback to the end of the priority list
+		prioritizedPlugins = pluginPriority.map(function(name){ return registeredPlugins[name]; });
+		pluginModule = Ayamel.mediaPlugins.fallbacks[type];
+		if(pluginModule){ prioritizedPlugins.push(pluginModule); }
+		len = prioritizedPlugins.length;
+
+		for(i = 0; i < len; i++){
+			pluginModule = prioritizedPlugins[i];
+			if(pluginModule.supports(resource)){
 				pluginPlayer = pluginModule.install(args);
+				if(pluginPlayer !== null){ return pluginPlayer; }
 			}
 		}
-		return pluginPlayer;
+		return null;
 	}
 
-	function MediaPlayer(args) {
+	function MediaPlayer(args){
 		var startTime = args.startTime,
 			endTime = args.endTime,
 			plugin, element;

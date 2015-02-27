@@ -197,9 +197,8 @@
 			return new BrightcoveVideoPlayer(args);
 		},
 		supports: function(resource){
-			return resource.content.files.some(function(file){
-				return (resource.type === "video" && supportsFile(file));
-			});
+			return resource.type === "video" &&
+					resource.content.files.some(supportsFile);
 		}
 	};
 
