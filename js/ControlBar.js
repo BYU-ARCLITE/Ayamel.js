@@ -7,18 +7,17 @@
 			<div class="right"></div>\
 		</div>';
 
-	function addComponent(controls, pluginFeatures, component) {
+	function addComponent(holder, pluginFeatures, component) {
 		// Check to see if this component is supported by the plugin and device
 		var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
-		if (!pluginFeatures[device][component])
-			return;
+		if(!pluginFeatures[device][component]){ return; }
 
 		var constructor = Ayamel.controls[component];
 		if(typeof constructor !== 'function'){ return; }
 
 		this.components[component] = new constructor({
 			parent: this,
-			holder: controls
+			holder: holder
 		});
 	}
 
@@ -47,6 +46,7 @@
 		this.playbackRate = 0;
 		this.playing = false;
 		this.fullScreen = false;
+		this.scale = 1;
 
 		// Create the control bar components
 		this.components = components;
@@ -86,12 +86,25 @@
 					}
 					return duration;
 				},
-				get: function () {
-					return duration;
-				}
+				get: function(){ return duration; }
 			}
 		});
 	}
+
+	ControlBar.prototype.resize = function(){
+		var el = this.element,
+			left = el.querySelector(".left"),
+			right = el.querySelector(".right"),
+			scale = el.clientWidth / (left.clientWidth + right.clientWidth + 2);
+		this.scale = scale;
+		if(scale < 1){
+			left.style.transform = "scale("+scale+","+scale+")";
+			right.style.transform = "scale("+scale+","+scale+")";
+		}else{
+			left.style.removeProperty("transform");
+			right.style.removeProperty("transform");
+		}
+	};
 
 	ControlBar.prototype.addEventListener = function(event, callback, capture) {
 		this.element.addEventListener(event, callback, !!capture);

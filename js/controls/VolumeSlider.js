@@ -19,6 +19,7 @@
 			muted = false,
 			element = Ayamel.utils.parseHTML(template),
 			slider = new Ayamel.controls.slider({
+				parent: args.parent,
 				holder: element,
 				level: 1
 			});
@@ -54,10 +55,8 @@
 		Object.defineProperties(this, {
 			muted: {
 				enumerable: true,
-				get: function () {
-					return muted;
-				},
-				set: function (value) {
+				get: function(){ return muted; },
+				set: function(value){
 					muted = !!value;
 					element.classList[muted?'add':'remove']("muted");
 					return muted;
@@ -65,10 +64,8 @@
 			},
 			volume: {
 				enumerable: true,
-				get: function () {
-					return volume;
-				},
-				set: function (value) {
+				get: function(){ return volume; },
+				set: function(value){
 					volume = +value||0;
 					slider.level = volume;
 					return volume;
@@ -83,18 +80,14 @@
 					set: function (value) {
 						return _this.muted = value;
 					},
-					get: function () {
-						return muted;
-					}
+					get: function(){ return muted; }
 				},
 				volume: {
 					enumerable: true,
-					set: function (value) {
+					set: function(value){
 						return _this.volume = value;
 					},
-					get: function () {
-						return volume;
-					}
+					get: function(){ return volume; }
 				},
 			});
 		}
