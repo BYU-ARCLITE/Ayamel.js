@@ -19,7 +19,7 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			mediaPlayer, controlBar, resizeWidth, renderCue;
+			mediaPlayer, controlBar, renderCue;
 
 		this.element = element;
 		args.holder.appendChild(element);
@@ -428,11 +428,7 @@
 			this.resetSize();
 		};
 
-		// Resize until it fills the most space avaliable
-		do {
-			resizeWidth = this.width;
-			this.resetSize();
-		} while (this.width != resizeWidth);
+		this.resetSize();
 	}
 
 	Object.defineProperties(AyamelPlayer.prototype,{
@@ -528,8 +524,17 @@
 
 
 	AyamelPlayer.prototype.resetSize = function(){
-		Ayamel.utils.fitAspectRatio(this.element, this.aspectRatio, this.maxWidth, this.maxHeight);
-		this.mediaPlayer.height = this.element.offsetHeight;
+		var resizeWidth,
+			el = this.element,
+			ar = this.aspectRatio,
+			mw = this.maxWidth,
+			mh = this.maxHeight;
+		do{ // Resize until it fills the most space avaliable
+			resizeWidth = el.clientWidth;
+			Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
+			this.mediaPlayer.height = el.offsetHeight;
+		}while(el.clientWidth != resizeWidth);
+		this.controlBar.resize();
 	};
 
 	Ayamel.classes.AyamelPlayer = AyamelPlayer;

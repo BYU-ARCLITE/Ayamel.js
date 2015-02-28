@@ -150,10 +150,12 @@
 
 .widgets .left {
 	left: 0;
+	transform-origin: left;
 }
 
 .widgets .right {
 	right: 0;
+	transform-origin: right;
 }
 
 .ayamelPlayer .control {
