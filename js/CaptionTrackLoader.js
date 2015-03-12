@@ -8,26 +8,31 @@
 (function (Ayamel, TimedText) {
 	"use strict";
 
-	Ayamel.utils.loadCaptionTrack = function(resource, successcb, errorcb){
+	Ayamel.utils.loadCaptionTrack = function(resource){
 		var supportedFiles, file;
 		if(!TimedText){ throw new Error("TimedText library not loaded."); }
 		if(resource instanceof TextTrack){
-			setTimeout(successcb.bind(null,resource),0);
+			return Promise.resolve(resource);
 		}else{
-			supportedFiles = resource.content.files.filter(function(file){ return TimedText.isSupported(file.mime); });
-			if(supportedFiles.length){
-				file = supportedFiles[0];
+			supportedFiles = resource.content.files.filter(function(file){
+				return TimedText.isSupported(file.mime);
+			});
+			if(supportedFiles.length === 0){
+				return Promise.reject(new Error("Unsupported MIME-Type"));
+			}
+			file = supportedFiles[0];
+			return new Promise(function(resolve, reject){
 				TextTrack.get({
 					kind: (file.attributes && file.attributes.kind) || "subtitles",
 					label: resource.title || "Untitled",
-					lang: (resource.languages && resource.languages.iso639_3 && resource.languages.iso639_3[0]) || "eng",
+					lang: resource.languages.iso639_3[0] || "eng",
 					src: file.downloadUri,
-					success: successcb,
-					error: errorcb
+					error: reject,
+					success: function(track, mime){
+						resolve({track: track, mime: mime});
+					}
 				});
-			}else if(typeof errorcb === 'function'){
-				setTimeout(errorcb.bind(null, new Error("Unsupported MIME-Type")),0);
-			}
+			});
 		}
 	};
 
