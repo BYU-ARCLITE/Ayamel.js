@@ -10,6 +10,38 @@
 		}, 0);
 	}
 
+	function makeCueRenderer(player, indexMap){
+		return function(renderedCue, area){
+			var cue = renderedCue.cue,
+				translator = player.translator,
+				annotator = player.annotator,
+				txt = new Ayamel.Text({
+					content: cue.getCueAsHTML(renderedCue.kind === 'subtitles'),
+					processor: annotator?function(n){
+						annotator.index = indexMap.get(cue);
+						return annotator.HTML(n);
+					}:null
+				});
+
+			renderedCue.node = txt.displayElement;
+			if(!translator){ return; }
+
+			// Attach the translator
+			txt.addEventListener('selection',function(event){
+				translator.translate({
+					//TODO: Check if the language is set in the HTML
+					srcLang: cue.track.language,
+					destLang: player.targetLang,
+					text: event.detail.fragment.textContent.trim(),
+					data: {
+						cue: cue,
+						sourceType: "caption"
+					}
+				});
+			},false);
+		};
+	}
+
 	function AyamelPlayer(args) {
 		var that = this,
 			element = Ayamel.utils.parseHTML(template),
@@ -33,6 +65,7 @@
 		 * ==========================================================================================
 		 */
 
+		this.annotator = null;
 		if(args.annotations instanceof Object){
 			this.annotator = new Ayamel.Annotator({
 				parsers: args.annotations.parsers,
@@ -63,8 +96,6 @@
 					});
 				}
 			});
-		}else{
-			this.annotator = null;
 		}
 
 		// Create the MediaPlayer
@@ -105,82 +136,40 @@
 		// Create the caption renderer
 		this.captionRenderer = null;
 		if(mediaPlayer.supports('captions')){
-			if(args.captionRenderer instanceof TimedText.CaptionRenderer){
-				this.captionRenderer = args.captionRenderer;
-				this.captionRenderer.target = this.mediaPlayer.captionsElement;
-				this.captionRenderer.appendCueCanvasTo = this.mediaPlayer.captionsElement;
-			}else{
-				renderCue = args.renderCue || function(renderedCue, area){
-					var txt, annotate,
-						cue = renderedCue.cue;
-
-					if(that.annotator){
-						annotate = function(n){
-							that.annotator.index = indexMap.get(cue);
-							return that.annotator.HTML(n);
-						};
-					}
-
-					txt = new Ayamel.Text({
-						content: cue.getCueAsHTML(renderedCue.kind === 'subtitles'),
-						processor: annotate
-					});
-
-					// Attach the translator
-					if(that.translator){
-						txt.addEventListener('selection',function(event){
-							that.translator.translate({
-								//TODO: Check if the language is set in the HTML
-								srcLang: cue.track.language,
-								destLang: that.targetLang,
-								text: event.detail.fragment.textContent.trim(),
-								data: {
-									cue: cue,
-									sourceType: "caption"
-								}
-							});
-						},false);
-					}
-
-					renderedCue.node = txt.displayElement;
-				};
-
-				this.captionRenderer = new TimedText.CaptionRenderer({
-					target: mediaPlayer.captionsElement,
-					appendCueCanvasTo: mediaPlayer.captionsElement,
-					renderCue: renderCue
-				});
-			}
+			this.captionRenderer = new TimedText.CaptionRenderer({
+				target: mediaPlayer.captionsElement,
+				appendCueCanvasTo: mediaPlayer.captionsElement,
+				renderCue: typeof args.renderCue === "function" ?
+							args.renderCue : makeCueRenderer(this, indexMap)
+			});
 			this.captionRenderer.bindMediaElement(mediaPlayer);
 		}
 
 		// Load the caption tracks
 		Promise.all((args.captionTracks||[]).map(function(resource){
-			return new Promise(function(resolve, reject){
-				Ayamel.utils.loadCaptionTrack(resource, function(track, mime){
-					var i, cue, offset = 0,
-						cueList = track.cues;
+			return Ayamel.utils.loadCaptionTrack(resource)
+			.then(function(obj){
+				var track = obj.track,
+					cueList = track.cues;
 
-					that.addTextTrack(track);
+				that.addTextTrack(track);
+				mimeMap.set(track, obj.mime);
+				resMap.set(track, resource);
 
-					mimeMap.set(track, mime);
-					resMap.set(track, resource);
-
-					for(i = 0; cue = cueList[i]; i++){
-						indexMap.set(cueList[i], offset);
-						offset += cueList[i].getCueAsHTML().textContent;
-					}
-
-					resolve(track);
-				}, function(err){
-					resolve(null);
-				});
+				return track;
 			});
 		})).then(function(tracks){
+			tracks.forEach(function(track){
+				var offset = 0;
+				track.cues.forEach(function(cue){
+					indexMap.set(cue, offset);
+					offset += cue.getCueAsHTML().textContent.length;
+				});
+			});
 			element.dispatchEvent(new CustomEvent('loadtexttracks', {
 				bubbles:true,
 				detail: {
-					tracks: tracks.filter(function(track){ return track !== null; }),
+					tracks: tracks,
 					resources: resMap,
 					mimes: mimeMap
 				}

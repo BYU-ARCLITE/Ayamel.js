@@ -8,6 +8,12 @@ var ResourceLibrary = (function() {
 	 */
 	var reqcache = {};
 
+	function load(id, callback){
+		if(!reqcache.hasOwnProperty(id)){ reqcache[id] = getResourcePromise(id); }
+		if(typeof callback === 'function'){ reqcache[id].then(callback); }
+		return reqcache[id];
+	}
+
 	function Resource(data, id) {
 		var key;
 		this.id = id;
@@ -20,7 +26,7 @@ var ResourceLibrary = (function() {
 	Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback){
 		var filteredRelations = (typeof test === 'function')?this.relations.filter(test,this):this.relations;
 		var p = Promise.all(filteredRelations.map(function(relation){
-			return ResourceLibrary.load(relation[relationRole]);
+			load(relation[relationRole]);
 		}));
 		if(typeof callback ==='function'){ p.then(callback); }
 		return p;
@@ -73,12 +79,6 @@ var ResourceLibrary = (function() {
 			xhr.open("GET",baseUrl + "resources/" + id + "?" + Date.now().toString(36),true);
 			xhr.send(null);
 		});
-	}
-
-	function load(id, callback){
-		if(!reqcache.hasOwnProperty(id)){ reqcache[id] = getResourcePromise(id); }
-		if(typeof callback === 'function'){ reqcache[id].then(callback); }
-		return reqcache[id];
 	}
 
 	return {
