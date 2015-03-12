@@ -83,6 +83,8 @@
 			success: function(track){
 				ready = 4;
 				track.cues.forEach(function(cue,i){
+					if(cue.endTime < startTime){ return; }
+					if(cue.startTime > endTime){ return; }
 					var cdiv = document.createElement('div');
 					cdiv.className = "transcriptCue";
 					cdiv.dataset.index = i;
@@ -106,7 +108,7 @@
 		this.timer = timer;
 
 		element.addEventListener('timeupdate',function(){
-			var d = that.duration;
+			var d = (endTime > -1 ? endTime : that.duration);
 			if(timer.currentTime >= d){
 				timer.pause();
 				timer.currentTime = d;
@@ -123,7 +125,7 @@
 			currentTime: {
 				get: function(){ return timer.currentTime; },
 				set: function(time){ 
-					timer.currentTime = +time||0;
+					timer.currentTime = Math.max(Math.min(+time||0,endTime),startTime);
 					element.dispatchEvent(new Event("seeked",{bubbles:true,cancelable:false}));
 					element.dispatchEvent(new Event("timeupdate",{bubbles:true,cancelable:false}));
 					return timer.currentTime;
