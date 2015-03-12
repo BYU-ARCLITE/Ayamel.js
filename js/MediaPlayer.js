@@ -3,20 +3,25 @@
 
 	var template = '<div class="mediaPlayer"></div>',
 		BasicMediaPrototype = {
+			supports: function(feature){
+				if(!this.plugin){ return false; }
+				var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
+				return !!this.plugin.features[device][feature];
+			},
 			enterFullScreen: function(availableHeight) {
-				if (this.plugin) {
+				if(this.plugin){
 					this.plugin.enterFullScreen(availableHeight);
 				}
 			},
 			exitFullScreen: function() {
-				if (this.plugin) {
+				if(this.plugin){
 					this.plugin.exitFullScreen();
 				}
 			},
-			addEventListener: function(event, callback) {
+			addEventListener: function(event, callback){
 				this.element.addEventListener(event, callback, false);
 			},
-			removeEventListener: function(event, callback) {
+			removeEventListener: function(event, callback){
 				this.element.removeEventListener(event, callback, false);
 			},
 			get readyState(){ return this.plugin.readyState; },
