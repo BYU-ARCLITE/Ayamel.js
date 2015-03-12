@@ -2,11 +2,7 @@
 	"use strict";
 
 	var template =
-		"<div class='playerTop'>" +
-			"<div class='audioCaptionContainer'>" +
-				"<div class='audioCaptionHolder'></div>" +
-			"</div>" +
-		"</div>",
+		"<div class='playerTop'></div>",
 		supports = ["probably", "maybe"],
 		testAudio = document.createElement("audio");
 
@@ -45,16 +41,12 @@
 		var file,
 			startTime = args.startTime, endTime = args.endTime,
 			element = Ayamel.utils.parseHTML(template),
-			captionsElement = element.querySelector(".audioCaptionHolder"),
 			audio = new Audio();
 
 		this.element = element;
 		args.holder.appendChild(element);
 
 		this.audio = audio;
-
-		// Create a place for captions
-		this.captionsElement = captionsElement;
 
 		// Load the source
 		file = findFile.call(this, args.resource);

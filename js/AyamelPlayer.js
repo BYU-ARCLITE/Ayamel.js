@@ -93,7 +93,7 @@
 		}
 
 		// Create the caption renderer
-		if(mediaPlayer.captionsElement){
+		if(mediaPlayer.supports('captions')){
 			if(args.captionRenderer instanceof TimedText.CaptionRenderer){
 				this.captionRenderer = args.captionRenderer;
 				this.captionRenderer.target = this.mediaPlayer.captionsElement;

@@ -1,8 +1,6 @@
 (function(Ayamel) {
 	"use strict";
 
-	var captionHolderTemplate = '<div class="videoCaptionHolder"></div>';
-
 	/* Events
 		error, play, pause, timeupdate, seeked, ended,
 		ratechange, durationchange, volumechange, loadedmetadata
@@ -82,18 +80,13 @@
 		var that = this, timer, track,
 			muted = false, volume = 1, ready = 0,
 			startTime = args.startTime, endTime = args.endTime,
-			element = document.createElement('div'),
-			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate);
+			element = document.createElement('div');
 
 		// Create the element
 		this.element = element;
 		element.style.overflowY = "hidden";
 		element.style.paddingLeft = "24pt";
 		args.holder.appendChild(element);
-
-		// Create a place for captions
-		this.captionsElement = captionsElement;
-		args.holder.appendChild(captionsElement);
 
 		// Load the source
 		track = TextTrack.get({
