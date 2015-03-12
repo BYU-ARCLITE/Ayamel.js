@@ -17,35 +17,46 @@ var ResourceLibrary = (function() {
 		}
 	}
 
-	Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback) {
-		var filteredRelations = (typeof test === 'function')?this.relations.filter(test):this.relations;
-		var p = Promise.all(filteredRelations.map(function(relation) {
+	Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback){
+		var filteredRelations = (typeof test === 'function')?this.relations.filter(test,this):this.relations;
+		var p = Promise.all(filteredRelations.map(function(relation){
 			return ResourceLibrary.load(relation[relationRole]);
 		}));
 		if(typeof callback ==='function'){ p.then(callback); }
 		return p;
 	};
 
-	Resource.prototype.getTranscripts = function(callback, additionalTest) {
-		this.loadResourcesFromRelations("subjectId", function (relation) {
-			var isTranscript = relation.type == "transcriptOf" && relation.objectId == _this.id,
+	Resource.prototype.getTranscriptIds = function(){
+		return this.relations.filter(function(relation){
+			return relation.type == "transcript_of" && relation.objectId == this.id;
+		},this).map(function(relation){ return relation.subjectId; });
+	};
+
+	Resource.prototype.getTranscripts = function(additionalTest, callback){
+		return this.loadResourcesFromRelations("subjectId", function(relation){
+			var isTranscript = relation.type == "transcript_of" && relation.objectId == this.id,
 				passTest = (typeof additionalTest === 'function')?additionalTest(relation):true;
 			return isTranscript && passTest;
 		}, callback);
 	};
 
-	Resource.prototype.getAnnotations = function(callback, additionalTest) {
-		this.loadResourcesFromRelations("subjectId", function (relation) {
-			var isAnnotations = relation.type == "references" && relation.objectId == _this.id && relation.attributes.type === "annotations",
+	Resource.prototype.getAnnotationIds = function(){
+		return this.relations.filter(function(relation){
+			return relation.type == "references" && relation.objectId == this.id && relation.attributes.type === "annotations";
+		},this).map(function(relation){ return relation.subjectId; });
+	};
+
+	Resource.prototype.getAnnotations = function(additionalTest, callback){
+		return this.loadResourcesFromRelations("subjectId", function(relation){
+			var isAnnotations = relation.type == "references" && relation.objectId == this.id && relation.attributes.type === "annotations",
 				passTest = (typeof additionalTest === 'function')?additionalTest(relation):true;
 			return isAnnotations && passTest;
 		}, callback);
 	};
 
-
 	function getResourcePromise(id){
-		var xhr = new XMLHttpRequest();
 		return new Promise(function(resolve, reject){
+			var xhr = new XMLHttpRequest();
 			xhr.addEventListener("load", function(){
 				if(this.status >= 200 && this.status < 400){
 					try {
@@ -60,17 +71,24 @@ var ResourceLibrary = (function() {
 			xhr.addEventListener("error", function(){ reject(new Error("Request Failed")); }, false);
 			xhr.addEventListener("abort", function(){ reject(new Error("Request Aborted")); }, false);
 			xhr.open("GET",baseUrl + "resources/" + id + "?" + Date.now().toString(36),true);
-			xhr.send();
+			xhr.send(null);
 		});
 	}
 
+	function load(id, callback){
+		if(!reqcache.hasOwnProperty(id)){ reqcache[id] = getResourcePromise(id); }
+		if(typeof callback === 'function'){ reqcache[id].then(callback); }
+		return reqcache[id];
+	}
+
 	return {
-		setBaseUrl: function(url) { baseUrl = url; },
-		load: function (id, callback) {
-			if(!reqcache.hasOwnProperty(id)){ reqcache[id] = getResourcePromise(id); }
-			if(typeof callback === 'function'){ reqcache[id].then(callback); }
-			return reqcache[id];
-		},
-		Resource: Resource
+		Resource: Resource,
+		setBaseUrl: function(url){ baseUrl = url; },
+		load: load,
+		loadAll: function(ids, callback){
+			var p = Promise.all(ids.map(load));
+			if(typeof callback === 'function'){ p.then(callback); }
+			return p;
+		}
 	};
 }());
