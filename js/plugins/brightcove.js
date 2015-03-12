@@ -7,15 +7,6 @@
 		return file.streamUri && file.streamUri.substr(0,13) === "brightcove://";
 	}
 
-	function findFile(resource) {
-		for (var i=0; i<resource.content.files.length; i += 1) {
-			var file = resource.content.files[i];
-			if (supportsFile(file))
-				return file;
-		}
-		return null;
-	}
-
 	function generateBrightcoveTemplate(videoId){
 		return Ayamel.utils.parseHTML('<div class="videoBox"><object id="brightcoveExperience'
 		+ (counter++).toString(36)
@@ -38,7 +29,7 @@
 	function BrightcoveVideoPlayer(args) {
 		var _this = this,
 			startTime = args.startTime, endTime = args.endTime,
-			file = findFile(args.resource),
+			file = Ayamel.utils.findFile(args.resource, supportsFile),
 			videoId = file.streamUri.substr(13),
 			element = generateBrightcoveTemplate(videoId),
 			properties = {

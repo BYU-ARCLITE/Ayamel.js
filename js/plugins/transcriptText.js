@@ -31,24 +31,6 @@
 		this.playing = false;
 	};
 
-	function findFile(resource){
-		return resource.content.files.filter(
-			function(f){ return TimedText.isSupported(f.mime); }
-		).sort(function(a,b){
-			if(a.representation === b.representation){
-				return	a.quality > b.quality ? -1 :
-						a.quality < b.quality ? 1 : 0;
-			}
-			switch(a.representation){
-			case 'original': return -1;
-			case 'summary': return 1;
-			case 'transcoding':
-				return b.representation === 'original' ? 1 : -1;
-			default: return 1;
-			}
-		})[0];
-	}
-
 	function updateScroll(element,cues,time){
 		var before, start, after, end, height, weight;
 		[].forEach.call(element.childNodes,function(cdiv){
@@ -76,7 +58,11 @@
 		}
 	};
 
-	function TextTranscriptPlayer(args) {
+	function supportsFile(file){
+		return TimedText.isSupported(file.mime);
+	}
+
+	function TextTranscriptPlayer(args){
 		var that = this, timer, track,
 			muted = false, volume = 1, ready = 0,
 			startTime = args.startTime, endTime = args.endTime,
@@ -90,7 +76,7 @@
 
 		// Load the source
 		track = TextTrack.get({
-			src: findFile(args.resource).downloadUri,
+			src: Ayamel.utils.findFile(args.resource, supportsFile).downloadUri,
 			kind: 'subtitles',
 			label: args.resource.title,
 			lang: args.resource.languages.iso639_3[0],
@@ -237,9 +223,7 @@
 		},
 		supports: function(resource) {
 			return resource.type === "document" &&
-					resource.content.files.some(
-						function(f){ return TimedText.isSupported(f.mime); }
-					);
+					resource.content.files.some(supportsFile);
 		}
 	};
 
