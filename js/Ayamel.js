@@ -26,25 +26,21 @@ var Ayamel = (function() {
 		// Audio, video, and other players will be registered here
 		mediaPlugins: {
 			audio: {},
-			audio_sequence: {},
 			video: {},
-			video_sequence: {},
 			image: {},
-			image_sequence: {},
-			text: {},
-			text_sequence: {},
+			document: {},
+			archive: {},
+			collection: {},
 			fallbacks: {}
 		},
 
 		prioritizedPlugins: {
 			audio: [],
-			audio_sequence: [],
 			video: [],
-			video_sequence: [],
 			image: [],
-			image_sequence: [],
-			text: [],
-			text_sequence: []
+			document: [],
+			archive: [],
+			collection: []
 		},
 
 		path: "",
@@ -59,16 +55,13 @@ var Ayamel = (function() {
 		utils: {
 			hasTimeline: function(resource){
 				//determines if a resource has an inherent timeline, or if it's just static
+				//Not very smart- only looks at type, so it can't discriminate collections
 				switch(resource.type){
 				case 'audio':
-				case 'audio_sequence':
 				case 'video':
-				case 'video_sequence':
-				case 'image_sequence':
 					return true;
 				case 'image':
-				case 'text':
-				case 'text_sequence':
+				case 'document':
 				default:
 					return false;
 				}
