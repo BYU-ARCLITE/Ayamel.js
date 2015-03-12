@@ -96,7 +96,7 @@
 			left = el.querySelector(".left"),
 			right = el.querySelector(".right"),
 			scale = el.clientWidth / (left.clientWidth + right.clientWidth + 2);
-		this.scale = scale;
+		this.scale = Math.min(scale, 1);
 		if(scale < 1){
 			left.style.transform = "scale("+scale+","+scale+")";
 			right.style.transform = "scale("+scale+","+scale+")";
