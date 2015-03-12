@@ -7,10 +7,9 @@
 			<div class="right"></div>\
 		</div>';
 
-	function addComponent(holder, pluginFeatures, component) {
+	function addComponent(holder, mplayer, component) {
 		// Check to see if this component is supported by the plugin and device
-		var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
-		if(!pluginFeatures[device][component]){ return; }
+		if(!mplayer.supports(component)){ return; }
 
 		var constructor = Ayamel.controls[component];
 		if(typeof constructor !== 'function'){ return; }
@@ -52,10 +51,10 @@
 		this.components = components;
 
 		if(controlLists.left instanceof Array){
-			controlLists.left.forEach(addComponent.bind(this, element.querySelector(".left"), args.pluginFeatures));
+			controlLists.left.forEach(addComponent.bind(this, element.querySelector(".left"), args.mediaPlayer));
 		}
 		if(controlLists.right instanceof Array){
-			controlLists.right.forEach(addComponent.bind(this, element.querySelector(".right"), args.pluginFeatures));
+			controlLists.right.forEach(addComponent.bind(this, element.querySelector(".right"), args.mediaPlayer));
 		}
 
 		timeCode = components.timeCode || {};

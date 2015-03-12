@@ -47,7 +47,7 @@
 		controlBar = new Ayamel.classes.ControlBar({
 			holder: element,
 			components: args.components,
-			pluginFeatures: mediaPlayer.plugin.features
+			mediaPlayer: mediaPlayer
 		});
 		this.controlBar = controlBar;
 
