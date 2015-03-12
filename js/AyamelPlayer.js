@@ -44,8 +44,25 @@
 						detail: {data: data, lang: lang, text: text, index: index}
 					}));
 				}
-			}, args.annotations.data);
-
+			});
+			Promise.all((args.annotations.data||[]).map(function(resource){
+				return Ayamel.utils.HTTP({url: resource.content.files[0].downloadUri})
+				.then(function(manifest){
+					return new Ayamel.Annotator.AnnSet(
+						resource.title,
+						resource.languages.iso639_3[0],
+						JSON.parse(manifest)
+					);
+				}).then(null,function(err){ return null; });
+			})).then(function(list){
+				list = list.filter(function(m){ return m !== null; });
+				that.annotator.annotations = list;
+				if(that.controlBar.components.annotations){
+					list.forEach(function(annset){
+						that.controlBar.components.annotations.addSet(annset);
+					});
+				}
+			});
 		}else{
 			this.annotator = null;
 		}
@@ -70,6 +87,7 @@
 
 		// Create the Translator
 		this.targetLang = args.targetLang || "eng";
+		this.translator = null;
 		if(args.translate){
 			this.translator = new Ayamel.utils.Translator(translationEndpoint,translationKey);
 			// Forward Events
@@ -82,17 +100,10 @@
 			this.translator.addEventListener("error", function(event){
 				element.dispatchEvent(new CustomEvent("translationError", {bubbles: true, detail: event.detail}));
 			});
-		}else{
-			this.translator = null;
-		}
-
-		if(this.controlBar.components.annotations){
-			args.annotations.data.forEach(function(annset){
-				that.controlBar.components.annotations.addSet(annset);
-			});
 		}
 
 		// Create the caption renderer
+		this.captionRenderer = null;
 		if(mediaPlayer.supports('captions')){
 			if(args.captionRenderer instanceof TimedText.CaptionRenderer){
 				this.captionRenderer = args.captionRenderer;

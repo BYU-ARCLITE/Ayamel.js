@@ -161,7 +161,7 @@
 		var parsers = config.parsers || Annotator.parsers;
 		if(!(annotations instanceof Array)){
 			annotations = (config.annotations instanceof Array)
-							?config.annotations:null;
+							?config.annotations:[];
 		}
 
 		this.classList = (config.classList instanceof Array)?config.classList:[];
