@@ -9,7 +9,6 @@
 
 	var counter = 0,
 		template = "<div class='videoBox'><div></div></div>",
-		captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
 		installed = false,
 		supportedMimeTypes = [
 			"video/mp4",
@@ -36,7 +35,6 @@
 			playing = false,
 			swfPath = Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.16.swf",
 			element = Ayamel.utils.parseHTML(template),
-			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate),
 			startTime = args.startTime, endTime = args.endTime,
 			width, height, player;
 
@@ -45,10 +43,6 @@
 		element.firstChild.id = flowId;
 		element.firstChild.style = "height:100%;";  // So that the flowPlayer will show up in Mac-Firefox
 		args.holder.appendChild(element);
-
-		// Create a place for captions
-		this.captionsElement = captionsElement;
-		args.holder.appendChild(captionsElement);
 
 		function fireTimeEvents(){
 			if(!playing){ return; }

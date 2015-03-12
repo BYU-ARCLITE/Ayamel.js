@@ -1,20 +1,15 @@
 (function(Ayamel) {
 	"use strict";
 
-	var template = '<div class="videoBox" style="color:white;text-align:center;"><h3>This resource could not be played on your current machine & browser.</h3></div>',
-		captionHolderTemplate = '<div class="videoCaptionHolder"></div>';
+	var template = '<div class="videoBox" style="color:white;text-align:center;">\
+		<h3>This resource could not be played on your current machine & browser.</h3></div>';
 
 	function FallbackPlayer(args) {
-		var element = Ayamel.utils.parseHTML(template),
-			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate);
+		var element = Ayamel.utils.parseHTML(template);
 
 		// Create the element
 		this.element = element;
 		args.holder.appendChild(element);
-
-		// Create a place for captions
-		this.captionsElement = captionsElement;
-		args.holder.appendChild(captionsElement);
 
 		Object.defineProperties(this, {
 			duration: {

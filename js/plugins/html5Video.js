@@ -2,7 +2,6 @@
 	"use strict";
 
 	var template = "<div class='videoBox'><video></video></div>",
-		captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
 		supports = ["probably", "maybe"],
 		testVideo = document.createElement('video');
 
@@ -41,7 +40,6 @@
 		var file,
 			startTime = args.startTime, endTime = args.endTime,
 			element = Ayamel.utils.parseHTML(template),
-			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate),
 			video = element.querySelector("video");
 
 		// Create the element
@@ -49,10 +47,6 @@
 		args.holder.appendChild(element);
 
 		this.video = video;
-
-		// Create a place for captions
-		this.captionsElement = captionsElement;
-		args.holder.appendChild(captionsElement);
 
 		// Load the source
 		file = findFile.call(this, args.resource);

@@ -4,7 +4,6 @@
 	// https://developers.google.com/youtube/iframe_api_reference
 
 	var template = '<div class="videoBox"><div></div></div>',
-		captionHolderTemplate = '<div class="videoCaptionHolder"></div>',
 		watchReg = /https?:\/\/www\.youtube\.com\/watch\?v=(.{11})/i,
 		shortReg = /https?:\/\/youtu\.be\/(.{11})/i;
 
@@ -39,18 +38,13 @@
 		var that = this,
 			startTime = args.startTime, endTime = args.endTime,
 			videoTime = startTime, videoIsMuted = false, ready = 0,
-			element = Ayamel.utils.parseHTML(template),
-			captionsElement = Ayamel.utils.parseHTML(captionHolderTemplate);
+			element = Ayamel.utils.parseHTML(template);
 
 		// Create the element
 		this.element = element;
 		args.holder.appendChild(element);
 
 		this.video = null;
-
-		// Create a place for captions
-		this.captionsElement = captionsElement;
-		args.holder.appendChild(captionsElement);
 
 		element.addEventListener("timeupdate", function(event) {
 			if(endTime > -1 && that.currentTime >= endTime){

@@ -41,7 +41,6 @@
 			file = findFile(args.resource),
 			videoId = file.streamUri.substr(13),
 			element = generateBrightcoveTemplate(videoId),
-			captionsElement = document.createElement('div'),
 			properties = {
 				duration: 0,
 				currentTime: startTime,
@@ -50,11 +49,6 @@
 
 		this.element = element;
 		args.holder.appendChild(element);
-
-		// Create a place for captions
-		this.captionsElement = captionsElement;
-		captionsElement.className = "videoCaptionHolder";
-		args.holder.appendChild(captionsElement);
 
 		this.player = null;
 		this.properties = properties;

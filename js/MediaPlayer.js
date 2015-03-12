@@ -93,8 +93,12 @@
 		}		
 
 		this.element = element;
+		this.captionsElement = null;
 		this.plugin = plugin;
-		this.captionsElement = plugin.captionsElement;
+		if(this.supports('captions')){
+			this.captionsElement = Ayamel.utils.parseHTML('<div class="videoCaptionHolder"></div>');
+			element.appendChild(this.captionsElement);
+		}
 
 		Object.defineProperties(this, {
 			duration: {
