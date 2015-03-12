@@ -33,6 +33,23 @@
 		 * ==========================================================================================
 		 */
 
+		if(args.annotations instanceof Object){
+			this.annotator = new Ayamel.Annotator({
+				parsers: args.annotations.parsers,
+				classList: args.annotations.classList,
+				style: args.annotations.style,
+				handler: function(data, lang, text, index){
+					element.dispatchEvent(new CustomEvent("annotation", {
+						bubbles: true,
+						detail: {data: data, lang: lang, text: text, index: index}
+					}));
+				}
+			}, args.annotations.data);
+
+		}else{
+			this.annotator = null;
+		}
+
 		// Create the MediaPlayer
 		mediaPlayer = new Ayamel.classes.MediaPlayer({
 			holder: element,
@@ -69,27 +86,10 @@
 			this.translator = null;
 		}
 
-		if(args.annotations instanceof Object){
-			this.annotator = new Ayamel.Annotator({
-				parsers: args.annotations.parsers,
-				classList: args.annotations.classList,
-				style: args.annotations.style,
-				handler: function(data, lang, text, index){
-					element.dispatchEvent(new CustomEvent("annotation", {
-						bubbles: true,
-						detail: {data: data, lang: lang, text: text, index: index}
-					}));
-				}
-			}, args.annotations.data);
-
-			if(this.controlBar.components.annotations){
-				args.annotations.data.forEach(function(annset){
-					that.controlBar.components.annotations.addSet(annset);
-				});
-			}
-
-		}else{
-			this.annotator = null;
+		if(this.controlBar.components.annotations){
+			args.annotations.data.forEach(function(annset){
+				that.controlBar.components.annotations.addSet(annset);
+			});
 		}
 
 		// Create the caption renderer
@@ -119,6 +119,7 @@
 					if(that.translator){
 						txt.addEventListener('selection',function(event){
 							that.translator.translate({
+								//TODO: Check if the language is set in the HTML
 								srcLang: cue.track.language,
 								destLang: that.targetLang,
 								text: event.detail.fragment.textContent.trim(),
