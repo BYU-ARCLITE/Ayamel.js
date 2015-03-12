@@ -83,7 +83,32 @@ var Ayamel = (function() {
 					}
 				})[0];
 			},
-			
+
+			HTTP: function(args){
+				var idx, url = args.url,
+					method = args.method || "GET";
+				if(!args.cached){
+					idx = url.indexOf('?');
+					if(idx === -1){ url += "?"; }
+					else if(idx !== url.length-1){ url += '&nocache='; }
+					url += Date.now().toString(36);
+				}
+				return new Promise(function(resolve, reject){
+					var xhr = new XMLHttpRequest();
+					xhr.addEventListener("load", function(){
+						if(this.status >= 200 && this.status < 400){
+							resolve(this.responseText);
+						}else{
+							reject(new Error(this.responseText));
+						}
+					}, false);
+					xhr.addEventListener("error", function(){ reject(new Error("Request Failed")); }, false);
+					xhr.addEventListener("abort", function(){ reject(new Error("Request Aborted")); }, false);
+					xhr.open(method,url,true);
+					xhr.send(args.body||null);
+				});
+			},
+
 			parseHTML: function(text){
 				var frag;
 				parseElement.innerHTML = text;
