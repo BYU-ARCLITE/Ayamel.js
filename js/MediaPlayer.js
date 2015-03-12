@@ -69,10 +69,6 @@
 			endTime = args.endTime,
 			plugin, element;
 
-		if(!Ayamel.utils.hasTimeline(args.resource)){
-			throw new Error("Cannot create player for untimed media.");
-		}
-
 		// Attempt to load the resource
 		element = Ayamel.utils.parseHTML(template);
 
