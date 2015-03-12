@@ -7,26 +7,16 @@
 		watchReg = /https?:\/\/www\.youtube\.com\/watch\?v=(.{11})/i,
 		shortReg = /https?:\/\/youtu\.be\/(.{11})/i;
 
-	function supportsFile(file) {
+	function supportsFile(file){
 		return file.streamUri &&
 			(file.streamUri.substr(0, 10) === "youtube://"
 			|| watchReg.test(file.streamUri)
 			|| shortReg.test(file.streamUri));
 	}
 
-	function findFile(resource) {
-		var file, i;
-		for (i=0; i<resource.content.files.length; i += 1) {
-			file = resource.content.files[i];
-			if (supportsFile(file))
-				return file;
-		}
-		return null;
-	}
-
-	function getYouTubeId(url) {
+	function getYouTubeId(url){
 		var match;
-		if (url.substr(0, 10) === "youtube://") {
+		if (url.substr(0, 10) === "youtube://"){
 			return url.substr(10,11);
 		}
 		match = watchReg.exec(url) || shortReg.exec(url);
@@ -34,7 +24,7 @@
 		return "";
 	}
 
-	function YouTubePlayer(args) {
+	function YouTubePlayer(args){
 		var that = this,
 			startTime = args.startTime, endTime = args.endTime,
 			videoTime = startTime, videoIsMuted = false, ready = 0,
@@ -73,7 +63,7 @@
 					this.video = new YT.Player(element.firstChild, {
 						height: "100%",
 						width: "100%",
-						videoId: getYouTubeId(findFile(args.resource).streamUri),
+						videoId: getYouTubeId(Ayamel.utils.findFile(args.resource, supportsFile).streamUri),
 						playerVars: {
 							autoplay: 1,
 							cc_load_policy: 0,

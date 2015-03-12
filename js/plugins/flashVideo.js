@@ -20,15 +20,6 @@
 		return supportedMimeTypes.indexOf(mime) >= 0;
 	}
 
-	function findFile(resource){
-		for (var i=0; i<resource.content.files.length; i += 1){
-			var file = resource.content.files[i];
-			if(supportsFile(file))
-				return file;
-		}
-		return null;
-	}
-
 	function FlashVideoPlayer(args){
 		var _this = this,
 			flowId = "flowVideoHolder"+(counter++).toString(36),
@@ -75,7 +66,7 @@
 				backgroundGradient: "none"
 			},
 			clip: {
-				url: findFile(args.resource).downloadUri,
+				url: Ayamel.utils.findFile(args.resource, supportsFile).downloadUri,
 				autoPlay: false,
 				autoBuffering: true,
 				scaling: "fit",

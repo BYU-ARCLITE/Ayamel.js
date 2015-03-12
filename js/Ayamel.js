@@ -67,6 +67,23 @@ var Ayamel = (function() {
 				}
 			},
 
+			findFile: function(resource, filter){
+				return resource.content.files.filter(filter)
+				.sort(function(a,b){
+					if(a.representation === b.representation){
+						return	a.quality > b.quality ? -1 :
+								a.quality < b.quality ? 1 : 0;
+					}
+					switch(a.representation){
+					case 'original': return -1;
+					case 'summary': return 1;
+					case 'transcoding':
+						return b.representation === 'original' ? 1 : -1;
+					default: return 1;
+					}
+				})[0];
+			},
+			
 			parseHTML: function(text){
 				var frag;
 				parseElement.innerHTML = text;

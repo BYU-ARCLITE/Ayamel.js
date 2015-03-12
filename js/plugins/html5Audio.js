@@ -27,19 +27,8 @@
 		return supports.indexOf(testAudio.canPlayType(file.mime)) >= 0;
 	}
 
-	function findFile(resource) {
-		var file, i;
-		for (i=0; i<resource.content.files.length; i += 1) {
-			file = resource.content.files[i];
-			if (supportsFile(file))
-				return file;
-		}
-		return null;
-	}
-
 	function Html5AudioPlayer(args) {
-		var file,
-			startTime = args.startTime, endTime = args.endTime,
+		var startTime = args.startTime, endTime = args.endTime,
 			element = Ayamel.utils.parseHTML(template),
 			audio = new Audio();
 
@@ -49,8 +38,7 @@
 		this.audio = audio;
 
 		// Load the source
-		file = findFile.call(this, args.resource);
-		audio.src = file.downloadUri;
+		audio.src = Ayamel.utils.findFile(args.resource, supportsFile).downloadUri;
 
 		// Set up event propagation
 		Object.keys(events).forEach(function (eventName) {
