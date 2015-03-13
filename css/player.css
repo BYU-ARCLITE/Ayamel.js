@@ -352,6 +352,10 @@
 	content: "\f048";
 }
 
+.ayamelPlayer .button.nextCaption:before {
+	content: "\f051";
+}
+
 .ayamelPlayer .transcriptCue:hover {
     background: rgba(33, 132, 174, 0.5);
     color: white;

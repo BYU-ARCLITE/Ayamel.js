@@ -11,34 +11,35 @@
 	Ayamel.utils.CaptionsTranversal = {
 
 		// Find the cue which most recently ended and move to its beginning
-		back: function(track, currentTime){
-			var i, cue, cueTime,
-				startTime = 0, endTime = 0,
-				cues = track.cues;
-			for(i = 0; cue = cues[i]; i++){
-				cueTime = cue.endTime;
-				//if we knew that cues were always sorted, we could break early
-				if(cueTime < currentTime && cueTime > endTime){
-					endTime = cueTime;
-					startTime = cue.startTime;
+		back: function(tracks, currentTime){
+			var lastTime = tracks.reduce(function(p,track){
+				var i, cue, cueTime,
+					startTime = 0, endTime = 0,
+					cues = track.cues;
+				for(i = 0; (cue = cues[i]) && cue.startTime < currentTime; i++){
+					cueTime = cue.endTime;
+					if(cueTime < currentTime && cueTime > endTime){
+						endTime = cueTime;
+						startTime = cue.startTime;
+					}
 				}
-			}
-			return startTime;
+				return startTime > p ? startTime : p;
+			},-1);
+			return lastTime === -1?currentTime:lastTime;
 		},
 
 		// Find the cue which is closest to being played and move to its beginning
-		forward: function(track, currentTime){
-			var i, cue, cueTime,
-				startTime = 1/0,
-				cues = track.cues;
-			for(i = 0; cue = cues[i]; i++){
-				cueTime = cue.startTime;
-				//if we knew that cues were always sorted, we could break early
-				if(cueTime > currentTime && cueTime < startTime){
-					startTime = cueTime;
+		forward: function(tracks, currentTime){
+			var nextTime = tracks.reduce(function(p,track){
+				var i, cue, cueTime,
+					cues = track.cues;
+				for(i = 0; cue = cues[i]; i++){
+					cueTime = cue.startTime;
+					if(cueTime > currentTime){ return cueTime < p ? cueTime : p; }
 				}
-			}
-			return isFinite(startTime)?startTime:currentTime;
+				return p;
+			},1/0);
+			return isFinite(nextTime)?nextTime:currentTime;
 		}
 	};
 })(Ayamel);
