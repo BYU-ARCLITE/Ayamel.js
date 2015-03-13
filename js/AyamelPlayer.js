@@ -138,12 +138,13 @@
 		// 
 		controlBar.addEventListener("captionJump", function(event){
 			// Find the first visible track
-			var track = that.captionRenderer.tracks.filter(function(track){
+			var tracks = that.captionRenderer.tracks.filter(function(track){
 				return track.mode === "showing";
-			})[0];
-			if(track){ // Move forward or back a caption
-				var traversal = Ayamel.utils.CaptionsTranversal[event.detail.direction];
-				that.currentTime = traversal(track, that.currentTime);
+			});
+			if(tracks.length){ // Move forward or back a caption
+				that.currentTime = Ayamel.utils.CaptionsTranversal[
+					event.detail.direction
+				](tracks, that.currentTime);
 			}
 		});
 
