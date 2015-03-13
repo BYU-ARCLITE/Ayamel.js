@@ -100,10 +100,52 @@
 		};
 	}
 
+	function loadAnnotations(resource, config){
+		var test = null;
+		if(config.whitelist instanceof Array){
+			test = function(relation){ return config.whitelist.indexOf(relation.subjectId) > -1; };
+		}else if(config.blacklist instanceof Array){
+			test = function(relation){ return config.blacklist.indexOf(relation.subjectId) === -1; };
+		}
+		return resource.getAnnotations(test).then(function(rlist){
+			return Promise.all(rlist.map(function(annres){
+				return Ayamel.utils.HTTP({url: annres.content.files[0].downloadUri})
+				.then(function(manifest){
+					return new Ayamel.Annotator.AnnSet(
+						resource.title,
+						resource.languages.iso639_3[0],
+						JSON.parse(manifest)
+					);
+				}).then(null,function(err){ return null; });
+			}));
+		}).then(function(list){
+			return list.filter(function(m){ return m !== null; });
+		});
+	}
+
+	function loadCaptions(resource, config){
+		var test = null;
+		if(config.whitelist instanceof Array){
+			test = function(relation){ return config.whitelist.indexOf(relation.subjectId) > -1; };
+		}else if(config.blacklist instanceof Array){
+			test = function(relation){ return config.blacklist.indexOf(relation.subjectId) === -1; };
+		}
+		return resource.getTranscripts(test).then(function(tlist){
+			return Promise.all(tlist.map(function(transres){
+				return Ayamel.utils.loadCaptionTrack(transres)
+				.then(function(obj){
+					return {track: obj.track, mime: obj.mime, resource: transres};
+				});
+			}));
+		});
+	}
+
 	function MediaPlayer(args){
-		var startTime = args.startTime,
+		var that = this,
+			resource = args.resource,
+			startTime = args.startTime,
 			endTime = args.endTime,
-			plugin, element;
+			plugin, element, indexMap;
 
 		// Attempt to load the resource
 		element = Ayamel.utils.parseHTML(template);
@@ -113,7 +155,7 @@
 		args.holder.appendChild(element);
 		plugin = loadPlugin({
 			holder: element,
-			resource: args.resource,
+			resource: resource,
 			startTime: startTime,
 			endTime: endTime
 		});
@@ -127,7 +169,7 @@
 		this.plugin = plugin;
 
 		this.annotator = null;
-		if(this.supports('annotations') && typeof args.annotations === 'object'){
+		if(this.supports('annotations')){
 			this.annotator = new Ayamel.Annotator({
 				parsers: args.annotations.parsers,
 				classList: args.annotations.classList,
@@ -139,20 +181,47 @@
 					}));
 				}
 			});
+			//TODO: Load annotations from subtitle resources,
+			//and push this annotator down to the plugin level
+			loadAnnotations(resource, args.annotations).then(function(list){
+				that.annotator.annotations = list;
+				list.forEach(function(annset){
+					element.dispatchEvent(new CustomEvent('addannset', {
+						bubbles:true, detail: {annset: annset}
+					}));
+				});
+			});
 		}
 
 		this.captionsElement = null;
 		this.captionRenderer = null;
 		if(this.supports('captions')){
+			indexMap = new Map();
+
 			this.captionsElement = Ayamel.utils.parseHTML('<div class="videoCaptionHolder"></div>');
 			element.appendChild(this.captionsElement);
+
 			this.captionRenderer = new TimedText.CaptionRenderer({
 				target: this.captionsElement,
 				appendCueCanvasTo: this.captionsElement,
-				renderCue: typeof args.renderCue === "function" ?
-							args.renderCue : makeCueRenderer(args.stage, this.annotator, args.indexMap)
+				renderCue: typeof args.captions.renderCue === "function" ?
+							args.captions.renderCue : makeCueRenderer(args.stage, this.annotator, indexMap)
 			});
 			this.captionRenderer.bindMediaElement(this);
+
+			loadCaptions(resource, args.captions).then(function(objs){
+				objs.forEach(function(obj){
+					var offset = 0;
+					that.captionRenderer.addTextTrack(obj.track);
+					obj.track.cues.forEach(function(cue){
+						indexMap.set(cue, offset);
+						offset += cue.getCueAsHTML().textContent.length;
+					});
+					element.dispatchEvent(new CustomEvent('addtexttrack', {
+						bubbles:true, detail: obj
+					}));
+				});
+			});
 		}
 
 		Object.defineProperties(this, {

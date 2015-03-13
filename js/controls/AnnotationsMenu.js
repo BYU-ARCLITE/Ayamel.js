@@ -68,6 +68,10 @@
 		element.querySelector(".menu").addEventListener('click', function(event){
 			event.stopPropagation();
 		},false);
+
+		args.player.addEventListener('addannset',function(e){
+			that.addSet(e.detail.annset);
+		},false);
 	}
 
 	function refresh(element, annsets){

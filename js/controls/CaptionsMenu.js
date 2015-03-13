@@ -75,6 +75,10 @@
 		element.querySelector(".menu").addEventListener('click', function(event){
 			event.stopPropagation();
 		},false);
+
+		args.player.addEventListener('addtexttrack',function(e){
+			that.addTrack(e.detail.track);
+		},false);
 	}
 
 	function refresh(element, tracks){
@@ -82,7 +86,7 @@
 		hideMenu(element);
 		buildMenu(element, tracks);
 	}
-	
+
 	CaptionsMenu.prototype.addTrack = function(track){
 		if(this.tracks.indexOf(track) > -1){ return; }
 		this.tracks.push(track);

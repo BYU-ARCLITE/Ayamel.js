@@ -16,13 +16,13 @@
 
 		this.components[component] = new constructor({
 			parent: this,
+			player: mplayer,
 			holder: holder
 		});
 	}
 
 	function ControlBar(args) {
-		var _this = this,
-			controlLists = args.components || {left:["play", "volume", "captions", "annotations"], right:["rate", "fullScreen", "timeCode"]},
+		var controlLists = args.components || {left:["play", "volume", "captions", "annotations"], right:["rate", "fullScreen", "timeCode"]},
 			components = {}, progressBar, timeCode,
 			currentTime = 0, duration = 0,
 			element = document.createElement('div');
