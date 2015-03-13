@@ -19,7 +19,7 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			mediaPlayer, controlBar, renderCue;
+			mediaPlayer, controlBar;
 
 		this.element = element;
 		args.holder.appendChild(element);
@@ -125,13 +125,13 @@
 
 		// Play the media when the play button is pressed
 		controlBar.addEventListener("play", function(){
-			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
 			mediaPlayer.play();
 		});
 
 		// Pause the media when the pause button is pressed
 		controlBar.addEventListener("pause", function(){
-			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
 			mediaPlayer.pause();
 		});
 
@@ -150,44 +150,44 @@
 
 		// Change the volume when the volume controls are adjusted
 		controlBar.addEventListener("volumechange", function(event){
-			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
 			mediaPlayer.volume = event.detail.volume;
 			controlBar.volume = mediaPlayer.volume;
 		});
 
 		// Change the playback rate when the rate controls are adjusted
 		controlBar.addEventListener("ratechange", function(event){
-			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
 			mediaPlayer.playbackRate = event.detail.playbackRate;
 			controlBar.playbackRate = mediaPlayer.playbackRate;
 		});
 
 		// Mute/unmute the media when the mute button is pressed
 		controlBar.addEventListener("mute", function(){
-			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
 			that.muted = true;
 			controlBar.muted = that.muted;
 		});
 		controlBar.addEventListener("unmute", function(){
-			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
 			that.muted = false;
 			controlBar.muted = that.muted;
 		});
 
 		// Rebuild captions when tracks are enabled or disabled.
-		controlBar.addEventListener("enabletrack", function(event){
+		controlBar.addEventListener("enabletrack", function(){
 			that.captionRenderer.rebuildCaptions();
 		});
-		controlBar.addEventListener("disabletrack", function(event){
+		controlBar.addEventListener("disabletrack", function(){
 			that.captionRenderer.rebuildCaptions();
 		});
 
 		// Rebuild captions when annotation sets are enabled or disabled.
-		controlBar.addEventListener("enableannset", function(event){
+		controlBar.addEventListener("enableannset", function(){
 			that.annotator.refresh();
 			that.captionRenderer.rebuildCaptions();
 		});
-		controlBar.addEventListener("disableannset", function(event){
+		controlBar.addEventListener("disableannset", function(){
 			that.annotator.refresh();
 			that.captionRenderer.rebuildCaptions();
 		});
@@ -431,7 +431,7 @@
 			resizeWidth = el.clientWidth;
 			Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
 			this.mediaPlayer.height = el.offsetHeight;
-		}while(el.clientWidth != resizeWidth);
+		}while(el.clientWidth !== resizeWidth);
 		this.controlBar.resize();
 	};
 
