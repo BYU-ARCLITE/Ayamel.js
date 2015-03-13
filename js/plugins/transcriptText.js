@@ -62,10 +62,37 @@
 		return TimedText.isSupported(file.mime);
 	}
 
+	//TODO: Dedeuplicate this with MediaPlayer.js
+	function loadAnnotations(resource, config){
+		var test = null;
+		if(config.whitelist instanceof Array){
+			test = function(relation){ return config.whitelist.indexOf(relation.subjectId) > -1; };
+		}else if(config.blacklist instanceof Array){
+			test = function(relation){ return config.blacklist.indexOf(relation.subjectId) === -1; };
+		}
+		return resource.getAnnotations(test).then(function(rlist){
+			return Promise.all(rlist.map(function(annres){
+				return Ayamel.utils.HTTP({url: annres.content.files[0].downloadUri})
+				.then(function(manifest){
+					return new Ayamel.Annotator.AnnSet(
+						resource.title,
+						resource.languages.iso639_3[0],
+						JSON.parse(manifest)
+					);
+				}).then(null,function(err){ return null; });
+			}));
+		}).then(function(list){
+			return list.filter(function(m){ return m !== null; });
+		});
+	}
+
 	function TextTranscriptPlayer(args){
-		var that = this, timer, track,
+		var that = this, timer, track, annotator,
+			resource = args.resource,
 			muted = false, volume = 1, ready = 0,
 			startTime = args.startTime, endTime = args.endTime,
+			translator = args.translator,
+			annotations = args.annotations,
 			element = document.createElement('div');
 
 		// Create the element
@@ -74,21 +101,78 @@
 		element.style.paddingLeft = "24pt";
 		args.holder.appendChild(element);
 
+		if(annotations){
+			annotator = new Ayamel.Annotator({
+				parsers: annotations.parsers,
+				classList: annotations.classList,
+				style: annotations.style,
+				handler: function(data, lang, text, index){
+					player.element.dispatchEvent(new CustomEvent("annotation", {
+						bubbles: true,
+						detail: {data: data, lang: lang, text: text, index: index}
+					}));
+				}
+			});
+			loadAnnotations(resource, annotations).then(function(list){
+				var element = player.element;
+				annotator.annotations = list;
+				list.forEach(function(annset){
+					element.dispatchEvent(new CustomEvent('addannset', {
+						bubbles:true, detail: {annset: annset}
+					}));
+				});
+			});
+		}
+
 		// Load the source
 		track = TextTrack.get({
-			src: Ayamel.utils.findFile(args.resource, supportsFile).downloadUri,
+			src: Ayamel.utils.findFile(resource, supportsFile).downloadUri,
 			kind: 'subtitles',
 			label: args.resource.title,
 			lang: args.resource.languages.iso639_3[0],
 			success: function(track){
+				var offset = 0;
 				ready = 4;
 				track.cues.forEach(function(cue,i){
+					var content = cue.getCueAsHTML(),
+						textIndex = offset;
+					offset += content.textContent.length;
+
 					if(cue.endTime < startTime){ return; }
-					if(cue.startTime > endTime){ return; }
-					var cdiv = document.createElement('div');
+					if(endTime > -1 && cue.startTime > endTime){ return; }
+					var txt, cdiv = document.createElement('div');
 					cdiv.className = "transcriptCue";
 					cdiv.dataset.index = i;
-					cdiv.appendChild(cue.getCueAsHTML());
+
+					txt = new Ayamel.Text({
+						content: cue.getCueAsHTML(),
+						processor: annotator?function(n){
+							annotator.index = textIndex;
+							return annotator.HTML(n);
+						}:null
+					});
+
+					if(translator){
+						//TODO: Deduplicate this with MediaPlayer.js
+						txt.addEventListener('selection',function(event){
+							var detail = event.detail;
+							translator.translate({
+								//TODO: Check if range contains multiple languages
+								srcLang: Ayamel.utils.findCurrentLanguage(
+									detail.range.startContainer,
+									cue.track.language,
+									'transcriptCue'
+								),//destLang is left to default
+								text: detail.fragment.textContent.trim(),
+								data: {
+									cue: cue,
+									sourceType: "transcript"
+								}
+							});
+						},false);
+					}
+
+					cdiv.appendChild(txt.displayElement);
 					cdiv.addEventListener('click',function(){
 						that.currentTime = cue.startTime;
 					},false);
@@ -117,15 +201,17 @@
 				updateScroll(element,track.cues,timer.currentTime);
 			}
 		});
-		
+
 		Object.defineProperties(this, {
 			duration: {
 				get: function(){ return track.cues[track.cues.length-1].endTime; }
 			},
 			currentTime: {
 				get: function(){ return timer.currentTime; },
-				set: function(time){ 
-					timer.currentTime = Math.max(Math.min(+time||0,endTime),startTime);
+				set: function(time){
+					time = Math.max(+time||0,startTime);
+					if(endTime > -1){ time = Math.min(time, endTime); }
+					timer.currentTime = time;
 					element.dispatchEvent(new Event("seeked",{bubbles:true,cancelable:false}));
 					element.dispatchEvent(new Event("timeupdate",{bubbles:true,cancelable:false}));
 					return timer.currentTime;

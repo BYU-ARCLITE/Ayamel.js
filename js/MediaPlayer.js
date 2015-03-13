@@ -65,20 +65,6 @@
 		return null;
 	}
 
-	//Checks to see if a language has been set in HTML
-	function findCurrentLanguage(node,def){
-		while(node && node.nodeType !== Node.ELEMENT_NODE){
-			node = node.parentNode;
-		}
-		do {
-			if(node.hasAttribute('lang')){
-				return node.getAttribute('lang');
-			}
-			node = node.parentNode;
-		}while(node && !node.classList.contains("caption-cue"));
-		return def;
-	}
-
 	function makeCueRenderer(translator, annotator, indexMap){
 		return function(renderedCue, area){
 			var cue = renderedCue.cue,
@@ -98,9 +84,10 @@
 				var detail = event.detail;
 				translator.translate({
 					//TODO: Check if range contains multiple languages
-					srcLang: findCurrentLanguage(
+					srcLang: Ayamel.utils.findCurrentLanguage(
 						detail.range.startContainer,
-						cue.track.language
+						cue.track.language,
+						'caption-cue'
 					),//destLang is left to default
 					text: detail.fragment.textContent.trim(),
 					data: {

@@ -357,26 +357,33 @@
 }
 
 .ayamelPlayer .transcriptCue:hover {
-    background: rgba(33, 132, 174, 0.5);
-    color: white;
+	background: rgba(33, 132, 174, 0.5);
+	color: white;
 }
 
 .ayamelPlayer .transcriptCue {
-    border-radius: 5px;
-    padding: 0 6px;
+	border-radius: 5px;
+	padding: 0 6px;
+
+	-webkit-touch-callout: initial;
+	-webkit-user-select: initial;
+	-khtml-user-select: initial;
+	-moz-user-select: initial;
+	-ms-user-select: initial;
+	user-select: initial;
 }
 
 .ayamelPlayer .transcriptCue.rtl {
-    direction: rtl;
+	direction: rtl;
 }
 
 .ayamelPlayer .transcriptCue.active {
-    background: #ffffaa;
+	background: #ffffaa;
 }
 
 .ayamelPlayer .transcriptCue.active:hover {
-    background: #ffff00;
-    color: black;
+	background: #ffff00;
+	color: black;
 }
 
 /* Full Screen */
