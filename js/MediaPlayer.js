@@ -69,6 +69,37 @@
 		return null;
 	}
 
+	function makeCueRenderer(player, annotator, indexMap){
+		return function(renderedCue, area){
+			var cue = renderedCue.cue,
+				translator = player.translator,
+				txt = new Ayamel.Text({
+					content: cue.getCueAsHTML(renderedCue.kind === 'subtitles'),
+					processor: annotator?function(n){
+						annotator.index = indexMap.get(cue);
+						return annotator.HTML(n);
+					}:null
+				});
+
+			renderedCue.node = txt.displayElement;
+			if(!translator){ return; }
+
+			// Attach the translator
+			txt.addEventListener('selection',function(event){
+				translator.translate({
+					//TODO: Check if the language is set in the HTML
+					srcLang: cue.track.language,
+					destLang: player.targetLang,
+					text: event.detail.fragment.textContent.trim(),
+					data: {
+						cue: cue,
+						sourceType: "caption"
+					}
+				});
+			},false);
+		};
+	}
+
 	function MediaPlayer(args){
 		var startTime = args.startTime,
 			endTime = args.endTime,
@@ -90,14 +121,38 @@
 		if(plugin === null){
 			args.holder.removeChild(element);
 			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
-		}		
+		}
 
 		this.element = element;
-		this.captionsElement = null;
 		this.plugin = plugin;
+
+		this.annotator = null;
+		if(this.supports('annotations') && typeof args.annotations === 'object'){
+			this.annotator = new Ayamel.Annotator({
+				parsers: args.annotations.parsers,
+				classList: args.annotations.classList,
+				style: args.annotations.style,
+				handler: function(data, lang, text, index){
+					element.dispatchEvent(new CustomEvent("annotation", {
+						bubbles: true,
+						detail: {data: data, lang: lang, text: text, index: index}
+					}));
+				}
+			});
+		}
+
+		this.captionsElement = null;
+		this.captionRenderer = null;
 		if(this.supports('captions')){
 			this.captionsElement = Ayamel.utils.parseHTML('<div class="videoCaptionHolder"></div>');
 			element.appendChild(this.captionsElement);
+			this.captionRenderer = new TimedText.CaptionRenderer({
+				target: this.captionsElement,
+				appendCueCanvasTo: this.captionsElement,
+				renderCue: typeof args.renderCue === "function" ?
+							args.renderCue : makeCueRenderer(args.stage, this.annotator, args.indexMap)
+			});
+			this.captionRenderer.bindMediaElement(this);
 		}
 
 		Object.defineProperties(this, {
