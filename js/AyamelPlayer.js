@@ -73,13 +73,13 @@
 		 * ==========================================================================================
 		 */
 
-		Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes.space, function() {
+		Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes.space, function(){
 			// Don't do anything if in a text box
-			if (["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) === -1) {
-				if (mediaPlayer.paused) {
+			if(["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) === -1){
+				if(mediaPlayer.paused){
 					mediaPlayer.play();
 					controlBar.playing = true;
-				} else {
+				}else{
 					mediaPlayer.pause();
 					controlBar.playing = false;
 				}
@@ -111,9 +111,9 @@
 			controlBar.volume = mediaPlayer.volume;
 		});
 
-		mediaPlayer.addEventListener("ended", function(){ controlBar.playing = false; }, false);
-		mediaPlayer.addEventListener("pause", function(){ controlBar.playing = false; }, false);
-		mediaPlayer.addEventListener("play", function(){ controlBar.playing = true; }, false);
+		mediaPlayer.addEventListener("ended", function(){ controlBar.playing = false; },false);
+		mediaPlayer.addEventListener("pause", function(){ controlBar.playing = false; },false);
+		mediaPlayer.addEventListener("play", function(){ controlBar.playing = true; },false);
 
 		//   Set up event listeners for the control bar
 		// ----------------------------------------------
@@ -125,38 +125,50 @@
 
 		// Play the media when the play button is pressed
 		controlBar.addEventListener("play", function(){
-			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
 			mediaPlayer.play();
 		});
 
 		// Pause the media when the pause button is pressed
 		controlBar.addEventListener("pause", function(){
-			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
 			mediaPlayer.pause();
+		});
+
+		// 
+		controlBar.addEventListener("captionJump", function(event){
+			// Find the first visible track
+			var track = that.captionRenderer.tracks.filter(function(track){
+				return track.mode === "showing";
+			})[0];
+			if(track){ // Move forward or back a caption
+				var traversal = Ayamel.utils.CaptionsTranversal[event.detail.direction];
+				that.currentTime = traversal(track, that.currentTime);
+			}
 		});
 
 		// Change the volume when the volume controls are adjusted
 		controlBar.addEventListener("volumechange", function(event){
-			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
 			mediaPlayer.volume = event.detail.volume;
 			controlBar.volume = mediaPlayer.volume;
 		});
 
 		// Change the playback rate when the rate controls are adjusted
 		controlBar.addEventListener("ratechange", function(event){
-			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
 			mediaPlayer.playbackRate = event.detail.playbackRate;
 			controlBar.playbackRate = mediaPlayer.playbackRate;
 		});
 
 		// Mute/unmute the media when the mute button is pressed
 		controlBar.addEventListener("mute", function(){
-			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
 			that.muted = true;
 			controlBar.muted = that.muted;
 		});
 		controlBar.addEventListener("unmute", function(){
-			try { event.stopPropagation(); } catch (e) {} // Firefox Compatibility
+			try{ event.stopPropagation(); }catch(e){} // Firefox Compatibility
 			that.muted = false;
 			controlBar.muted = that.muted;
 		});
@@ -170,19 +182,27 @@
 		});
 
 		// Rebuild captions when annotation sets are enabled or disabled.
-		if(this.annotator){
-			controlBar.addEventListener("enableannset", function(event){
-				that.annotator.refresh();
-				that.captionRenderer.rebuildCaptions();
-			});
-			controlBar.addEventListener("disableannset", function(event){
-				that.annotator.refresh();
-				that.captionRenderer.rebuildCaptions();
-			});
-		}
+		controlBar.addEventListener("enableannset", function(event){
+			that.annotator.refresh();
+			that.captionRenderer.rebuildCaptions();
+		});
+		controlBar.addEventListener("disableannset", function(event){
+			that.annotator.refresh();
+			that.captionRenderer.rebuildCaptions();
+		});
+
+		//Enter/exit full screen when the button is pressed
+		controlBar.addEventListener("enterfullscreen", function(e){
+			e.stopPropagation();
+			Ayamel.utils.FullScreen.enter(element);
+		});
+
+		controlBar.addEventListener("exitfullscreen", function(e){
+			e.stopPropagation();
+			Ayamel.utils.FullScreen.exit();
+		});
 
 		// Handle changes to fullscreen mode
-
 		document.addEventListener(Ayamel.utils.FullScreen.fullScreenEvent,function(){
 			var availableHeight;
 			if(Ayamel.utils.FullScreen.fullScreenElement === element){
@@ -198,27 +218,6 @@
 				element.dispatchEvent(new CustomEvent('exitfullscreen',{bubbles:true}));
 			}
 		},false);
-
-		//Enter/exit full screen when the button is pressed
-		controlBar.addEventListener("enterfullscreen", function(e){
-			e.stopPropagation();
-			Ayamel.utils.FullScreen.enter(element);
-		});
-
-		controlBar.addEventListener("exitfullscreen", function(e){
-			e.stopPropagation();
-			Ayamel.utils.FullScreen.exit();
-		});
-
-		controlBar.addEventListener("captionJump", function(event){
-			// Find the first visible track
-			var track = that.captionRenderer.tracks.filter(function(track){return track.mode === "showing";})[0];
-			if (track) {
-				// Move forward or back a caption
-				var traversal = Ayamel.utils.CaptionsTranversal[event.detail.direction];
-				that.currentTime = traversal(track, that.currentTime);
-			}
-		});
 
 		/*
 		 * ==========================================================================================
