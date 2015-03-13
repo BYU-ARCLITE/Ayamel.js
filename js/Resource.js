@@ -26,7 +26,7 @@ var ResourceLibrary = (function() {
 	Resource.prototype.loadResourcesFromRelations = function(relationRole, test, callback){
 		var filteredRelations = (typeof test === 'function')?this.relations.filter(test,this):this.relations;
 		var p = Promise.all(filteredRelations.map(function(relation){
-			load(relation[relationRole]);
+			return load(relation[relationRole]);
 		}));
 		if(typeof callback ==='function'){ p.then(callback); }
 		return p;
