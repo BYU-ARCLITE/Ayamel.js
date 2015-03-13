@@ -120,7 +120,24 @@ var Ayamel = (function() {
 					return parseElement.firstChild;
 				}
 			},
-			
+
+			//Checks to see if a language has been set in HTML
+			findCurrentLanguage: function (node,def,topclass){
+				while(node && node.nodeType !== Node.ELEMENT_NODE){
+					node = node.parentNode;
+				}
+				do {
+					if(node.hasAttribute('lang')){
+						return node.getAttribute('lang');
+					}
+					if(topclass && node.classList.contains(topclass)){
+						return def;
+					}
+					node = node.parentNode;
+				}while(node !== window.document);
+				return def;
+			},
+
 			fitAspectRatio: function(element, aspectRatio, maxWidth, maxHeight){
 				var pHeight;
 
