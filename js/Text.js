@@ -14,22 +14,21 @@
 		rng = rng.cloneRange(); //don't want to accidentally mess around with the real selection
 
 		if(!(rng.startContainer.compareDocumentPosition(this.displayElement) & Node.DOCUMENT_POSITION_CONTAINS)){
-			rng.setStartBefore(this.contentElement);
+			rng.setStart(this.contentElement,0);
 		}
 		if(!(rng.endContainer.compareDocumentPosition(this.displayElement) & Node.DOCUMENT_POSITION_CONTAINS)){
-			rng.setEndAfter(this.contentElement);
+			rng.setEnd(this.contentElement,this.contentElement.childNodes.length);
 		}
 		if(rng.collapsed){ return; }
 
 		this.displayElement.dispatchEvent(new CustomEvent("selection",{
 			bubbles:true,
-			cancelable:true,
 			detail: {
+				range: rng,
 				fragment: rng.cloneContents(),
 				rect: rng.getBoundingClientRect()
 			}
 		}));
-		rng.detach();
 		e.preventDefault();
 	}
 

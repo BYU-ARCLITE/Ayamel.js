@@ -8,15 +8,11 @@
 				var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
 				return !!this.plugin.features[device][feature];
 			},
-			enterFullScreen: function(availableHeight) {
-				if(this.plugin){
-					this.plugin.enterFullScreen(availableHeight);
-				}
+			enterFullScreen: function(availableHeight){
+				this.plugin.enterFullScreen(availableHeight);
 			},
-			exitFullScreen: function() {
-				if(this.plugin){
-					this.plugin.exitFullScreen();
-				}
+			exitFullScreen: function(){
+				this.plugin.exitFullScreen();
 			},
 			addEventListener: function(event, callback){
 				this.element.addEventListener(event, callback, false);
@@ -69,10 +65,23 @@
 		return null;
 	}
 
-	function makeCueRenderer(player, annotator, indexMap){
+	//Checks to see if a language has been set in HTML
+	function findCurrentLanguage(node,def){
+		while(node && node.nodeType !== Node.ELEMENT_NODE){
+			node = node.parentNode;
+		}
+		do {
+			if(node.hasAttribute('lang')){
+				return node.getAttribute('lang');
+			}
+			node = node.parentNode;
+		}while(node && !node.classList.contains("caption-cue"));
+		return def;
+	}
+
+	function makeCueRenderer(translator, annotator, indexMap){
 		return function(renderedCue, area){
 			var cue = renderedCue.cue,
-				translator = player.translator,
 				txt = new Ayamel.Text({
 					content: cue.getCueAsHTML(renderedCue.kind === 'subtitles'),
 					processor: annotator?function(n){
@@ -86,11 +95,14 @@
 
 			// Attach the translator
 			txt.addEventListener('selection',function(event){
+				var detail = event.detail;
 				translator.translate({
-					//TODO: Check if the language is set in the HTML
-					srcLang: cue.track.language,
-					destLang: player.targetLang,
-					text: event.detail.fragment.textContent.trim(),
+					//TODO: Check if range contains multiple languages
+					srcLang: findCurrentLanguage(
+						detail.range.startContainer,
+						cue.track.language
+					),//destLang is left to default
+					text: detail.fragment.textContent.trim(),
 					data: {
 						cue: cue,
 						sourceType: "caption"
@@ -140,51 +152,30 @@
 		});
 	}
 
-	function MediaPlayer(args){
-		var that = this,
-			resource = args.resource,
-			startTime = args.startTime,
-			endTime = args.endTime,
-			plugin, element, indexMap;
+	function setupCaptioning(player, translator, resource, args){
+		var annotations = args.annotations,
+			captions = args.captions,
+			annotator, indexMap,
+			captionsElement, captionRenderer;
 
-		// Attempt to load the resource
-		element = Ayamel.utils.parseHTML(template);
-
-		//needs to be in the document before loading a plugin
-		//so the plugin can examine the displayed size
-		args.holder.appendChild(element);
-		plugin = loadPlugin({
-			holder: element,
-			resource: resource,
-			startTime: startTime,
-			endTime: endTime
-		});
-
-		if(plugin === null){
-			args.holder.removeChild(element);
-			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
-		}
-
-		this.element = element;
-		this.plugin = plugin;
-
-		this.annotator = null;
-		if(this.supports('annotations')){
-			this.annotator = new Ayamel.Annotator({
-				parsers: args.annotations.parsers,
-				classList: args.annotations.classList,
-				style: args.annotations.style,
+		if(player.supports('annotations')){
+			annotator = new Ayamel.Annotator({
+				parsers: annotations.parsers,
+				classList: annotations.classList,
+				style: annotations.style,
 				handler: function(data, lang, text, index){
-					element.dispatchEvent(new CustomEvent("annotation", {
+					player.element.dispatchEvent(new CustomEvent("annotation", {
 						bubbles: true,
 						detail: {data: data, lang: lang, text: text, index: index}
 					}));
 				}
 			});
+			player.annotator = annotator;
 			//TODO: Load annotations from subtitle resources,
 			//and push this annotator down to the plugin level
-			loadAnnotations(resource, args.annotations).then(function(list){
-				that.annotator.annotations = list;
+			loadAnnotations(resource, annotations).then(function(list){
+				var element = player.element;
+				annotator.annotations = list;
 				list.forEach(function(annset){
 					element.dispatchEvent(new CustomEvent('addannset', {
 						bubbles:true, detail: {annset: annset}
@@ -193,26 +184,28 @@
 			});
 		}
 
-		this.captionsElement = null;
-		this.captionRenderer = null;
-		if(this.supports('captions')){
+		if(player.supports('captions')){
 			indexMap = new Map();
 
-			this.captionsElement = Ayamel.utils.parseHTML('<div class="videoCaptionHolder"></div>');
-			element.appendChild(this.captionsElement);
+			captionsElement = Ayamel.utils.parseHTML('<div class="videoCaptionHolder"></div>');
+			player.element.appendChild(captionsElement);
 
-			this.captionRenderer = new TimedText.CaptionRenderer({
-				target: this.captionsElement,
-				appendCueCanvasTo: this.captionsElement,
-				renderCue: typeof args.captions.renderCue === "function" ?
-							args.captions.renderCue : makeCueRenderer(args.stage, this.annotator, indexMap)
+			captionRenderer = new TimedText.CaptionRenderer({
+				target: captionsElement,
+				appendCueCanvasTo: captionsElement,
+				renderCue: typeof captions.renderCue === "function" ?
+							captions.renderCue : makeCueRenderer(translator, annotator, indexMap)
 			});
-			this.captionRenderer.bindMediaElement(this);
+			captionRenderer.bindMediaElement(player);
+
+			player.captionsElement = captionsElement;
+			player.captionRenderer = captionRenderer;
 
 			loadCaptions(resource, args.captions).then(function(objs){
+				var element = player.element;
 				objs.forEach(function(obj){
 					var offset = 0;
-					that.captionRenderer.addTextTrack(obj.track);
+					captionRenderer.addTextTrack(obj.track);
 					obj.track.cues.forEach(function(cue){
 						indexMap.set(cue, offset);
 						offset += cue.getCueAsHTML().textContent.length;
@@ -223,6 +216,44 @@
 				});
 			});
 		}
+	}
+
+	function MediaPlayer(args){
+		var that = this,
+			resource = args.resource,
+			startTime = args.startTime,
+			endTime = args.endTime,
+			translator = args.translator,
+			plugin, element, indexMap;
+
+		// Attempt to load the resource
+		element = Ayamel.utils.parseHTML(template);
+		this.element = element;
+
+		this.plugin = null;
+		this.annotator = null;
+		this.captionsElement = null;
+		this.captionRenderer = null;
+
+		//needs to be in the document before loading a plugin
+		//so the plugin can examine the displayed size
+		args.holder.appendChild(element);
+		plugin = loadPlugin({
+			holder: element,
+			resource: resource,
+			startTime: startTime,
+			endTime: endTime,
+			translator: translator,
+			annotations: args.annotations
+		});
+
+		if(plugin === null){
+			args.holder.removeChild(element);
+			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
+		}
+
+		this.plugin = plugin;
+		setupCaptioning(this, translator, resource, args);
 
 		Object.defineProperties(this, {
 			duration: {
@@ -231,23 +262,6 @@
 			currentTime: {
 				get: function(){ return plugin.currentTime - startTime; },
 				set: function(time){ return plugin.currentTime = time + startTime; }
-			},
-			muted: {
-				get: function(){ return plugin.muted; },
-				set: function(muted){ return plugin.muted = muted; }
-			},
-			paused: {
-				get: function(){ return plugin.paused; }
-			},
-			playbackRate: {
-				get: function(){ return plugin.playbackRate; },
-				set: function(playbackRate){
-					return plugin.playbackRate = playbackRate;
-				}
-			},
-			volume: {
-				get: function(){ return plugin.volume; },
-				set: function(volume){ return plugin.volume = volume; }
 			}
 		});
 
@@ -257,14 +271,25 @@
 		paused: {
 			get: function(){ return this.plugin.paused; }
 		},
-		duration: {
-			get: function (){ return this.plugin.duration; }
-		},
 		play: {
 			value: function(){ this.plugin.play(); }
 		},
 		pause: {
 			value: function(){ this.plugin.pause(); }
+		},
+		playbackRate: {
+			get: function(){ return this.plugin.playbackRate; },
+			set: function(playbackRate){
+				return this.plugin.playbackRate = playbackRate;
+			}
+		},
+		muted: {
+			get: function(){ return this.plugin.muted; },
+			set: function(muted){ return this.plugin.muted = muted; }
+		},
+		volume: {
+			get: function(){ return this.plugin.volume; },
+			set: function(volume){ return this.plugin.volume = volume; }
 		}
 	});
 

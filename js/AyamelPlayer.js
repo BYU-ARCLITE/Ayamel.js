@@ -30,26 +30,6 @@
 		 * ==========================================================================================
 		 */
 
-		// Create the MediaPlayer
-		mediaPlayer = new Ayamel.classes.MediaPlayer({
-			stage: this,
-			holder: element,
-			resource: resource,
-			startTime: startTime,
-			endTime: endTime,
-			annotations: args.annotations||{},
-			captions: args.captions||{}
-		});
-		this.mediaPlayer = mediaPlayer;
-
-		// Create the ControlBar
-		controlBar = new Ayamel.classes.ControlBar({
-			holder: element,
-			components: args.components,
-			mediaPlayer: mediaPlayer
-		});
-		this.controlBar = controlBar;
-
 		// Create the Translator
 		this.translator = null;
 		if(args.translator){
@@ -69,6 +49,26 @@
 				element.dispatchEvent(new CustomEvent("translationError", {bubbles: true, detail: event.detail}));
 			});
 		}
+
+		// Create the MediaPlayer
+		mediaPlayer = new Ayamel.classes.MediaPlayer({
+			holder: element,
+			resource: resource,
+			startTime: startTime,
+			endTime: endTime,
+			translator: this.translator,
+			annotations: args.annotations||{},
+			captions: args.captions||{}
+		});
+		this.mediaPlayer = mediaPlayer;
+
+		// Create the ControlBar
+		controlBar = new Ayamel.classes.ControlBar({
+			holder: element,
+			components: args.components,
+			mediaPlayer: mediaPlayer
+		});
+		this.controlBar = controlBar;
 
 		/*
 		 * ==========================================================================================
