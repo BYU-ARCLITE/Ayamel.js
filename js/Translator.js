@@ -4,18 +4,22 @@
 		throw new Error("Ayamel Uninitialized");
 	}
 
-	function Translator(endpoint, key){
+	function Translator(args){
+		args = args || {};
 		this.e = document.createElement("div");
-		this.endpoint = endpoint;
-		this.key = key;
+		this.endpoint = args.endpoint || Translator.endpoint;
+		this.key = args.key || Translator.key;
+		this.targetLang = args.targetLang || "eng";
 	}
 
+	Translator.endpoint = "";
+	Translator.key = "";
+
 	Translator.prototype.translate = function(params) {
-		var promise, that = this,
+		var that = this,
 			text = params.text,
 			srcLang = params.srcLang,
-			destLang = params.destLang,
-			xhr = new XMLHttpRequest();
+			destLang = params.destLang || this.targetLang;
 
 		// Because translation engines look for two-letter codes, make sure that's what we are dealing with
 		if(srcLang.length === 3){ srcLang = Ayamel.utils.downgradeLangCode(srcLang); }
@@ -43,7 +47,20 @@
 			}
 		}));
 
-		promise = new Promise(function(resolve, reject){
+		return new Promise(function(resolve, reject){
+			var xhr = new XMLHttpRequest();
+			
+			function err(msg){
+				var data = {
+					text: text, message: msg,
+					srcLang: Ayamel.utils.upgradeLangCode(srcLang),
+					destLang: Ayamel.utils.upgradeLangCode(destLang),
+					data: params.data
+				};
+				that.e.dispatchEvent(new CustomEvent("error",{detail:data, bubbles:true}));
+				reject(data);
+			}
+
 			xhr.addEventListener('load',function(){
 				var resp = JSON.parse(xhr.responseText),
 					data = {
@@ -54,8 +71,8 @@
 						destLang: Ayamel.utils.upgradeLangCode(destLang),
 						data: params.data
 					};
-				if (data.translations === void 0) {  // Make sure we actually recieved translations
-					this.dispatchEvent(new Event("error")); 
+				if (data.translations === void 0) {  // Make sure we actually received translations
+					err("No Data"); 
 				} else {
 					that.e.dispatchEvent(new CustomEvent("translation", {
 						bubbles: true,
@@ -67,6 +84,7 @@
 			},false);
 
 			xhr.addEventListener('timeout',function(){ err("Timeout"); }, false);
+			xhr.addEventListener('abort',function(){ err("Abort"); }, false);
 
 			xhr.addEventListener('error',function(){
 				var message;
@@ -74,29 +92,13 @@
 				finally { err(message || xhr.statusText); }
 			}, false);
 
-			function err(msg){
-				var data = {
-						text: text,
-						message: msg,
-						srcLang: Ayamel.utils.upgradeLangCode(srcLang),
-						destLang: Ayamel.utils.upgradeLangCode(destLang),
-						data: params.data
-					};
-				that.e.dispatchEvent(new CustomEvent("error", {
-					bubbles: true,
-					cancelable: true,
-					detail: data
-				}));
-				reject(data);
-			}
+			xhr.open("POST", that.endpoint+"/lookup", true);
+			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhr.setRequestHeader("Authorization", that.key);
+			xhr.send("srcLang="+encodeURIComponent(srcLang)+
+					"&destLang="+encodeURIComponent(destLang)+
+					"&word="+encodeURIComponent(text));
 		});
-
-		xhr.open("POST", this.endpoint+"/lookup", true)
-		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-		xhr.setRequestHeader("Authorization", this.key)
-		xhr.send("srcLang="+encodeURIComponent(srcLang)+"&destLang="+encodeURIComponent(destLang)+"&word="+encodeURIComponent(text));
-
-		return promise;
 	};
 
 	Translator.prototype.addEventListener = function(event, callback, capture) {
@@ -107,5 +109,5 @@
 		this.e.removeEventListener(event, callback, capture);
 	};
 
-	Ayamel.utils.Translator = Translator;
+	Ayamel.classes.Translator = Translator;
 }(Ayamel));

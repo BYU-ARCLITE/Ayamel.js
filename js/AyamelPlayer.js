@@ -51,10 +51,13 @@
 		this.controlBar = controlBar;
 
 		// Create the Translator
-		this.targetLang = args.targetLang || "eng";
 		this.translator = null;
-		if(args.translate){
-			this.translator = new Ayamel.utils.Translator(translationEndpoint,translationKey);
+		if(args.translator){
+			this.translator = new Ayamel.classes.Translator({
+				endpoint: args.translator.endpoint,
+				key: args.translator.key,
+				targetLang: args.translator.targetLang || "eng"
+			});
 			// Forward Events
 			this.translator.addEventListener("translate", function(event){
 				element.dispatchEvent(new CustomEvent("translate", {bubbles: true, detail: event.detail}));
@@ -235,6 +238,17 @@
 			},
 			duration: {
 				get: function(){ return mediaPlayer.duration; }
+			},
+			targetLang: {
+				get: function(){
+					return this.translator ? this.translator.targetLang : "eng";
+				},
+				set: function(lang){
+					if(this.translator){
+						return this.translator.targetLang = ""+lang;
+					}
+					return "eng";
+				}
 			},
 			currentTime: {
 				get: function(){ return mediaPlayer.currentTime; },
