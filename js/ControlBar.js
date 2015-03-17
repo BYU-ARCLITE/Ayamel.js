@@ -30,9 +30,10 @@
 		element.className = "controlBar";
 
 		// Create the ProgressBar
-		progressBar = new Ayamel.classes.ProgressBar({
+		progressBar = args.mediaPlayer.supports('seek')?
+		new Ayamel.classes.ProgressBar({
 			holder: element
-		});
+		}):{};
 
 		element.appendChild(Ayamel.utils.parseHTML(wtemplate));
 

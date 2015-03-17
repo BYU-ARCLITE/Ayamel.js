@@ -216,6 +216,7 @@
 		'mcd':"application/mcad",
 		'mcf':"text/mcf",
 		'mcp':"application/netmc",
+		'md':"text/x-markdown",
 		'me':"application/x-troff-me",
 		'mht':"message/rfc822",
 		'mhtml':"message/rfc822",
@@ -550,7 +551,7 @@
 		'pages':"application/x-iwork-pages-sffpages",
 		'template':"application/x-iwork-pages-sfftemplate"
 	};
-	
+
 	Ayamel.utils.ext2mime = ext2mime;
 	Ayamel.utils.mimeForExtension = function(ext,def){
 		return ext2mime.hasOwnProperty(ext)?ext2mime[ext]:
@@ -559,6 +560,11 @@
 	Ayamel.utils.mimeFromFilename = function(name,def){
 		return Ayamel.utils.mimeForExtension(name.substr(name.lastIndexOf('.')+1),def);
 	};
-	
+	Ayamel.utils.stripFileExt = function(name){
+		var idx = name.lastIndexOf('.');
+		return ext2mime.hasOwnProperty(name.substr(idx+1))?
+				name.substr(0,idx):name;
+	};
+
 	//TODO: isImage, isVideo, isText, isAudio
 }(Ayamel));
