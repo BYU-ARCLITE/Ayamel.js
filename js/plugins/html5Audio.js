@@ -131,6 +131,7 @@
 			fullScreen: false,
 			lastCaption: true,
 			play: true,
+			seek: true,
 			rate: true,
 			timeCode: true,
 			volume: true
@@ -141,6 +142,7 @@
 			fullScreen: false,
 			lastCaption: true,
 			play: true,
+			seek: true,
 			rate: false,
 			timeCode: true,
 			volume: false
