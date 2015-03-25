@@ -33,7 +33,9 @@
 
 		// Create the element
 		this.element = element;
-		args.holder.appendChild(element);
+		if(args.holder){
+			args.holder.appendChild(element);
+		}
 
 		this.video = video;
 
@@ -119,6 +121,14 @@
 
 	Html5VideoPlayer.prototype.exitFullScreen = function(){
 		this.element.style.height = this.normalHeight + 'px';
+	};
+
+	Html5VideoPlayer.prototype.addEventListener = function(name, handler, capture){
+		this.element.addEventListener(name, handler, !!capture);
+	};
+
+	Html5VideoPlayer.prototype.removeEventListener = function(name, handler, capture){
+		this.element.removeEventListener(name, handler, !!capture);
 	};
 
 	Html5VideoPlayer.prototype.features = {
