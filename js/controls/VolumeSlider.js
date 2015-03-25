@@ -1,20 +1,77 @@
-/**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/30/13
- * Time: 10:01 AM
- * To change this template use File | Settings | File Templates.
- */
-(function(Ayamel) {
+(function(Ayamel){
 	"use strict";
 
 	var template =
 		'<div class="control volume">\
-			<div class="button mute" title="mute"></div>\
+			<div class="button mute" title="mute">\
+				<div class="menu">\
+					<div class="menuTipDark"></div>\
+					<div class="menuTip"></div>\
+				</div>\
+			</div>\
 		</div>';
 
-	function VolumeSlider(args) {
-		var _this = this,
+	function buildMenu(element, tracks){
+		var item, akey, aitem = null,
+			menu = element.querySelector('.menu');
+		tracks.forEach(function(value,key){
+			var item = document.createElement('div');
+
+			if(value.active){
+				item.classList.add("active");
+				aitem = item;
+				akey = key;
+			}
+			item.classList.add("menuEntry");
+			item.textContent = value.label;
+
+			item.addEventListener('click', function(e){
+				var alist, active = !value.active;
+				value.active = active;
+				if(active){
+					if(aitem){
+						aitem.classList.remove("active");
+						element.dispatchEvent(new CustomEvent(
+							"disableaudio",{bubbles:true,detail:akey}
+						));
+					}else{
+						element.dispatchEvent(new CustomEvent("unmute",{bubbles:true}));
+					}
+					aitem = item;
+					akey = key;
+					item.classList.add("active");
+					element.dispatchEvent(new CustomEvent(
+						"enableaudio",{bubbles:true,detail:key}
+					));
+				}else{
+					aitem = null;
+					item.classList.remove("active");
+					element.dispatchEvent(new CustomEvent(
+						"disableaudio",{bubbles:true,detail:key}
+					));
+					element.dispatchEvent(new CustomEvent("mute",{bubbles:true}));
+				}
+			});
+			menu.appendChild(item);
+		});
+		element.classList.add("active");
+	}
+
+	function hideMenu(element){
+		element.classList.remove("active");
+		[].forEach.call(element.querySelectorAll(".menu .menuEntry"),
+			function(el){ el.parentNode.removeChild(el); }
+		);
+	}
+
+	function refresh(element, tracks){
+		if(!element.classList.contains("active")){ return; }
+		hideMenu(element);
+		buildMenu(element, tracks);
+	}
+
+	function VolumeSlider(args){
+		var that = this,
 			volume = 1,
 			muted = false,
 			element = Ayamel.utils.parseHTML(template),
@@ -26,6 +83,7 @@
 
 		this.element = element;
 		args.holder.appendChild(element);
+		this.tracks = new Map();
 
 		slider.element.title = "volume";
 		slider.addEventListener('levelchange',function(evt){
@@ -36,19 +94,30 @@
 
 		// Allow muting
 		element.querySelector(".mute").addEventListener('click',function(){
-			var newEvent;
-			if (muted) {
+			if(element.classList.contains("active")){
+				hideMenu(element);
+			}
+			if(that.tracks.size > 1){
+				buildMenu(element, that.tracks);
+			}else if(muted){
 				muted = false;
 				element.title="mute";
 				element.classList.remove("muted");
-				newEvent = new Event("unmute",{bubbles:true});
-			} else {
+				element.dispatchEvent(new Event("unmute",{bubbles:true}));
+			}else{
 				muted = true;
 				element.title="unmute";
 				element.classList.add("muted");
-				newEvent = new Event("mute",{bubbles:true});
+				element.dispatchEvent(new Event("mute",{bubbles:true}));
 			}
-			element.dispatchEvent(newEvent);
+		},false);
+
+		document.addEventListener('click', function(event){
+			if(event.target === element || element.contains(event.target)){ return; }
+			hideMenu(element);
+		},false);
+		element.querySelector(".menu").addEventListener('click', function(event){
+			event.stopPropagation();
 		},false);
 
 		// Be able to set the muted & volume attributes
@@ -77,21 +146,45 @@
 			Object.defineProperties(args.parent, {
 				muted: {
 					enumerable: true,
-					set: function (value) {
-						return _this.muted = value;
+					set: function (value){
+						return that.muted = value;
 					},
 					get: function(){ return muted; }
 				},
 				volume: {
 					enumerable: true,
 					set: function(value){
-						return _this.volume = value;
+						return that.volume = value;
 					},
 					get: function(){ return volume; }
 				},
 			});
 		}
 	}
+
+	VolumeSlider.prototype.addTrack = function(key, label){
+		if(this.tracks.has(key)){
+			this.tracks.get(key).label = label;
+		}else{
+			this.tracks.set(key,{
+				label: label, active: false
+			});
+		}
+		if(this.tracks.size > 1){
+			this.element.title = "Select Audio";
+		}
+		refresh(this.element, this.tracks);
+	};
+
+	VolumeSlider.prototype.removeTrack = function(key){
+		this.tracks.delete(key);
+		if(this.tracks.size < 2){
+			hideMenu(this.element);
+			this.element.title = this.muted?"unmute":"mute";
+		}else{
+			refresh(this.element, this.tracks);
+		}
+	};
 
 	Ayamel.controls.volume = VolumeSlider;
 }(Ayamel));
