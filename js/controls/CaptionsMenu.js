@@ -1,10 +1,3 @@
-/**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 5/1/13
- * Time: 9:18 AM
- * To change this template use File | Settings | File Templates.
- */
 (function (Ayamel) {
 	"use strict";
 
@@ -43,13 +36,19 @@
 			});
 		}
 		element.classList.add("active");
-	};
+	}
 
 	function hideMenu(element){
 		element.classList.remove("active");
 		[].forEach.call(element.querySelectorAll(".menu .menuEntry, .noOptions"),
 			function(el){ el.parentNode.removeChild(el); }
 		);
+	}
+
+	function refresh(element, tracks){
+		if(!element.classList.contains("active")){ return; }
+		hideMenu(element);
+		buildMenu(element, tracks);
 	}
 
 	function CaptionsMenu(args) {
@@ -79,12 +78,6 @@
 		args.player.addEventListener('addtexttrack',function(e){
 			that.addTrack(e.detail.track);
 		},false);
-	}
-
-	function refresh(element, tracks){
-		if(!element.classList.contains("active")){ return; }
-		hideMenu(element);
-		buildMenu(element, tracks);
 	}
 
 	CaptionsMenu.prototype.addTrack = function(track){

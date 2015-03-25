@@ -36,13 +36,19 @@
 			});
 		}
 		element.classList.add("active");
-	};
+	}
 
 	function hideMenu(element){
 		element.classList.remove("active");
 		[].forEach.call(element.querySelectorAll(".menu .menuEntry, .noOptions"),
 			function(el){ el.parentNode.removeChild(el); }
 		);
+	}
+
+	function refresh(element, annsets){
+		if(!element.classList.contains("active")){ return; }
+		hideMenu(element);
+		buildMenu(element, annsets);
 	}
 
 	function AnnotationsMenu(args) {
@@ -72,12 +78,6 @@
 		args.player.addEventListener('addannset',function(e){
 			that.addSet(e.detail.annset);
 		},false);
-	}
-
-	function refresh(element, annsets){
-		if(!element.classList.contains("active")){ return; }
-		hideMenu(element);
-		buildMenu(element, annsets);
 	}
 
 	AnnotationsMenu.prototype.addSet = function(annset){
