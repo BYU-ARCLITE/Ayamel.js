@@ -1,28 +1,27 @@
 (function(Ayamel) {
-    "use strict";
+	"use strict";
 
-    var template = '<span class="control">\
+	var template = '<span class="control">\
 		<div class="button lastCaption" title="jump to previous cue"></div>\
 		<div class="button nextCaption" title="jump to following cue"></div>\
 	</span>';
 
-    function LastCaptionButton(args) {
-        var _this = this,
-            element = Ayamel.utils.parseHTML(template);
+	function LastCaptionButton(args) {
+		var element = Ayamel.utils.parseHTML(template);
 
-        this.element = element;
-        args.holder.appendChild(element);
+		this.element = element;
+		args.holder.appendChild(element);
 
-        // Set up events
-        element.querySelector('.lastCaption').addEventListener('click',function (e) {
+		//Set up events
+		function jump(dir,e){
             e.stopPropagation();
-            element.dispatchEvent(new CustomEvent('captionJump',{bubbles:true,cancelable:true,detail:{direction:"back"}}));
-        },false);
-        element.querySelector('.nextCaption').addEventListener('click',function (e) {
-            e.stopPropagation();
-            element.dispatchEvent(new CustomEvent('captionJump',{bubbles:true,cancelable:true,detail:{direction:"forward"}}));
-        },false);
-    }
+            element.dispatchEvent(new CustomEvent('captionJump',{bubbles:true,cancelable:true,detail:{direction:dir}}));
+        }
+		element.querySelector('.lastCaption')
+			.addEventListener('click',jump.bind(null,"back"),false);
+		element.querySelector('.nextCaption')
+			.addEventListener('click',jump.bind(null,"forward"),false);
+	}
 
-    Ayamel.controls.lastCaption = LastCaptionButton;
+	Ayamel.controls.lastCaption = LastCaptionButton;
 }(Ayamel));
