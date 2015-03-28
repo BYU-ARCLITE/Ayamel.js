@@ -38,6 +38,8 @@
 				paused: true
 			};
 
+		this.resource = args.resource;
+
 		this.element = element;
 		args.holder.appendChild(element);
 
@@ -183,9 +185,9 @@
 		install: function(args){
 			return new BrightcoveVideoPlayer(args);
 		},
-		supports: function(resource){
-			return resource.type === "video" &&
-					resource.content.files.some(supportsFile);
+		supports: function(args){
+			return args.resource.type === "video" &&
+					args.resource.content.files.some(supportsFile);
 		}
 	};
 

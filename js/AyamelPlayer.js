@@ -1,8 +1,6 @@
 (function(Ayamel) {
 	"use strict";
 
-	var template = '<div class="ayamelPlayer"></div>';
-
 	function processTime(time){
 		if(typeof time === "number"){ return time; }
 		return time.split(":").reduce(function(last, next){
@@ -13,7 +11,7 @@
 	function AyamelPlayer(args) {
 		var that = this,
 			resource = args.resource,
-			element = Ayamel.utils.parseHTML(template),
+			element = document.createElement('div'),
 			startTime = processTime(args.startTime || 0),
 			endTime = processTime(args.endTime || -1),
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
@@ -21,6 +19,7 @@
 			maxHeight = +args.maxHeight || (1/0),
 			mediaPlayer, controlBar;
 
+		element.className = "ayamelPlayer";
 		this.element = element;
 		args.holder.appendChild(element);
 
@@ -58,7 +57,8 @@
 			endTime: endTime,
 			translator: this.translator,
 			annotations: args.annotations||{},
-			captions: args.captions||{}
+			captions: args.captions||{},
+			soundtracks: args.soundtracks||{}
 		});
 		this.mediaPlayer = mediaPlayer;
 
@@ -138,19 +138,6 @@
 			mediaPlayer.pause();
 		});
 
-		// 
-		controlBar.addEventListener("captionJump", function(event){
-			// Find the first visible track
-			var tracks = that.captionRenderer.tracks.filter(function(track){
-				return track.mode === "showing";
-			});
-			if(tracks.length){ // Move forward or back a caption
-				that.currentTime = Ayamel.utils.CaptionsTranversal[
-					event.detail.direction
-				](tracks, that.currentTime);
-			}
-		});
-
 		// Change the volume when the volume controls are adjusted
 		controlBar.addEventListener("volumechange", function(event){
 			try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
@@ -177,22 +164,33 @@
 			controlBar.muted = that.muted;
 		});
 
+		//Caption controls
+		controlBar.addEventListener("captionJump", function(event){
+			that.mediaPlayer.cueJump(event.detail.direction);
+		});
+
 		// Rebuild captions when tracks are enabled or disabled.
 		controlBar.addEventListener("enabletrack", function(){
-			that.captionRenderer.rebuildCaptions();
+			that.mediaPlayer.rebuildCaptions();
 		});
 		controlBar.addEventListener("disabletrack", function(){
-			that.captionRenderer.rebuildCaptions();
+			that.mediaPlayer.rebuildCaptions();
 		});
 
 		// Rebuild captions when annotation sets are enabled or disabled.
 		controlBar.addEventListener("enableannset", function(){
-			that.annotator.refresh();
-			that.captionRenderer.rebuildCaptions();
+			that.mediaPlayer.refreshAnnotations();
 		});
 		controlBar.addEventListener("disableannset", function(){
-			that.annotator.refresh();
-			that.captionRenderer.rebuildCaptions();
+			that.mediaPlayer.refreshAnnotations();
+		});
+
+		// Turn soundtracks on and off.
+		controlBar.addEventListener("enableaudio", function(e){
+			that.mediaPlayer.enableAudio(e.detail);
+		});
+		controlBar.addEventListener("disableaudio", function(e){
+			that.mediaPlayer.disableAudio(e.detail);
 		});
 
 		//Enter/exit full screen when the button is pressed
@@ -230,71 +228,6 @@
 		 */
 
 		Object.defineProperties(this, {
-			annotator: {
-				get: function(){ return mediaPlayer.annotator; }
-			},
-			captionRenderer: {
-				get: function(){ return mediaPlayer.captionRenderer; }
-			},
-			duration: {
-				get: function(){ return mediaPlayer.duration; }
-			},
-			targetLang: {
-				get: function(){
-					return this.translator ? this.translator.targetLang : "eng";
-				},
-				set: function(lang){
-					if(this.translator){
-						return this.translator.targetLang = ""+lang;
-					}
-					return "eng";
-				}
-			},
-			currentTime: {
-				get: function(){ return mediaPlayer.currentTime; },
-				set: function(time){
-					var newtime,
-						oldtime = mediaPlayer.currentTime;
-					mediaPlayer.currentTime = (+time||0);
-					newtime = mediaPlayer.currentTime;
-					element.dispatchEvent(new CustomEvent('timejump', {
-						bubbles:true,
-						detail: { oldtime: oldtime, newtime: newtime }
-					}));
-					return newtime;
-				}
-			},
-			muted: {
-				get: function(){
-					return mediaPlayer.muted;
-				},
-				set: function(muted){
-					var m = mediaPlayer.muted;
-					mediaPlayer.muted = muted;
-					if(mediaPlayer.muted !== m){
-						element.dispatchEvent(new CustomEvent(m?'unmute':'mute', {bubbles:true}));
-						return !m;
-					}
-				}
-			},
-			paused: {
-				get: function(){ return mediaPlayer.paused; }
-			},
-			playbackRate: {
-				get: function(){ return mediaPlayer.playbackRate; },
-				set: function(playbackRate){
-					return mediaPlayer.playbackRate = playbackRate;
-				}
-			},
-			readyState: {
-				get: function(){ return mediaPlayer.readyState; }
-			},
-			volume: {
-				get: function(){ return mediaPlayer.volume; },
-				set: function(volume){
-					return mediaPlayer.volume = volume;
-				}
-			},
 			aspectRatio: {
 				get: function(){ return aspectRatio; },
 				set: function(r){
@@ -302,12 +235,6 @@
 					this.resetSize();
 					return aspectRatio;
 				}
-			},
-			width: {
-				get: function(){ return element.clientWidth; }
-			},
-			height: {
-				get: function(){ return element.clientHeight; }
 			},
 			maxWidth: {
 				get: function(){ return maxWidth; },
@@ -343,60 +270,85 @@
 		this.resetSize();
 	}
 
-	Object.defineProperties(AyamelPlayer.prototype,{
-		textTracks: {
-			get: function(){ return this.captionRenderer?this.captionRenderer.tracks:[]; },
-			enumerable: true
+	AyamelPlayer.prototype = {
+		get width(){ return this.element.clientWidth; },
+		get height(){ return this.element.clientHeight; },
+		get textTracks(){ return this.mediaPlayer.textTracks; },
+		get targetLang(){
+			return this.translator ? this.translator.targetLang : "eng";
+		},
+		set targetLang(lang){
+			if(this.translator){
+				return this.translator.targetLang = ""+lang;
+			}
+			return "eng";
+		},
+		get readyState(){ return this.mediaPlayer.readyState; },
+		get duration(){ return this.mediaPlayer.duration; },
+		get currentTime(){ return this.mediaPlayer.currentTime; },
+		set currentTime(time){
+			var newtime,
+				oldtime = this.mediaPlayer.currentTime;
+			this.mediaPlayer.currentTime = (+time||0);
+			newtime = this.mediaPlayer.currentTime;
+			element.dispatchEvent(new CustomEvent('timejump', {
+				bubbles:true,
+				detail: { oldtime: oldtime, newtime: newtime }
+			}));
+			return newtime;
+		},
+		get muted(){ return this.mediaPlayer.muted; },
+		set muted(muted){
+			var m = this.mediaPlayer.muted;
+			this.mediaPlayer.muted = muted;
+			if(this.mediaPlayer.muted !== m){
+				this.element.dispatchEvent(new CustomEvent(
+					m?'unmute':'mute', {bubbles:true}
+				));
+			}
+			return this.mediaPlayer.muted;
+		},
+		get paused(){ return this.mediaPlayer.paused; },
+		get playbackRate(){ return this.mediaPlayer.playbackRate; },
+		set playbackRate(playbackRate){
+			return this.mediaPlayer.playbackRate = playbackRate;
+		},
+		get volume(){ return this.mediaPlayer.volume; },
+		set volume(volume){
+			return this.mediaPlayer.volume = volume;
 		}
-	});
+	};
 
 	AyamelPlayer.prototype.addTextTrack = function(track){
-		if(!this.captionRenderer){ return; }
-		if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
-		this.captionRenderer.addTextTrack(track);
+		this.mediaPlayer.addTextTrack(track);
 		if(this.controlBar.components.captions){
 			this.controlBar.components.captions.addTrack(track);
 		}
 	};
 
 	AyamelPlayer.prototype.removeTextTrack = function(track){
-		if(!this.captionRenderer){ return; }
-		if(this.captionRenderer.tracks.indexOf(track) === -1){ return; }
-		this.captionRenderer.removeTextTrack(track);
+		this.mediaPlayer.removeTextTrack(track);
 		if(this.controlBar.components.captions){
 			this.controlBar.components.captions.removeTrack(track);
 		}
 	};
 
 	AyamelPlayer.prototype.refreshCaptionMenu = function(){
-		if(!this.captionRenderer){ return; }
 		if(!this.controlBar.components.captions){ return; }
-		this.controlBar.components.captions.rebuild(this.captionRenderer.tracks);
+		this.controlBar.components.captions.rebuild(this.mediaPlayer.captionRenderer.tracks);
 	};
 
 	AyamelPlayer.prototype.addAnnSet = function(annset){
-		if(!this.annotator){ return; }
-		var added = this.annotator.addSet(annset);
-		if(added){
-			if(this.captionRenderer && annset.mode === "showing"){
-				this.captionRenderer.rebuildCaptions(true);
-			}
-			if(this.controlBar.components.annotations){
-				this.controlBar.components.annotations.addSet(annset);
-			}
+		this.mediaPlayer.addAnnSet(annset);
+		if(this.controlBar.components.annotations){
+			this.controlBar.components.annotations.addSet(annset);
 		}
 	};
 
 	AyamelPlayer.prototype.removeAnnSet = function(annset){
-		if(!this.annotator){ return; }
-		var removed = this.annotator.removeSet(annset);
-		if(removed){
-			if(this.captionRenderer && annset.mode === "showing"){
-				this.captionRenderer.rebuildCaptions(true);
-			}
-			if(this.controlBar.components.annotations){
-				this.controlBar.components.annotations.addSet(annset);
-			}
+		this.mediaPlayer.removeAnnSet(annset);
+		if(this.controlBar.components.annotations){
+			this.controlBar.components.annotations.removeSet(annset);
 		}
 	};
 
@@ -407,9 +359,7 @@
 	};
 
 	AyamelPlayer.prototype.refreshAnnotations = function(){
-		if(!this.annotator){ return; }
-		this.annotator.refresh();
-		if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
+		this.mediaPlayer.refreshAnnotations();
 	};
 
 	AyamelPlayer.prototype.refreshAnnotationMenu = function(){
@@ -433,7 +383,6 @@
 	AyamelPlayer.prototype.removeEventListener = function(event, callback, capture){
 		this.element.removeEventListener(event, callback, !!capture);
 	};
-
 
 	AyamelPlayer.prototype.resetSize = function(){
 		var resizeWidth,

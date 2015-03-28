@@ -37,6 +37,7 @@
 			args.holder.appendChild(element);
 		}
 
+		this.resource = args.resource;
 		this.video = video;
 
 		// Load the source
@@ -157,12 +158,12 @@
 	};
 
 	Ayamel.mediaPlugins.video.html5 = {
-		install: function(args) {
+		install: function(args){
 			return new Html5VideoPlayer(args);
 		},
-		supports: function(resource) {
-			return resource.type === "video" &&
-					resource.content.files.some(supportsFile);
+		supports: function(args){
+			return args.resource.type === "video" &&
+					args.resource.content.files.some(supportsFile);
 		}
 	};
 

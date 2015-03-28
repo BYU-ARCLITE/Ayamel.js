@@ -1,10 +1,3 @@
-/**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 5/6/13
- * Time: 8:34 AM
- * To change this template use File | Settings | File Templates.
- */
 (function(Ayamel,global){
 
 	var counter = 0,
@@ -21,13 +14,14 @@
 	}
 
 	function FlashVideoPlayer(args){
-		var _this = this,
-			flowId = "flowVideoHolder"+(counter++).toString(36),
+		var flowId = "flowVideoHolder"+(counter++).toString(36),
 			playing = false,
 			swfPath = Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.16.swf",
 			element = Ayamel.utils.parseHTML(template),
 			startTime = args.startTime, endTime = args.endTime,
 			width, height, player;
+
+		this.resource = args.resource;
 
 		// Create the element
 		this.element = element;
@@ -221,19 +215,17 @@
 			}
 			return new FlashVideoPlayer(args);
 		},
-		supports: function(resource){
+		supports: function(args){
 
 			// Ensure that the browser supports flash
-			var hasFlash = false;
-			try {
-				hasFlash = !!(new ActiveXObject('ShockwaveFlash.ShockwaveFlash'));
-			}catch(e){
-				hasFlash = (typeof navigator.mimeTypes["application/x-shockwave-flash"] !== 'undefined');
-			}
+			var hasFlash = (
+				typeof global.ActiveXObject === 'function' &&
+				!!(new global.ActiveXObject('ShockwaveFlash.ShockwaveFlash'))
+			) || (typeof navigator.mimeTypes["application/x-shockwave-flash"] !== 'undefined');
 
 			// Check that there is a supported resource
-			return hasFlash && resource.type === "video" &&
-					resource.content.files.some(supportsFile);
+			return hasFlash && args.resource.type === "video" &&
+					args.resource.content.files.some(supportsFile);
 		}
 	};
 

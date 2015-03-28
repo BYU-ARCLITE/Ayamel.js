@@ -38,6 +38,7 @@
 		}
 
 		this.audio = audio;
+		this.resource = args.resource;
 
 		// Load the source
 		audio.src = Ayamel.utils.findFile(args.resource, supportsFile).downloadUri;
@@ -163,9 +164,9 @@
 		install: function(args){
 			return new Html5AudioPlayer(args);
 		},
-		supports: function(resource) {
-			return resource.type === "audio" &&
-					resource.content.files.some(supportsFile);
+		supports: function(args){
+			return args.resource.type === "audio" &&
+					args.resource.content.files.some(supportsFile);
 		}
 	};
 

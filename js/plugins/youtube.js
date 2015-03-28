@@ -35,6 +35,7 @@
 		args.holder.appendChild(element);
 
 		this.video = null;
+		this.resource = args.resource;
 
 		element.addEventListener("timeupdate", function(event) {
 			if(endTime > -1 && that.currentTime >= endTime){
@@ -274,16 +275,16 @@
 
 	//Register the plugin
 	Ayamel.mediaPlugins.video.youtube = {
-		install: function(args) {
+		install: function(args){
 			var player = new YouTubePlayer(args);
 			//If it's ever asynchronous, it should always be asynchronous
 			if(ready){ setTimeout(player.init.bind(player),0); }
 			else{ inits.push(player.init.bind(player)); }
 			return player;
 		},
-		supports: function(resource) {
-			return resource.type === "video" &&
-					resource.content.files.some(supportsFile);
+		supports: function(args){
+			return args.holder && args.resource.type === "video" &&
+					args.resource.content.files.some(supportsFile);
 		}
 	};
 
