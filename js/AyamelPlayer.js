@@ -335,7 +335,7 @@
 
 	AyamelPlayer.prototype.refreshCaptionMenu = function(){
 		if(!this.controlBar.components.captions){ return; }
-		this.controlBar.components.captions.rebuild(this.mediaPlayer.captionRenderer.tracks);
+		this.controlBar.components.captions.rebuild(this.textTracks);
 	};
 
 	AyamelPlayer.prototype.addAnnSet = function(annset){
