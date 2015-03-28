@@ -87,7 +87,7 @@
 
 		slider.element.title = "volume";
 		slider.addEventListener('levelchange',function(evt){
-			volume = evt.detail.level;
+			volume = Math.min(evt.detail.level,1);
 			slider.level = volume;
 			element.dispatchEvent(new CustomEvent("volumechange",{bubbles:true,cancelable:true,detail:{volume:volume}}));
 		},false);

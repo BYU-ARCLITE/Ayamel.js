@@ -1,9 +1,22 @@
 (function(Ayamel) {
 	"use strict";
 
+	function pluginLoop(i,len,plugins,args){
+		var module;
+		for(;i < len; i++){
+			module = plugins[i];
+			if(!module.supports(args)){ continue; }
+			//Promise.resolve allows install to return either a plugin,
+			//or a promise for a plugin
+			return Promise.resolve(module.install(args)).then(null,function(){
+				return pluginLoop(i+1,len,plugins,args);
+			});
+		}
+		return Promise.reject(new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser"));
+	}
+
 	function loadPlugin(args){
-		var pluginModule, len, i,
-			pluginPlayer = null,
+		var pluginModule,
 			type = args.resource.type,
 			registeredPlugins = Ayamel.mediaPlugins[type] || {},
 			pluginPriority = Ayamel.prioritizedPlugins[type] || [],
@@ -26,16 +39,7 @@
 		prioritizedPlugins = pluginPriority.map(function(name){ return registeredPlugins[name]; });
 		pluginModule = Ayamel.mediaPlugins.fallbacks[type];
 		if(pluginModule){ prioritizedPlugins.push(pluginModule); }
-		len = prioritizedPlugins.length;
-
-		for(i = 0; i < len; i++){
-			pluginModule = prioritizedPlugins[i];
-			if(pluginModule.supports(args)){
-				pluginPlayer = pluginModule.install(args);
-				if(pluginPlayer !== null){ return pluginPlayer; }
-			}
-		}
-		return null;
+		return pluginLoop(0,prioritizedPlugins.length,prioritizedPlugins,args);
 	}
 
 	function makeCueRenderer(translator, annotator, indexMap){
@@ -215,30 +219,33 @@
 	}
 
 	function setupSoundtracks(player, resource, args){
-		var p, soundtracks = args.soundtracks;
-		if(typeof Ayamel.classes.SoundManager !== 'function'){ return; }
+		var p, soundtracks = args.soundtracks,
+			soundManager = new Ayamel.classes.SoundManager(player.plugin);
+
+		player.soundManager.copyState(soundManager);
+		player.soundManager = soundManager;
+
 		switch(resource.type){
 		case 'document': p = getDocumentSoundtracks(resource, args);
 			break;
-		case 'video': p = getVideoSoundtracks(resource, args);
-			break;
 		case 'image': p = getImageSoundtracks(resource, args);
 			break;
-		case 'audio': return;
+		case 'video':
+			p = getVideoSoundtracks(resource, args);
+			soundManager.addPlayer(player.plugin,true);
+			break;
+		case 'audio':
+			soundManager.addPlayer(player.plugin,true);
+			return Promise.resolve([]);
 		default:
-			throw new Error("Non-viewable resource type");
+			return Promise.reject(new Error("Non-viewable resource type"));
 		}
-		p.then(function(rlist){ //Turn resources into player plugins
+
+		return p.then(function(rlist){ //Turn resources into player plugins
 			var plugins = rlist.map(function(res){
 				return loadPlugin({resource: res});
 			}).filter(function(p){ return p !== null; });
-			if(!plugins.length){ throw 0; } //bailout
-			return plugins;
-		}).then(function(plugins){
-			//Create a Sound Manager with the primary player plugin as the master
-			var soundManager = new Ayamel.classes.SoundManager(player.plugin);
-			player.soundManager = soundManager;
-
+			if(!plugins.length){ return; } //bailout
 			plugins.forEach(function(plugin){
 				soundManager.addPlayer(plugin,false);
 				player.element.dispatchEvent(new CustomEvent('addaudiotrack', {
@@ -249,10 +256,7 @@
 					}, bubbles: true
 				}));
 			});
-
-			//A video has its own sound, so we need to include it in the manager
 			if(resource.type === 'video'){
-				soundManager.addPlayer(player.plugin,true);
 				player.element.dispatchEvent(new CustomEvent('addaudiotrack', {
 					detail: {
 						track: player.plugin,
@@ -270,47 +274,48 @@
 			startTime = args.startTime,
 			endTime = args.endTime,
 			translator = args.translator,
-			plugin, element, indexMap;
+			element, indexMap;
 
 		// Attempt to load the resource
 		element = document.createElement('div');
 		element.className = "mediaPlayer";
 		this.element = element;
 
-		this.plugin = null;
+		this.plugin = new PluginShell();
+		this.soundManager = new SoundShell();
+		
 		this.annotator = null;
 		this.captionsElement = null;
 		this.captionRenderer = null;
-		this.soundManager = null;
 
 		//needs to be in the document before loading a plugin
 		//so the plugin can examine the displayed size
 		args.holder.appendChild(element);
-		plugin = loadPlugin({
+		this.promise = loadPlugin({
 			holder: element,
 			resource: resource,
 			startTime: startTime,
 			endTime: endTime,
 			translator: translator,
 			annotations: args.annotations
-		});
-
-		if(plugin === null){
+		}).then(function(plugin){
+			that.plugin.copyState(plugin);
+			that.plugin = plugin;
+			setupCaptioning(that, translator, resource, args);
+			return setupSoundtracks(that, resource, args)
+				.then(function(){ return that; });
+		},function(e){
 			args.holder.removeChild(element);
-			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
-		}
-
-		this.plugin = plugin;
-		setupCaptioning(this, translator, resource, args);
-		setupSoundtracks(this, resource, args);
+			throw e;
+		});
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function(){ return endTime === -1 ? plugin.duration : (endTime - startTime); }
+				get: function(){ return endTime === -1 ? this.plugin.duration : (endTime - startTime); }
 			},
 			currentTime: {
-				get: function(){ return plugin.currentTime - startTime; },
-				set: function(time){ return plugin.currentTime = time + startTime; }
+				get: function(){ return this.plugin.currentTime - startTime; },
+				set: function(time){ return this.plugin.currentTime = time + startTime; }
 			}
 		});
 
@@ -318,7 +323,6 @@
 
 	MediaPlayer.prototype = {
 		supports: function(feature){
-			if(!this.plugin){ return false; }
 			var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
 			return !!this.plugin.features[device][feature];
 		},
@@ -375,14 +379,7 @@
 		get textTracks(){
 			return this.captionRenderer?this.captionRenderer.tracks:[];
 		},
-		enableAudio: function(track){
-			if(!this.soundManager){ return; }
-			this.soundManager.activate(track);
-		},
-		disableAudio: function(track){
-			if(!this.soundManager){ return; }
-			this.soundManager.deactivate(track);
-		},
+
 		enterFullScreen: function(height){ this.plugin.enterFullScreen(height); },
 		exitFullScreen: function(){ this.plugin.exitFullScreen(); },
 		play: function(){ this.plugin.play(); },
@@ -390,75 +387,27 @@
 		get paused(){ return this.plugin.paused; },
 		get playbackRate(){ return this.plugin.playbackRate; },
 		set playbackRate(rate){	return this.plugin.playbackRate = rate; },
-		get muted(){ return this.plugin.muted; },
-		set muted(muted){ return this.plugin.muted = muted; },
-		get volume(){ return this.plugin.volume; },
-		set volume(volume){ return this.plugin.volume = volume; },
 		get readyState(){ return this.plugin.readyState; },
 		get height(){ return this.plugin.height; },
 		set height(h){ return this.plugin.height = h; },
 		get width(){ return this.plugin.width; },
-		set width(w){ return this.plugin.width = w; }
+		set width(w){ return this.plugin.width = w; },
+
+		enableAudio: function(track){ this.soundManager.activate(track); },
+		disableAudio: function(track){ this.soundManager.deactivate(track); },
+		get muted(){ return this.soundManager.muted; },
+		set muted(muted){ return this.soundManager.muted = muted; },
+		get volume(){ return this.soundManager.volume; },
+		set volume(volume){ return this.soundManager.volume = volume; }
 	};
 
-	function MediaShell(){
-		this.cevents = {};
-		this.ncevents = {};
-		this.annsets = [];
-		this.textTracks = [];
+	function SoundShell(){
 		this.audioTracks = [];
-		this.jumps = 0;
-		this.playbackRate = 1;
 		this.volume = 1;
-		this.paused = true;
 		this.muted = false;
-		this.fsHeight = NaN;
-		this.height = NaN;
-		this.width = NaN;
 	}
 
-	MediaShell.prototype = {
-		get readyState(){ return 0; },
-		rebuildCaptions: function(){},
-		refreshAnnotations: function(){},
-		enterFullScreen: function(h){ this.fsHeight = h; },
-		exitFullScreen: function(){ this.fsHeight = NaN; },
-		play: function(){ this.paused = false; },
-		pause: function(){ this.paused = true; },
-		addEventListener: function(event, callback, capture){
-			var events = !!capture?this.cevents:this.ncevents,
-				evlist = events[event];
-			if(!evlist){
-				evlist = [];
-				events[event] = evlist;
-			}
-			evlist.push(callback);
-		},
-		removeEventListener: function(event, callback, capture){
-			var idx, evlist = (!!capture?this.cevents:this.ncevents)[event];
-			if(!evlist){ return; }
-			idx = evlist.indexOf(callback);
-			if(idx !== -1){ evlist.splice(idx,1); }
-		},
-		removeAnnSet: function(annset){
-			var idx = this.annsets.indexOf(annset);
-			if(idx !== -1){ this.annsets.splice(idx,1); }
-		},
-		addAnnSet: function(annset){
-			if(this.annsets.indexOf(annset) !== -1){ return; }
-			this.annsets.push(annset);
-		},
-		removeTextTrack: function(track){
-			var idx = this.textTracks.indexOf(track);
-			if(idx !== -1){ this.textTracks.splice(idx,1); }
-		},
-		addTextTrack: function(track){
-			if(this.textTracks.indexOf(track) !== -1){ return; }
-			this.textTracks.push(track);
-		},
-		cueJump: function(dir){
-			this.jumps += (dir === "forward")?1:-1;
-		},
+	SoundShell.prototype = {
 		enableAudio: function(track){
 			if(this.audioTracks.indexOf(track) !== -1){ return; }
 			this.audioTracks.push(track);
@@ -467,48 +416,38 @@
 			var idx = this.audioTracks.indexOf(track);
 			if(idx !== -1){ this.audioTracks.splice(idx,1); }
 		},
-		copyState: function(mplayer){
-			mplayer.playbackRate = this.playbackRate;
-			mplayer.volume = this.volume;
-			mplayer.muted = this.muted;
+		copyState: function(sound){
+			sound.volume = this.volume;
+			sound.muted = this.muted;
+			this.audioTracks.forEach(function(track){
+				mplayer.soundManager.activate(track);
+			});
+		}
+	};
 
-			if(!isNaN(this.height)){ mplayer.height = this.height; }
-			if(!isNaN(this.width)){ mplayer.width = this.width; }
-			if(!isNaN(this.fsHeight)){ mplayer.enterFullScreen(this.fsHeight); }
+	function PluginShell(){
+		this.playbackRate = 1;
+		this.paused = true;
+		this.fsHeight = NaN;
+		this.height = NaN;
+		this.width = NaN;
+	}
 
-			//copy event listeners
-			Object.keys(this.cevents).forEach(function(event){
-				this[event].forEach(function(cb){
-					mplayer.addEventListener(event, cb, true);
-				});
-			},this.cevents);
-			Object.keys(this.ncevents).forEach(function(event){
-				this[event].forEach(function(cb){
-					mplayer.addEventListener(event, cb, false);
-				});
-			},this.ncevents);
+	PluginShell.prototype = {
+		get readyState(){ return 0; },
+		enterFullScreen: function(h){ this.fsHeight = h; },
+		exitFullScreen: function(){ this.fsHeight = NaN; },
+		play: function(){ this.paused = false; },
+		pause: function(){ this.paused = true; },
+		copyState: function(plugin){
+			if(!isNaN(this.height)){ plugin.height = this.height; }
+			if(!isNaN(this.width)){ plugin.width = this.width; }
+			if(!isNaN(this.fsHeight)){ plugin.enterFullScreen(this.fsHeight); }
 
-			//copy auxilliary objects
-			if(mplayer.annotator){
-				this.annsets.forEach(function(annset){
-					mplayer.annotator.addSet(annset);
-				});
-			}
-			if(mplayer.captionRenderer){
-				this.textTracks.forEach(function(track){
-					mplayer.captionRenderer.addTextTrack(track);
-				});
-			}
-			if(mplayer.soundManager){
-				this.audioTracks.forEach(function(track){
-					mplayer.soundManager.activate(track);
-				});
-			}
-
-			if(!this.paused){ mplayer.play(); }
+			plugin.playbackRate = this.playbackRate;
+			if(!this.paused){ plugin.play(); }
 		}
 	};
 
 	Ayamel.classes.MediaPlayer = MediaPlayer;
-	Ayamel.classes.MediaShell = MediaShell;
 }(Ayamel));
