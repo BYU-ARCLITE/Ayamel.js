@@ -1,86 +1,6 @@
 (function(Ayamel) {
 	"use strict";
 
-	var BasicMediaPrototype = {
-			supports: function(feature){
-				if(!this.plugin){ return false; }
-				var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
-				return !!this.plugin.features[device][feature];
-			},
-			enterFullScreen: function(availableHeight){
-				this.plugin.enterFullScreen(availableHeight);
-			},
-			exitFullScreen: function(){
-				this.plugin.exitFullScreen();
-			},
-			addEventListener: function(event, callback){
-				this.element.addEventListener(event, callback, false);
-			},
-			removeEventListener: function(event, callback){
-				this.element.removeEventListener(event, callback, false);
-			},
-			refreshAnnotations: function(){
-				if(!this.annotator){ return; }
-				this.annotator.refresh();
-				if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
-			},
-			removeAnnSet: function(annset){
-				if(!this.annotator){ return; }
-				var removed = this.annotator.removeSet(annset);
-				if(removed && this.captionRenderer && annset.mode === "showing"){
-					this.captionRenderer.rebuildCaptions(true);
-				}
-			},
-			addAnnSet: function(annset){
-				if(!this.annotator){ return; }
-				var added = this.annotator.addSet(annset);
-				if(added && this.captionRenderer && annset.mode === "showing"){
-					this.captionRenderer.rebuildCaptions(true);
-				}
-			},
-			removeTextTrack: function(track){
-				if(!this.captionRenderer){ return; }
-				if(this.captionRenderer.tracks.indexOf(track) === -1){ return; }
-				this.captionRenderer.removeTextTrack(track);
-			},
-			addTextTrack: function(track){
-				if(!this.captionRenderer){ return; }
-				if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
-				this.captionRenderer.addTextTrack(track);
-			},
-			rebuildCaptions: function(){
-				if(!this.captionRenderer){ return; }
-				this.captionRenderer.rebuildCaptions();
-			},
-			cueJump: function(dir){
-				if(!this.captionRenderer){ return; }
-				var tracks = this.captionRenderer.tracks.filter(function(track){
-					return track.mode === "showing";
-				});
-				if(tracks.length){ // Move forward or back a caption
-					this.currentTime = Ayamel.utils.CaptionsTranversal[
-						dir === "forward"?"forward":"back"
-					](tracks, this.currentTime);
-				}
-			},
-			get textTracks(){
-				return this.captionRenderer?this.captionRenderer.tracks:[];
-			},
-			enableAudio: function(track){
-				if(!this.soundManager){ return; }
-				this.soundManager.activate(track);
-			},
-			disableAudio: function(track){
-				if(!this.soundManager){ return; }
-				this.soundManager.deactivate(track);
-			},
-			get readyState(){ return this.plugin.readyState; },
-			get height(){ return this.plugin.height; },
-			set height(h){ return this.plugin.height = h; },
-			get width(){ return this.plugin.width; },
-			set width(w){ return this.plugin.width = w; }
-		};
-
 	function loadPlugin(args){
 		var pluginModule, len, i,
 			pluginPlayer = null,
@@ -396,72 +316,199 @@
 
 	}
 
-	MediaPlayer.prototype = Object.create(BasicMediaPrototype,{
-		paused: {
-			get: function(){ return this.plugin.paused; }
+	MediaPlayer.prototype = {
+		supports: function(feature){
+			if(!this.plugin){ return false; }
+			var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
+			return !!this.plugin.features[device][feature];
 		},
-		play: {
-			value: function(){ this.plugin.play(); }
+		addEventListener: function(event, callback, capture){
+			this.element.addEventListener(event, callback, !!capture);
 		},
-		pause: {
-			value: function(){ this.plugin.pause(); }
+		removeEventListener: function(event, callback, capture){
+			this.element.removeEventListener(event, callback, !!capture);
 		},
-		playbackRate: {
-			get: function(){ return this.plugin.playbackRate; },
-			set: function(playbackRate){
-				return this.plugin.playbackRate = playbackRate;
+		refreshAnnotations: function(){
+			if(!this.annotator){ return; }
+			this.annotator.refresh();
+			if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
+		},
+		removeAnnSet: function(annset){
+			if(!this.annotator){ return; }
+			var removed = this.annotator.removeSet(annset);
+			if(removed && this.captionRenderer && annset.mode === "showing"){
+				this.captionRenderer.rebuildCaptions(true);
 			}
 		},
-		muted: {
-			get: function(){ return this.plugin.muted; },
-			set: function(muted){ return this.plugin.muted = muted; }
+		addAnnSet: function(annset){
+			if(!this.annotator){ return; }
+			var added = this.annotator.addSet(annset);
+			if(added && this.captionRenderer && annset.mode === "showing"){
+				this.captionRenderer.rebuildCaptions(true);
+			}
 		},
-		volume: {
-			get: function(){ return this.plugin.volume; },
-			set: function(volume){ return this.plugin.volume = volume; }
-		}
-	});
+		removeTextTrack: function(track){
+			if(!this.captionRenderer){ return; }
+			if(this.captionRenderer.tracks.indexOf(track) === -1){ return; }
+			this.captionRenderer.removeTextTrack(track);
+		},
+		addTextTrack: function(track){
+			if(!this.captionRenderer){ return; }
+			if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
+			this.captionRenderer.addTextTrack(track);
+		},
+		rebuildCaptions: function(){
+			if(!this.captionRenderer){ return; }
+			this.captionRenderer.rebuildCaptions();
+		},
+		cueJump: function(dir){
+			if(!this.captionRenderer){ return; }
+			var tracks = this.captionRenderer.tracks.filter(function(track){
+				return track.mode === "showing";
+			});
+			if(tracks.length){ // Move forward or back a caption
+				this.currentTime = Ayamel.utils.CaptionsTranversal[
+					dir === "forward"?"forward":"back"
+				](tracks, this.currentTime);
+			}
+		},
+		get textTracks(){
+			return this.captionRenderer?this.captionRenderer.tracks:[];
+		},
+		enableAudio: function(track){
+			if(!this.soundManager){ return; }
+			this.soundManager.activate(track);
+		},
+		disableAudio: function(track){
+			if(!this.soundManager){ return; }
+			this.soundManager.deactivate(track);
+		},
+		enterFullScreen: function(height){ this.plugin.enterFullScreen(height); },
+		exitFullScreen: function(){ this.plugin.exitFullScreen(); },
+		play: function(){ this.plugin.play(); },
+		pause: function(){ this.plugin.pause(); },
+		get paused(){ return this.plugin.paused; },
+		get playbackRate(){ return this.plugin.playbackRate; },
+		set playbackRate(rate){	return this.plugin.playbackRate = rate; },
+		get muted(){ return this.plugin.muted; },
+		set muted(muted){ return this.plugin.muted = muted; },
+		get volume(){ return this.plugin.volume; },
+		set volume(volume){ return this.plugin.volume = volume; },
+		get readyState(){ return this.plugin.readyState; },
+		get height(){ return this.plugin.height; },
+		set height(h){ return this.plugin.height = h; },
+		get width(){ return this.plugin.width; },
+		set width(w){ return this.plugin.width = w; }
+	};
 
-	function MediaViewer(args) {
-		var plugin, element;
-
-		if(Ayamel.utils.hasTimeline(args.resource)){
-			throw new Error("Cannot create viewer for timed media.");
-		}
-
-		// Attempt to load the resource
-		element = document.createElement('div');
-		element.className = "mediaPlayer";
-		plugin = loadPlugin({
-			holder: element,
-			resource: args.resource,
-			aspectRatio: args.aspectRatio
-		});
-
-		if(plugin === null){
-			throw new Error("Could Not Find Resource Representation Compatible With Your Machine & Browser");
-		}
-
-		args.holder.appendChild(element);
-
-		this.element = element;
-
-		this.plugin = plugin;
-		this.captionsElement = plugin.captionsElement;
+	function MediaShell(){
+		this.cevents = {};
+		this.ncevents = {};
+		this.annsets = [];
+		this.textTracks = [];
+		this.audioTracks = [];
+		this.jumps = 0;
+		this.playbackRate = 1;
+		this.volume = 1;
+		this.paused = true;
+		this.muted = false;
+		this.fsHeight = NaN;
+		this.height = NaN;
+		this.width = NaN;
 	}
 
-	MediaViewer.prototype = BasicMediaPrototype;
+	MediaShell.prototype = {
+		get readyState(){ return 0; },
+		rebuildCaptions: function(){},
+		refreshAnnotations: function(){},
+		enterFullScreen: function(h){ this.fsHeight = h; },
+		exitFullScreen: function(){ this.fsHeight = NaN; },
+		play: function(){ this.paused = false; },
+		pause: function(){ this.paused = true; },
+		addEventListener: function(event, callback, capture){
+			var events = !!capture?this.cevents:this.ncevents,
+				evlist = events[event];
+			if(!evlist){
+				evlist = [];
+				events[event] = evlist;
+			}
+			evlist.push(callback);
+		},
+		removeEventListener: function(event, callback, capture){
+			var idx, evlist = (!!capture?this.cevents:this.ncevents)[event];
+			if(!evlist){ return; }
+			idx = evlist.indexOf(callback);
+			if(idx !== -1){ evlist.splice(idx,1); }
+		},
+		removeAnnSet: function(annset){
+			var idx = this.annsets.indexOf(annset);
+			if(idx !== -1){ this.annsets.splice(idx,1); }
+		},
+		addAnnSet: function(annset){
+			if(this.annsets.indexOf(annset) !== -1){ return; }
+			this.annsets.push(annset);
+		},
+		removeTextTrack: function(track){
+			var idx = this.textTracks.indexOf(track);
+			if(idx !== -1){ this.textTracks.splice(idx,1); }
+		},
+		addTextTrack: function(track){
+			if(this.textTracks.indexOf(track) !== -1){ return; }
+			this.textTracks.push(track);
+		},
+		cueJump: function(dir){
+			this.jumps += (dir === "forward")?1:-1;
+		},
+		enableAudio: function(track){
+			if(this.audioTracks.indexOf(track) !== -1){ return; }
+			this.audioTracks.push(track);
+		},
+		disableAudio: function(track){
+			var idx = this.audioTracks.indexOf(track);
+			if(idx !== -1){ this.audioTracks.splice(idx,1); }
+		},
+		copyState: function(mplayer){
+			mplayer.playbackRate = this.playbackRate;
+			mplayer.volume = this.volume;
+			mplayer.muted = this.muted;
 
-	function createMedia(args) {
-		var resource = args.resource;
-		if(Ayamel.utils.hasTimeline(args.resource)){
-			return new MediaPlayer(args);
-		}else{
-			return new MediaViewer(args);
+			if(!isNaN(this.height)){ mplayer.height = this.height; }
+			if(!isNaN(this.width)){ mplayer.width = this.width; }
+			if(!isNaN(this.fsHeight)){ mplayer.enterFullScreen(this.fsHeight); }
+
+			//copy event listeners
+			Object.keys(this.cevents).forEach(function(event){
+				this[event].forEach(function(cb){
+					mplayer.addEventListener(event, cb, true);
+				});
+			},this.cevents);
+			Object.keys(this.ncevents).forEach(function(event){
+				this[event].forEach(function(cb){
+					mplayer.addEventListener(event, cb, false);
+				});
+			},this.ncevents);
+
+			//copy auxilliary objects
+			if(mplayer.annotator){
+				this.annsets.forEach(function(annset){
+					mplayer.annotator.addSet(annset);
+				});
+			}
+			if(mplayer.captionRenderer){
+				this.textTracks.forEach(function(track){
+					mplayer.captionRenderer.addTextTrack(track);
+				});
+			}
+			if(mplayer.soundManager){
+				this.audioTracks.forEach(function(track){
+					mplayer.soundManager.activate(track);
+				});
+			}
+
+			if(!this.paused){ mplayer.play(); }
 		}
-	}
+	};
 
-	Ayamel.utils.createMedia = createMedia;
 	Ayamel.classes.MediaPlayer = MediaPlayer;
-	Ayamel.classes.MediaViewer = MediaViewer;
+	Ayamel.classes.MediaShell = MediaShell;
 }(Ayamel));
