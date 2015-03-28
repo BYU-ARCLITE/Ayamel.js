@@ -16,6 +16,8 @@
 			startTime = args.startTime, endTime = args.endTime,
 			element = document.createElement('pre');
 
+		this.resource = args.resource;
+
 		// Create the element
 		this.element = element;
 		element.style.overflowY = "auto";
@@ -120,12 +122,12 @@
 	};
 
 	Ayamel.mediaPlugins.document.plaintext = {
-		install: function(args) {
+		install: function(args){
 			return new PlaintextPlayer(args);
 		},
-		supports: function(resource) {
-			return resource.type === "document" &&
-					resource.content.files.some(supportsFile);
+		supports: function(args){
+			return args.holder && args.resource.type === "document" &&
+					args.resource.content.files.some(supportsFile);
 		}
 	};
 

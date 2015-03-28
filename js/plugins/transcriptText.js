@@ -95,6 +95,8 @@
 			annotations = args.annotations,
 			element = document.createElement('div');
 
+		this.resource = resource;
+
 		// Create the element
 		this.element = element;
 		element.style.overflowY = "hidden";
@@ -308,12 +310,12 @@
 	};
 
 	Ayamel.mediaPlugins.document.transcript = {
-		install: function(args) {
+		install: function(args){
 			return new TextTranscriptPlayer(args);
 		},
-		supports: function(resource) {
-			return resource.type === "document" &&
-					resource.content.files.some(supportsFile);
+		supports: function(args){
+			return args.holder && args.resource.type === "document" &&
+					args.resource.content.files.some(supportsFile);
 		}
 	};
 

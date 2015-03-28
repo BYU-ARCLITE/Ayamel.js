@@ -120,6 +120,10 @@
 			event.stopPropagation();
 		},false);
 
+		args.player.addEventListener('addaudiotrack',function(e){
+			that.addTrack(e.detail.track, e.detail.name, e.detail.active);
+		},false);
+
 		// Be able to set the muted & volume attributes
 		Object.defineProperties(this, {
 			muted: {
@@ -162,14 +166,14 @@
 		}
 	}
 
-	VolumeSlider.prototype.addTrack = function(key, label){
-		if(this.tracks.has(key)){
-			this.tracks.get(key).label = label;
-		}else{
-			this.tracks.set(key,{
-				label: label, active: false
+	VolumeSlider.prototype.addTrack = function(key, label, active){
+		var value;
+		if(active){
+			this.tracks.forEach(function(value,ignore){
+				value.active = false;
 			});
 		}
+		this.tracks.set(key,{label: label, active: active});
 		if(this.tracks.size > 1){
 			this.element.title = "Select Audio";
 		}

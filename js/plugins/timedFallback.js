@@ -7,6 +7,8 @@
 	function FallbackPlayer(args) {
 		var element = Ayamel.utils.parseHTML(template);
 
+		this.resource = args.resource;
+
 		// Create the element
 		this.element = element;
 		args.holder.appendChild(element);
@@ -97,8 +99,8 @@
 		install: function(args){
 			return new FallbackPlayer(args);
 		},
-		supports: function(resource){
-			return (resource.type === "video" || resource.type === "audio");
+		supports: function(args){
+			return (args.resource.type === "video" || args.resource.type === "audio");
 		}
 	};
 	Ayamel.mediaPlugins.fallbacks.video = obj;

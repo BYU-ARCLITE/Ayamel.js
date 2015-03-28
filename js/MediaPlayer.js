@@ -1,8 +1,7 @@
 (function(Ayamel) {
 	"use strict";
 
-	var template = '<div class="mediaPlayer"></div>',
-		BasicMediaPrototype = {
+	var BasicMediaPrototype = {
 			supports: function(feature){
 				if(!this.plugin){ return false; }
 				var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
@@ -20,6 +19,61 @@
 			removeEventListener: function(event, callback){
 				this.element.removeEventListener(event, callback, false);
 			},
+			refreshAnnotations: function(){
+				if(!this.annotator){ return; }
+				this.annotator.refresh();
+				if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
+			},
+			removeAnnSet: function(annset){
+				if(!this.annotator){ return; }
+				var removed = this.annotator.removeSet(annset);
+				if(removed && this.captionRenderer && annset.mode === "showing"){
+					this.captionRenderer.rebuildCaptions(true);
+				}
+			},
+			addAnnSet: function(annset){
+				if(!this.annotator){ return; }
+				var added = this.annotator.addSet(annset);
+				if(added && this.captionRenderer && annset.mode === "showing"){
+					this.captionRenderer.rebuildCaptions(true);
+				}
+			},
+			removeTextTrack: function(track){
+				if(!this.captionRenderer){ return; }
+				if(this.captionRenderer.tracks.indexOf(track) === -1){ return; }
+				this.captionRenderer.removeTextTrack(track);
+			},
+			addTextTrack: function(track){
+				if(!this.captionRenderer){ return; }
+				if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
+				this.captionRenderer.addTextTrack(track);
+			},
+			rebuildCaptions: function(){
+				if(!this.captionRenderer){ return; }
+				this.captionRenderer.rebuildCaptions();
+			},
+			cueJump: function(dir){
+				if(!this.captionRenderer){ return; }
+				var tracks = this.captionRenderer.tracks.filter(function(track){
+					return track.mode === "showing";
+				});
+				if(tracks.length){ // Move forward or back a caption
+					this.currentTime = Ayamel.utils.CaptionsTranversal[
+						dir === "forward"?"forward":"back"
+					](tracks, this.currentTime);
+				}
+			},
+			get textTracks(){
+				return this.captionRenderer?this.captionRenderer.tracks:[];
+			},
+			enableAudio: function(track){
+				if(!this.soundManager){ return; }
+				this.soundManager.activate(track);
+			},
+			disableAudio: function(track){
+				if(!this.soundManager){ return; }
+				this.soundManager.deactivate(track);
+			},
 			get readyState(){ return this.plugin.readyState; },
 			get height(){ return this.plugin.height; },
 			set height(h){ return this.plugin.height = h; },
@@ -30,8 +84,7 @@
 	function loadPlugin(args){
 		var pluginModule, len, i,
 			pluginPlayer = null,
-			resource = args.resource,
-			type = resource.type,
+			type = args.resource.type,
 			registeredPlugins = Ayamel.mediaPlugins[type] || {},
 			pluginPriority = Ayamel.prioritizedPlugins[type] || [],
 			prioritizedPlugins;
@@ -57,7 +110,7 @@
 
 		for(i = 0; i < len; i++){
 			pluginModule = prioritizedPlugins[i];
-			if(pluginModule.supports(resource)){
+			if(pluginModule.supports(args)){
 				pluginPlayer = pluginModule.install(args);
 				if(pluginPlayer !== null){ return pluginPlayer; }
 			}
@@ -174,7 +227,8 @@
 		if(player.supports('captions')){
 			indexMap = new Map();
 
-			captionsElement = Ayamel.utils.parseHTML('<div class="videoCaptionHolder"></div>');
+			captionsElement = document.createElement('div');
+			captionsElement.className = "videoCaptionHolder";
 			player.element.appendChild(captionsElement);
 
 			captionRenderer = new TimedText.CaptionRenderer({
@@ -205,6 +259,91 @@
 		}
 	}
 
+	function getDocumentSoundtracks(resource, config){
+		var cmp = (config.whitelist instanceof Array)?function(id){
+				return config.whitelist.indexOf(id) > -1;
+			}:(config.blacklist instanceof Array)?function(id){
+				return config.blacklist.indexOf(relation.objectId) === -1;
+			}:function(){ return true; };
+		return resource.loadResourcesFromRelations("objectId", function(relation){
+			return relation.type === "transcript_of" && cmp(relation.objectId);
+		}).then(function(rlist){
+			return rlist.filter(function(res){
+				return res.type === "video" || res.type === "audio";
+			});
+		});
+	}
+
+	function getVideoSoundtracks(resource, config){
+		var cmp = (config.whitelist instanceof Array)?function(id){
+				return config.whitelist.indexOf(id) > -1;
+			}:(config.blacklist instanceof Array)?function(id){
+				return config.blacklist.indexOf(relation.objectId) === -1;
+			}:function(){ return true; };
+		//TODO: should also check "translation_of" both ways, and "based_on"s related to those translations
+		return resource.loadResourcesFromRelations("subjectId", function(relation){
+			return relation.type === "based_on" && cmp(relation.subjectId);
+		}).then(function(rlist){
+			return rlist.filter(function(res){
+				return res.type === "video" || res.type === "audio";
+			});
+		});
+	}
+
+	function getImageSoundtracks(resource, config){
+		return Promise.resolve([]);
+	}
+
+	function setupSoundtracks(player, resource, args){
+		var p, soundtracks = args.soundtracks;
+		if(typeof Ayamel.classes.SoundManager !== 'function'){ return; }
+		switch(resource.type){
+		case 'document': p = getDocumentSoundtracks(resource, args);
+			break;
+		case 'video': p = getVideoSoundtracks(resource, args);
+			break;
+		case 'image': p = getImageSoundtracks(resource, args);
+			break;
+		case 'audio': return;
+		default:
+			throw new Error("Non-viewable resource type");
+		}
+		p.then(function(rlist){ //Turn resources into player plugins
+			var plugins = rlist.map(function(res){
+				return loadPlugin({resource: res});
+			}).filter(function(p){ return p !== null; });
+			if(!plugins.length){ throw 0; } //bailout
+			return plugins;
+		}).then(function(plugins){
+			//Create a Sound Manager with the primary player plugin as the master
+			var soundManager = new Ayamel.classes.SoundManager(player.plugin);
+			player.soundManager = soundManager;
+
+			plugins.forEach(function(plugin){
+				soundManager.addPlayer(plugin,false);
+				player.element.dispatchEvent(new CustomEvent('addaudiotrack', {
+					detail: {
+						track: plugin,
+						name: plugin.resource.title,
+						active: false
+					}, bubbles: true
+				}));
+			});
+
+			//A video has its own sound, so we need to include it in the manager
+			if(resource.type === 'video'){
+				soundManager.addPlayer(player.plugin,true);
+				player.element.dispatchEvent(new CustomEvent('addaudiotrack', {
+					detail: {
+						track: player.plugin,
+						name: "Default",
+						active: true
+					}, bubbles: true
+				}));
+			}
+		});
+	}
+
 	function MediaPlayer(args){
 		var that = this,
 			resource = args.resource,
@@ -214,13 +353,15 @@
 			plugin, element, indexMap;
 
 		// Attempt to load the resource
-		element = Ayamel.utils.parseHTML(template);
+		element = document.createElement('div');
+		element.className = "mediaPlayer";
 		this.element = element;
 
 		this.plugin = null;
 		this.annotator = null;
 		this.captionsElement = null;
 		this.captionRenderer = null;
+		this.soundManager = null;
 
 		//needs to be in the document before loading a plugin
 		//so the plugin can examine the displayed size
@@ -241,6 +382,7 @@
 
 		this.plugin = plugin;
 		setupCaptioning(this, translator, resource, args);
+		setupSoundtracks(this, resource, args);
 
 		Object.defineProperties(this, {
 			duration: {
@@ -288,7 +430,8 @@
 		}
 
 		// Attempt to load the resource
-		element = Ayamel.utils.parseHTML(template);
+		element = document.createElement('div');
+		element.className = "mediaPlayer";
 		plugin = loadPlugin({
 			holder: element,
 			resource: args.resource,
