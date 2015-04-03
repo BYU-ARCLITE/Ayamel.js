@@ -380,7 +380,7 @@
 			return this.captionRenderer?this.captionRenderer.tracks:[];
 		},
 
-		enterFullScreen: function(height){ this.plugin.enterFullScreen(height); },
+		enterFullScreen: function(h,w){ this.plugin.enterFullScreen(h,w); },
 		exitFullScreen: function(){ this.plugin.exitFullScreen(); },
 		play: function(){ this.plugin.play(); },
 		pause: function(){ this.plugin.pause(); },
@@ -429,20 +429,27 @@
 		this.playbackRate = 1;
 		this.paused = true;
 		this.fsHeight = NaN;
+		this.fsWidth = NaN;
 		this.height = NaN;
 		this.width = NaN;
 	}
 
 	PluginShell.prototype = {
 		get readyState(){ return 0; },
-		enterFullScreen: function(h){ this.fsHeight = h; },
-		exitFullScreen: function(){ this.fsHeight = NaN; },
 		play: function(){ this.paused = false; },
 		pause: function(){ this.paused = true; },
+		enterFullScreen: function(h,w){
+			this.fsHeight = h;
+			this.fsWidth = w;
+		},
+		exitFullScreen: function(){
+			this.fsHeight = NaN;
+			this.fsWidth = NaN;
+		},
 		copyState: function(plugin){
 			if(!isNaN(this.height)){ plugin.height = this.height; }
 			if(!isNaN(this.width)){ plugin.width = this.width; }
-			if(!isNaN(this.fsHeight)){ plugin.enterFullScreen(this.fsHeight); }
+			if(!isNaN(this.fsHeight)){ plugin.enterFullScreen(this.fsHeight,this.fsWidth); }
 
 			plugin.playbackRate = this.playbackRate;
 			if(!this.paused){ plugin.play(); }

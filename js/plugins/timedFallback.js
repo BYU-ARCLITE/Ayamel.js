@@ -70,6 +70,14 @@
 		this.element.style.height = this.normalHeight + 'px';
 	};
 
+	FallbackPlayer.prototype.addEventListener = function(name, handler, capture){
+		this.element.addEventListener(name, handler, !!capture);
+	};
+
+	FallbackPlayer.prototype.removeEventListener = function(name, handler, capture){
+		this.element.removeEventListener(name, handler, !!capture);
+	};
+
 	FallbackPlayer.prototype.features = {
 		desktop: {
 			captions: true,

@@ -44,6 +44,15 @@
 				player.playbackRate = main.playbackRate;
 			});
 		},false);
+		main.addEventListener('volumechange',function(){
+			volume = main.volume;
+			muted = main.muted;
+			active.forEach(function(player){
+				if(player === main){ return; }
+				player.volume = volume;
+				player.muted = muted;
+			});
+		},false);
 
 		function play(){
 			active.forEach(function(player){

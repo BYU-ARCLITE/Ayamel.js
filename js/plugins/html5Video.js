@@ -1,7 +1,7 @@
 (function(Ayamel) {
 	"use strict";
 
-	var template = "<div class='videoBox'><video></video></div>",
+	var template = "<div class='videoBox'><video style='pointer-events:none;'></video></div>",
 		supports = ["probably", "maybe"],
 		testVideo = document.createElement('video');
 
@@ -22,11 +22,11 @@
 		volumechange: 'volumechange'        // Volume has changed
 	};
 
-	function supportsFile(file) {
+	function supportsFile(file){
 		return supports.indexOf(testVideo.canPlayType(file.mime)) >= 0;
 	}
 
-	function Html5VideoPlayer(args) {
+	function Html5VideoPlayer(args){
 		var startTime = args.startTime, endTime = args.endTime,
 			element = Ayamel.utils.parseHTML(template),
 			video = element.querySelector("video");
@@ -44,7 +44,7 @@
 		video.src = Ayamel.utils.findFile(args.resource, supportsFile).downloadUri;
 
 		// Set up event propagation
-		Object.keys(events).forEach(function (eventName) {
+		Object.keys(events).forEach(function(eventName){
 			video.addEventListener(eventName, function(event){
 				event.stopPropagation();
 				element.dispatchEvent(new Event(events[eventName],{bubbles:true,cancelable:false}));
