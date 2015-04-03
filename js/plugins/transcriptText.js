@@ -284,6 +284,14 @@
 		this.element.style.height = this.normalHeight + 'px';
 	};
 
+	TextTranscriptPlayer.prototype.addEventListener = function(name, handler, capture){
+		this.element.addEventListener(name, handler, !!capture);
+	};
+
+	TextTranscriptPlayer.prototype.removeEventListener = function(name, handler, capture){
+		this.element.removeEventListener(name, handler, !!capture);
+	};
+
 	TextTranscriptPlayer.prototype.features = {
 		desktop: {
 			captions: true,

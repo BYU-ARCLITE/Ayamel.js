@@ -238,6 +238,14 @@
 		this.element.style.height = this.normalHeight + 'px';
 	};
 
+	YouTubePlayer.prototype.addEventListener = function(name, handler, capture){
+		this.element.addEventListener(name, handler, !!capture);
+	};
+
+	YouTubePlayer.prototype.removeEventListener = function(name, handler, capture){
+		this.element.removeEventListener(name, handler, !!capture);
+	};
+
 	YouTubePlayer.prototype.features = {
 		desktop: {
 			captions: true,
