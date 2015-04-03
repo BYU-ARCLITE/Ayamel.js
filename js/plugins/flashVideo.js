@@ -178,6 +178,14 @@
 		this.element.style.height = this.normalHeight + 'px';
 	};
 
+	FlashVideoPlayer.prototype.addEventListener = function(name, handler, capture){
+		this.element.addEventListener(name, handler, !!capture);
+	};
+
+	FlashVideoPlayer.prototype.removeEventListener = function(name, handler, capture){
+		this.element.removeEventListener(name, handler, !!capture);
+	};
+
 	FlashVideoPlayer.prototype.features = {
 		desktop: {
 			captions: true,

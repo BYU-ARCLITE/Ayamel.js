@@ -96,6 +96,14 @@
 		this.element.style.height = this.normalHeight + 'px';
 	};
 
+	PlaintextPlayer.prototype.addEventListener = function(name, handler, capture){
+		this.element.addEventListener(name, handler, !!capture);
+	};
+
+	PlaintextPlayer.prototype.removeEventListener = function(name, handler, capture){
+		this.element.removeEventListener(name, handler, !!capture);
+	};
+
 	PlaintextPlayer.prototype.features = {
 		desktop: {
 			captions: true,
