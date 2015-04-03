@@ -1,14 +1,11 @@
 (function(Ayamel) {
 	"use strict";
 
-	var template =
-		"<div class='playerTop'></div>",
-		supports = ["probably", "maybe"],
-		testAudio = document.createElement("audio");
+	var template = "<div class='videoBox'><video style='pointer-events:none;'></video></div>";
 
 	var events = {
 		abort: 'error',                     // Data loading was aborted
-		error: 'error',                     // An error occured
+		error: 'error',                     // An error occurred
 		emptied: 'error',                   // Data not present unexpectedly
 		stalled: 'error',                   // Data transfer stalled
 		play: 'play',                       // Video started playing (fired with play())
@@ -24,78 +21,80 @@
 	};
 
 	function supportsFile(file){
-		return supports.indexOf(testAudio.canPlayType(file.mime)) >= 0;
+		return	file.mimeType === 'application/x-mpegURL' ||
+				file.mimeType === 'application/vnd.apple.mpegURL' ||
+				file.downloadUri.indexOf('.m3u8') > -1;
 	}
 
-	function Html5AudioPlayer(args){
+	function THEOVideoPlayer(args){
 		var startTime = args.startTime, endTime = args.endTime,
 			element = Ayamel.utils.parseHTML(template),
-			audio = new Audio();
+			videoel = element.querySelector("video"),
+			video;
 
+		// Create the element
 		this.element = element;
 		if(args.holder){
 			args.holder.appendChild(element);
 		}
 
-		this.audio = audio;
 		this.resource = args.resource;
 
 		// Load the source
-		audio.src = Ayamel.utils.findFile(args.resource, supportsFile).downloadUri;
-
+		videoel.src = Ayamel.utils.findFile(args.resource, supportsFile).downloadUri;
+		video = theoplayer(videoel);
+		this.video = video;
+		
 		// Set up event propagation
 		Object.keys(events).forEach(function(eventName){
-			audio.addEventListener(eventName, function(event){
-				element.dispatchEvent(new Event(events[eventName],{bubbles:true,cancelable:true}));
-				event.stopPropagation();
+			video.addEventListener(eventName, function(event){
+				element.dispatchEvent(new Event(events[eventName],{bubbles:true,cancelable:false}));
 			}, false);
 		});
 
 		// Set up the duration
-		element.addEventListener("timeupdate", function(event){
-			if (endTime > -1 && audio.currentTime >= endTime) {
-				audio.pause();
+		element.addEventListener("timeupdate", function(event) {
+			if(endTime > -1 && video.currentTime > endTime){
+				video.pause();
 				element.dispatchEvent(new Event("ended",{bubbles:true,cancelable:false}));
 			}
 		}, false);
 
 		Object.defineProperties(this, {
 			duration: {
-				get: function(){ return audio.duration; }
+				get: function(){ return video.duration; }
 			},
 			currentTime: {
-				get: function(){ return audio.currentTime; },
-				set: function(time){
-					return audio.currentTime = +time||0;
-				}
+				get: function(){ return video.currentTime; },
+				set: function(time){ return video.currentTime = +time||0; }
 			},
 			muted: {
-				get: function(){ return audio.muted; },
-				set: function(muted){
-					return audio.muted = !!muted;
-				}
+				get: function(){ return video.muted; },
+				set: function(muted){ return video.muted = !!muted; }
+			},
+			paused: {
+				get: function(){ return video.paused; }
 			},
 			playbackRate: {
-				get: function(){ return audio.playbackRate; },
+				get: function(){ return video.playbackRate; },
 				set: function(playbackRate){
 					playbackRate = +playbackRate
-					return audio.playbackRate = isNaN(playbackRate)?1:playbackRate;
+					return video.playbackRate = isNaN(playbackRate)?1:playbackRate;
 				}
 			},
 			readyState: {
-				get: function(){ return audio.readyState; }
+				get: function(){ return video.readyState; }
 			},
 			volume: {
-				get: function(){ return audio.volume; },
-				set: function(volume){
-					return audio.volume = +volume||0;
-				}
+				get: function(){ return video.volume; },
+				set: function(volume){ return video.volume = +volume||0; }
 			},
 			height: {
 				get: function(){ return element.clientHeight; },
 				set: function(h){
 					h = +h || element.clientHeight;
 					element.style.height = h + "px";
+					video.height = h;
 					return h;
 				}
 			},
@@ -104,42 +103,50 @@
 				set: function(w){
 					w = +w || element.clientWidth;
 					element.style.width = w + "px";
+					video.width = w;
 					return w;
 				}
 			}
 		});
 	}
 
-	Html5AudioPlayer.prototype.play = function(){
-		this.audio.play();
+	THEOVideoPlayer.prototype.play = function(){
+		this.video.play();
 	};
 
-	Html5AudioPlayer.prototype.pause = function(){
-		this.audio.pause();
+	THEOVideoPlayer.prototype.pause = function(){
+		this.video.pause();
 	};
 
-	Html5AudioPlayer.prototype.enterFullScreen = function(availableHeight){
+	THEOVideoPlayer.prototype.enterFullScreen = function(h,w){
 		this.normalHeight = this.element.clientHeight;
-		this.element.style.height = availableHeight + 'px';
+		this.normalWidth = this.element.clientWidth;
+		this.element.style.height = h + 'px';
+		this.element.style.width = w + 'px';
+		this.video.height = h;
+		this.video.width = w;
 	};
 
-	Html5AudioPlayer.prototype.exitFullScreen = function(){
+	THEOVideoPlayer.prototype.exitFullScreen = function(){
 		this.element.style.height = this.normalHeight + 'px';
+		this.element.style.width = this.normalWidth + 'px';
+		this.video.height = this.normalHeight;
+		this.video.width = this.normalWidth;
 	};
 
-	Html5AudioPlayer.prototype.addEventListener = function(name, handler, capture){
+	THEOVideoPlayer.prototype.addEventListener = function(name, handler, capture){
 		this.element.addEventListener(name, handler, !!capture);
 	};
 
-	Html5AudioPlayer.prototype.removeEventListener = function(name, handler, capture){
+	THEOVideoPlayer.prototype.removeEventListener = function(name, handler, capture){
 		this.element.removeEventListener(name, handler, !!capture);
 	};
 
-	Html5AudioPlayer.prototype.features = {
+	THEOVideoPlayer.prototype.features = {
 		desktop: {
 			captions: true,
 			annotations: true,
-			fullScreen: false,
+			fullScreen: true,
 			lastCaption: true,
 			play: true,
 			seek: true,
@@ -150,7 +157,7 @@
 		mobile: {
 			captions: true,
 			annotations: true,
-			fullScreen: false,
+			fullScreen: true,
 			lastCaption: true,
 			play: true,
 			seek: true,
@@ -160,14 +167,15 @@
 		}
 	};
 
-	Ayamel.mediaPlugins.audio.html5 = {
+	Ayamel.mediaPlugins.video.theo = {
 		install: function(args){
-			return new Html5AudioPlayer(args);
+			return new THEOVideoPlayer(args);
 		},
 		supports: function(args){
-			return args.resource.type === "audio" &&
+			return args.resource.type === "video" &&
 					args.resource.content.files.some(supportsFile);
 		}
 	};
+
 
 }(Ayamel));

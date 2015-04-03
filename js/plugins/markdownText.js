@@ -10,7 +10,7 @@
 		return file.mimeType === "text/x-markdown";
 	}
 
-	function MarkdownPlayer(args) {
+	function MarkdownPlayer(args){
 		var that = this, xhr,
 			muted = false, volume = 1, ready = 0,
 			startTime = args.startTime, endTime = args.endTime,
@@ -94,6 +94,14 @@
 
 	MarkdownPlayer.prototype.exitFullScreen = function(){
 		this.element.style.height = this.normalHeight + 'px';
+	};
+
+	MarkdownPlayer.prototype.addEventListener = function(name, handler, capture){
+		this.element.addEventListener(name, handler, !!capture);
+	};
+
+	MarkdownPlayer.prototype.removeEventListener = function(name, handler, capture){
+		this.element.removeEventListener(name, handler, !!capture);
 	};
 
 	MarkdownPlayer.prototype.features = {

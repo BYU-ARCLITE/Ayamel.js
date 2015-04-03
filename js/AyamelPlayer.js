@@ -112,6 +112,7 @@
 
 			mediaPlayer.addEventListener("volumechange", function(){
 				controlBar.volume = mediaPlayer.volume;
+				controlBar.muted = mediaPlayer.muted;
 			});
 
 			mediaPlayer.addEventListener("ended", function(){ controlBar.playing = false; },false);
@@ -155,42 +156,42 @@
 			// Mute/unmute the media when the mute button is pressed
 			controlBar.addEventListener("mute", function(){
 				try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
-				that.muted = true;
-				controlBar.muted = that.muted;
+				mediaPlayer.muted = true;
+				controlBar.muted = mediaPlayer.muted;
 			});
 			controlBar.addEventListener("unmute", function(){
 				try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
-				that.muted = false;
-				controlBar.muted = that.muted;
+				mediaPlayer.muted = false;
+				controlBar.muted = mediaPlayer.muted;
 			});
 
 			//Caption controls
 			controlBar.addEventListener("captionJump", function(event){
-				that.mediaPlayer.cueJump(event.detail.direction);
+				mediaPlayer.cueJump(event.detail.direction);
 			});
 
 			// Rebuild captions when tracks are enabled or disabled.
 			controlBar.addEventListener("enabletrack", function(){
-				that.mediaPlayer.rebuildCaptions();
+				mediaPlayer.rebuildCaptions();
 			});
 			controlBar.addEventListener("disabletrack", function(){
-				that.mediaPlayer.rebuildCaptions();
+				mediaPlayer.rebuildCaptions();
 			});
 
 			// Rebuild captions when annotation sets are enabled or disabled.
 			controlBar.addEventListener("enableannset", function(){
-				that.mediaPlayer.refreshAnnotations();
+				mediaPlayer.refreshAnnotations();
 			});
 			controlBar.addEventListener("disableannset", function(){
-				that.mediaPlayer.refreshAnnotations();
+				mediaPlayer.refreshAnnotations();
 			});
 
 			// Turn soundtracks on and off.
 			controlBar.addEventListener("enableaudio", function(e){
-				that.mediaPlayer.enableAudio(e.detail);
+				mediaPlayer.enableAudio(e.detail);
 			});
 			controlBar.addEventListener("disableaudio", function(e){
-				that.mediaPlayer.disableAudio(e.detail);
+				mediaPlayer.disableAudio(e.detail);
 			});
 
 			//Enter/exit full screen when the button is pressed
@@ -206,12 +207,13 @@
 
 			// Handle changes to fullscreen mode
 			document.addEventListener(Ayamel.utils.FullScreen.fullScreenEvent,function(){
-				var availableHeight;
+				var fsHeight, fsWidth;
 				if(Ayamel.utils.FullScreen.fullScreenElement === element){
 					// Figure out how much space we have for the media player to fill
-					availableHeight = Ayamel.utils.FullScreen.availableHeight
+					fsHeight = Ayamel.utils.FullScreen.availableHeight
 						- controlBar.height;
-					mediaPlayer.enterFullScreen(availableHeight);
+					fsWidth = Ayamel.utils.FullScreen.availableWidth;
+					mediaPlayer.enterFullScreen(fsHeight,fsWidth);
 					controlBar.fullScreen = true;
 					element.dispatchEvent(new CustomEvent('enterfullscreen',{bubbles:true}));
 				}else{
@@ -364,6 +366,7 @@
 				resizeWidth = el.clientWidth;
 				Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
 				this.mediaPlayer.height = el.offsetHeight;
+				this.mediaPlayer.width = el.offsetWidth;
 			}while(el.clientWidth !== resizeWidth);
 			if(this.controlBar){ this.controlBar.resize(); }
 		}
