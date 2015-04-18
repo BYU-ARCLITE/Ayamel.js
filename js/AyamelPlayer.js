@@ -292,7 +292,7 @@
 				oldtime = this.mediaPlayer.currentTime;
 			this.mediaPlayer.currentTime = (+time||0);
 			newtime = this.mediaPlayer.currentTime;
-			element.dispatchEvent(new CustomEvent('timejump', {
+			this.element.dispatchEvent(new CustomEvent('timejump', {
 				bubbles:true,
 				detail: { oldtime: oldtime, newtime: newtime }
 			}));
