@@ -88,8 +88,8 @@
 				return Ayamel.utils.HTTP({url: annres.content.files[0].downloadUri})
 				.then(function(manifest){
 					return new Ayamel.Annotator.AnnSet(
-						resource.title,
-						resource.languages.iso639_3[0],
+						annres.title,
+						annres.languages.iso639_3[0],
 						JSON.parse(manifest)
 					);
 				}).then(null,function(err){ return null; });

@@ -48,13 +48,13 @@ var ResourceLibrary = (function() {
 
 	Resource.prototype.getAnnotationIds = function(){
 		return this.relations.filter(function(relation){
-			return relation.type == "references" && relation.objectId == this.id && relation.attributes.type === "annotations";
+			return relation.type == "references" && relation.objectId == this.id;
 		},this).map(function(relation){ return relation.subjectId; });
 	};
 
 	Resource.prototype.getAnnotations = function(additionalTest, callback){
 		return this.loadResourcesFromRelations("subjectId", function(relation){
-			var isAnnotations = relation.type == "references" && relation.objectId == this.id && relation.attributes.type === "annotations",
+			var isAnnotations = relation.type == "references" && relation.objectId == this.id,
 				passTest = (typeof additionalTest === 'function')?additionalTest(relation):true;
 			return isAnnotations && passTest;
 		}, callback);
