@@ -156,11 +156,11 @@
 		this.element.style.height = this.normalHeight + 'px';
 	};
 
-	BrightcovePlayer.prototype.addEventListener = function(name, handler, capture){
+	BrightcoveVideoPlayer.prototype.addEventListener = function(name, handler, capture){
 		this.element.addEventListener(name, handler, !!capture);
 	};
 
-	BrigthcovePlayer.prototype.removeEventListener = function(name, handler, capture){
+	BrightcoveVideoPlayer.prototype.removeEventListener = function(name, handler, capture){
 		this.element.removeEventListener(name, handler, !!capture);
 	};
 
