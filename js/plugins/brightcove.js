@@ -1,33 +1,43 @@
 (function(Ayamel){
 	"use strict";
 
-	var counter = 0;
+	var accountNum = "1126213333001";
+	var playerId = "d3af83a6-196d-4b91-bb6a-9838bdff05ec";
+	var APIPromise = new Promise(function(resolve, reject){
+		var script = document.createElement("script");
+		script.type = "text\/javascript";
+		script.onerror = reject;
+		script.onload = resolve;
+		document.body.appendChild(script);
+		script.src ="http://players.brightcove.net/"
+			+ accountNum + "/"
+			+ playerId + "_default/index.min.js";
+	});
+
+	var events = [
+		'play','pause','ended',
+		'timeupdate',
+		'durationchange',
+		'volumechange'
+	];
 
 	function supportsFile(file) {
 		return file.streamUri && file.streamUri.substr(0,13) === "brightcove://";
 	}
 
 	function generateBrightcoveTemplate(videoId){
-		return Ayamel.utils.parseHTML('<div class="videoBox"><object id="brightcoveExperience'
-		+ (counter++).toString(36)
-		+ '" class="BrightcoveExperience">\
-				<param name="bgcolor" value="#FFFFFF" />\
-				<param name="width" value="100%" />\
-				<param name="height" value="100%" />\
-				<param name="wmode" value="opaque" />\
-				<param name="playerID" value="2359958964001" />\
-				<param name="playerKey" value="AQ~~,AAABBjeLsAk~,DhYCBe7490IkhazTuLjixXSBXs1PvEho" />\
-				<param name="isSlim" value="true" />\
-				<param name="dynamicStreaming" value="true" />\
-				<param name="includeAPI" value="true" />\
-				<param name="templateLoadHandler" value="brightcoveTemplateLoaded" />\
-				<param name="@videoPlayer" value="' + videoId + '" />\
-				<param name="templateReadyHandler" value="brightcoveTemplateReady" />\
-			</object></div>');
+		return Ayamel.utils.parseHTML(
+		'<div class="videoBox"><video \
+			data-account="' + accountNum +
+			'" data-player="' + playerId +
+			'" data-video-id="' + videoId +
+			'" data-embed="default" \
+			class="video-js">\
+		</video></div>');
 	}
 
 	function BrightcoveVideoPlayer(args) {
-		var _this = this,
+		var that = this, player,
 			startTime = args.startTime, endTime = args.endTime,
 			file = Ayamel.utils.findFile(args.resource, supportsFile),
 			videoId = file.streamUri.substr(13),
@@ -35,7 +45,10 @@
 			properties = {
 				duration: 0,
 				currentTime: startTime,
-				paused: true
+				paused: true,
+				volume: 1,
+				muted: false,
+				playbackRate: 1
 			};
 
 		this.resource = args.resource;
@@ -46,83 +59,49 @@
 		this.player = null;
 		this.properties = properties;
 
-		// Register the global callbacks
-		window.brightcoveTemplateLoaded = function brightcoveTemplateLoaded(experienceID) {
-			var brightcoveExperience = brightcove.api.getExperience(experienceID);
-			_this.player = brightcoveExperience.getModule(brightcove.api.modules.APIModules.VIDEO_PLAYER);
-			_this.player.seek(properties.currentTime);
-			if(!properties.paused){ _this.player.play(); }
-		};
-
-		window.brightcoveTemplateReady = function brightcoveTemplateReady(experienceID) {
-			var events = {};
-			events[brightcove.api.events.MediaEvent.BEGIN] = "durationchange";
-			events[brightcove.api.events.MediaEvent.CHANGE] = "durationchange";
-			events[brightcove.api.events.MediaEvent.COMPLETE] = "ended";
-			events[brightcove.api.events.MediaEvent.ERROR] = "error";
-			events[brightcove.api.events.MediaEvent.PLAY] = "play";
-			events[brightcove.api.events.MediaEvent.PROGRESS] = "timeupdate";
-			events[brightcove.api.events.MediaEvent.SEEK_NOTIFY] = "seek";
-			events[brightcove.api.events.MediaEvent.STOP] = "pause";
-
-			function updateProperties(event) {
-				properties.currentTime = event.position;
-				properties.duration = event.duration;
-				if (event.type === brightcove.api.events.MediaEvent.PLAY) {
-					properties.paused = false;
-				}
-				if (event.type === brightcove.api.events.MediaEvent.STOP || event.type === brightcove.api.events.MediaEvent.COMPLETE) {
-					properties.paused = true;
-				}
-			}
-
-			Object.keys(events).forEach(function (brightcoveEvent) {
-				_this.player.addEventListener(brightcoveEvent, function(event){
-					updateProperties(event);
-					element.dispatchEvent(new Event(events[brightcoveEvent],{bubbles:true,cancelable:false}));
+		APIPromise.then(function(){
+			player = videojs(element.firstChild, {
+				controls: false,
+				autoplay: false,
+				preload: "auto"
+			});
+			that.player = player;
+			return new Promise(function(resolve){
+				player.ready(resolve);
+			});
+		}).then(function(){
+			var c = element.querySelector('.vjs-control-bar');
+			c.parentElement.removeChild(c);
+			events.forEach(function(ename){
+				player.on(ename, function(){
+					properties.currentTime = player.currentTime();
+					properties.duration = player.duration();
+					properties.paused = player.paused();
+					properties.volume = player.volume();
+					properties.muted = player.muted();
+					properties.playbackRate = player.playbackRate();
+					element.dispatchEvent(new Event(ename,{
+						bubbles:true,cancelable:false
+					}));
 				});
 			});
-		};
 
-		// Create the player
-		brightcove.createExperiences();
+			player.height(element.clientHeight, true);
+			player.width(element.clientWidth, true);
+			player.currentTime(properties.currentTime);
+			player.volume(properties.volume);
+			player.muted(properties.muted);
+			player.playbackRate(properties.playbackRate);
+			if(!properties.paused){ player.play(); }
+		});
 
 		Object.defineProperties(this, {
-			duration: {
-				get: function(){ return properties.duration; }
-			},
-			currentTime: {
-				get: function(){ return properties.currentTime; },
-				set: function(time){
-					time = Math.floor(Number(time)* 100) / 100;
-					properties.currentTime = time;
-					this.player && this.player.seek(properties.currentTime);
-					return time;
-				}
-			},
-			muted: {
-				get: function(){ return false; },
-				set: function(muted){ return false; }
-			},
-			paused: {
-				get: function(){ return properties.paused; }
-			},
-			playbackRate: {
-				get: function(){ return 1; },
-				set: function(playbackRate){ return 1; }
-			},
-			readyState: {
-				get: function(){ return 0; }
-			},
-			volume: {
-				get: function(){ return 1; },
-				set: function(volume){ return 1; }
-			},
 			height: {
 				get: function(){ return element.clientHeight; },
 				set: function(h){
 					h = +h || element.clientHeight;
 					element.style.height = h + "px";
+					player && player.height(h, true);
 					return h;
 				}
 			},
@@ -131,11 +110,60 @@
 				set: function(w){
 					w = +w || element.clientWidth;
 					element.style.width = w + "px";
+					player && player.width(w, true);
 					return w;
 				}
 			}
 		});
 	}
+
+	Object.defineProperties(BrightcoveVideoPlayer.prototype,{
+		duration: {
+			get: function(){ return this.properties.duration; }
+		},
+		currentTime: {
+			get: function(){ return this.properties.currentTime; },
+			set: function(time){
+				time = +time||0;
+				this.properties.currentTime = time;
+				this.player && this.player.currentTime(time);
+				return time;
+			}
+		},
+		muted: {
+			get: function(){ return this.properties.muted; },
+			set: function(muted){
+				muted = !! muted;
+				this.properties.muted = muted;
+				this.player && this.player.muted(muted);
+				return muted;
+			}
+		},
+		volume: {
+			get: function(){ return this.properties.volume; },
+			set: function(volume){
+				volume = Math.max(+volume || 0, 0);
+				this.properties.volume = volume;
+				this.player && this.player.volume(volume);
+				return volume;
+			}
+		},
+		paused: {
+			get: function(){ return this.properties.paused; }
+		},
+		playbackRate: {
+			get: function(){ return this.properties.playbackRate; },
+			set: function(rate){
+				rate = +rate || 1;
+				this.properties.playbackRate = rate;
+				this.player && this.player.playbackRate(rate);
+				return rate;
+			}
+		},
+		readyState: {
+			get: function(){ return 0; }
+		}
+	});
 
 	BrightcoveVideoPlayer.prototype.play = function() {
 		this.player && this.player.play();
@@ -172,9 +200,9 @@
 			lastCaption: true,
 			play: true,
 			seek: true,
-			rate: false,
+			rate: true,
 			timeCode: true,
-			volume: false
+			volume: true
 		},
 		mobile: {
 			captions: true,
