@@ -3,16 +3,6 @@
 
 	var accountNum = "1126213333001";
 	var playerId = "d3af83a6-196d-4b91-bb6a-9838bdff05ec";
-	var APIPromise = new Promise(function(resolve, reject){
-		var script = document.createElement("script");
-		script.type = "text\/javascript";
-		script.onerror = reject;
-		script.onload = resolve;
-		document.body.appendChild(script);
-		script.src ="http://players.brightcove.net/"
-			+ accountNum + "/"
-			+ playerId + "_default/index.min.js";
-	});
 
 	var events = [
 		'play','pause','ended',
@@ -26,14 +16,17 @@
 	}
 
 	function generateBrightcoveTemplate(videoId){
-		return Ayamel.utils.parseHTML(
-		'<div class="videoBox"><video \
-			data-account="' + accountNum +
-			'" data-player="' + playerId +
-			'" data-video-id="' + videoId +
-			'" data-embed="default" \
-			class="video-js">\
-		</video></div>');
+		var source, box = Ayamel.utils.parseHTML('<div class="videoBox"><iframe style="width:100%;height:100%;"/></div>');
+		source = '<html><body><video data-account="' + accountNum
+			+ '" data-player="' + playerId
+			+ '" data-video-id="' + videoId
+			+ '" data-embed="default" class="video-js"></video>\
+			<script src="http://players.brightcove.net/'
+			+ accountNum + '/'
+			+ playerId + '_default/index.min.js"></script>\
+			</body></html>';
+		box.firstChild.src = URL.createObjectURL(new Blob([source], {type: 'text/html'}));
+		return box;
 	}
 
 	function BrightcoveVideoPlayer(args) {
@@ -59,7 +52,7 @@
 		this.player = null;
 		this.properties = properties;
 
-		APIPromise.then(function(){
+		/*APIPromise.then(function(){
 			player = videojs(element.firstChild, {
 				controls: false,
 				autoplay: false,
@@ -93,7 +86,7 @@
 			player.muted(properties.muted);
 			player.playbackRate(properties.playbackRate);
 			if(!properties.paused){ player.play(); }
-		});
+		});*/
 
 		Object.defineProperties(this, {
 			height: {
