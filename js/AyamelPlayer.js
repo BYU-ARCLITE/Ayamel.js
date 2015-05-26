@@ -17,7 +17,7 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			mediaPlayer;
+			mediaPlayer, readyPromise;
 
 		element.className = "ayamelPlayer";
 		this.element = element;
@@ -63,7 +63,7 @@
 
 		this.mediaPlayer = mediaPlayer;
 
-		mediaPlayer.promise.then(function(mediaPlayer){
+		readyPromise = mediaPlayer.promise.then(function(mediaPlayer){
 
 			// Create the ControlBar
 			var controlBar = new Ayamel.classes.ControlBar({
@@ -223,6 +223,8 @@
 				}
 			},false);
 		});
+
+		this.then = readyPromise.then.bind(readyPromise);
 
 		/* ================================================================
 		 *                           Attributes
