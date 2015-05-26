@@ -15,15 +15,29 @@
 		return file.streamUri && file.streamUri.substr(0,13) === "brightcove://";
 	}
 
+	function frameCode(){
+		var player = videojs('vplayer', {
+			controls: false,
+			autoplay: false,
+			preload: "auto"
+		});
+		player.ready(function(){
+			var c = document.querySelector('.vjs-control-bar');
+			c.parentElement.removeChild(c);
+			c = document.querySelector('.vjs-big-play-button');
+			c.parentElement.removeChild(c);
+		});
+	}
+
 	function generateBrightcoveTemplate(videoId){
 		var source, box = Ayamel.utils.parseHTML('<div class="videoBox"><iframe style="width:100%;height:100%;"/></div>');
-		source = '<html><body><video data-account="' + accountNum
-			+ '" data-player="' + playerId
-			+ '" data-video-id="' + videoId
+		source = '<html><body><video id="vplayer" data-account="' + accountNum
+			+ '" data-player="' + playerId + '" data-video-id="' + videoId
 			+ '" data-embed="default" class="video-js"></video>\
 			<script src="http://players.brightcove.net/'
 			+ accountNum + '/'
 			+ playerId + '_default/index.min.js"></script>\
+			<script>('+frameCode.toString()+')();</script>\
 			</body></html>';
 		box.firstChild.src = URL.createObjectURL(new Blob([source], {type: 'text/html'}));
 		return box;
@@ -49,22 +63,10 @@
 		this.element = element;
 		args.holder.appendChild(element);
 
-		this.player = null;
+		this.player = element.firstChild;
 		this.properties = properties;
 
 		/*APIPromise.then(function(){
-			player = videojs(element.firstChild, {
-				controls: false,
-				autoplay: false,
-				preload: "auto"
-			});
-			that.player = player;
-			return new Promise(function(resolve){
-				player.ready(resolve);
-			});
-		}).then(function(){
-			var c = element.querySelector('.vjs-control-bar');
-			c.parentElement.removeChild(c);
 			events.forEach(function(ename){
 				player.on(ename, function(){
 					properties.currentTime = player.currentTime();
