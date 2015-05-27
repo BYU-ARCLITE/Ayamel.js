@@ -3,76 +3,35 @@
 
 	var accountNum = "1126213333001";
 	var playerId = "d3af83a6-196d-4b91-bb6a-9838bdff05ec";
-	var APIPromise = new Promise(function(resolve, reject){
-		var script = document.createElement("script");
-		script.type = "text\/javascript";
-		script.onerror = reject;
-		script.onload = resolve;
-		document.body.appendChild(script);
-		script.src ="http://players.brightcove.net/"
-			+ accountNum + "/"
-			+ playerId + "_default/index.min.js";
-	});
-
-	var events = [
-		'play','pause','ended',
-		'timeupdate',
-		'durationchange',
-		'volumechange'
-	];
 
 	function supportsFile(file) {
 		return file.streamUri && file.streamUri.substr(0,13) === "brightcove://";
 	}
 
-	function generateBrightcoveTemplate(videoId){
-		return Ayamel.utils.parseHTML(
-		'<div class="videoBox"><video \
-			data-account="' + accountNum +
-			'" data-player="' + playerId +
-			'" data-video-id="' + videoId +
-			'" data-embed="default" \
-			class="video-js">\
-		</video></div>');
-	}
-
-	function BrightcoveVideoPlayer(args) {
-		var that = this, player,
-			startTime = args.startTime, endTime = args.endTime,
-			file = Ayamel.utils.findFile(args.resource, supportsFile),
-			videoId = file.streamUri.substr(13),
-			element = generateBrightcoveTemplate(videoId),
+	function frameCode(){
+		var loaded = false,
+			player = videojs(document.getElementById('vplayer')),
 			properties = {
 				duration: 0,
-				currentTime: startTime,
+				currentTime: 0,
 				paused: true,
 				volume: 1,
 				muted: false,
 				playbackRate: 1
 			};
 
-		this.resource = args.resource;
-
-		this.element = element;
-		args.holder.appendChild(element);
-
-		this.player = null;
-		this.properties = properties;
-
-		APIPromise.then(function(){
-			player = videojs(element.firstChild, {
-				controls: false,
-				autoplay: false,
-				preload: "auto"
-			});
-			that.player = player;
-			return new Promise(function(resolve){
-				player.ready(resolve);
-			});
-		}).then(function(){
-			var c = element.querySelector('.vjs-control-bar');
+		player.ready(function(){
+			var c = document.querySelector('.vjs-control-bar');
 			c.parentElement.removeChild(c);
-			events.forEach(function(ename){
+			c = document.querySelector('.vjs-big-play-button');
+			c.parentElement.removeChild(c);
+			loaded = true;
+
+			[	'play','pause','ended',
+				'timeupdate',
+				'durationchange',
+				'volumechange'
+			].forEach(function(ename){
 				player.on(ename, function(){
 					properties.currentTime = player.currentTime();
 					properties.duration = player.duration();
@@ -80,14 +39,12 @@
 					properties.volume = player.volume();
 					properties.muted = player.muted();
 					properties.playbackRate = player.playbackRate();
-					element.dispatchEvent(new Event(ename,{
-						bubbles:true,cancelable:false
-					}));
+					parent.postMessage({type: ename, properties: properties}, '*');
 				});
 			});
 
-			player.height(element.clientHeight, true);
-			player.width(element.clientWidth, true);
+			player.height(window.innerHeight, true);
+			player.width(window.innerWidth, true);
 			player.currentTime(properties.currentTime);
 			player.volume(properties.volume);
 			player.muted(properties.muted);
@@ -95,13 +52,84 @@
 			if(!properties.paused){ player.play(); }
 		});
 
+		addEventListener('resize', function(){
+			player.height(window.innerHeight, true);
+			player.width(window.innerWidth, true);
+		}, false);
+
+		addEventListener('message',function(e){
+			if(e.source !== parent){ return; }
+			switch(e.data.method){
+			case 'play':
+				if(loaded){ player.play(); }
+				else{ properties.paused = false; }
+				break;
+			case 'pause':
+				if(loaded){ player.pause(); }
+				else{ properties.paused = true; }
+				break;
+			default:
+				if(loaded){ player[e.data.method](e.data.arg); }
+				else{ properties[e.data.method] = e.data.arg; }
+				break;
+			}
+		},false);
+	}
+
+	function generateBrightcoveTemplate(videoId){
+		var box = Ayamel.utils.parseHTML('<div class="videoBox"><iframe style="width:100%;height:100%;overflow:hidden;" scrolling="no"/></div>');
+		box.firstChild.src = URL.createObjectURL(new Blob([
+			'<html><head><base href="'+location.href+'"></head>\n\
+			<body style="margin:0;padding:0;">\n\
+			<video id="vplayer" data-account="' + accountNum
+			+ '" data-player="' + playerId + '" data-video-id="' + videoId
+			+ '" data-embed="default" class="video-js"></video>\n\
+			<script src="http://players.brightcove.net/'
+			+ accountNum + '/'
+			+ playerId + '_default/index.min.js"><\/script>\n\
+			<script>('+frameCode.toString()+')();<\/script>\n\
+			</body></html>'
+		], {type: 'text/html'}));
+		return box;
+	}
+
+	function BrightcoveVideoPlayer(args) {
+		var that = this, player,
+			startTime = args.startTime, endTime = args.endTime,
+			file = Ayamel.utils.findFile(args.resource, supportsFile),
+			videoId = file.streamUri.substr(13),
+			element = generateBrightcoveTemplate(videoId);
+
+		this.resource = args.resource;
+
+		this.element = element;
+		args.holder.appendChild(element);
+
+		player = element.firstChild.contentWindow;
+		this.player = player;
+		this.properties = {
+			duration: 0,
+			currentTime: startTime,
+			paused: true,
+			volume: 1,
+			muted: false,
+			playbackRate: 1
+		};
+
+		window.addEventListener('message', function(e){
+			if(e.source !== player){ return; }
+			that.properties = e.data.properties;
+			element.dispatchEvent(new Event(e.data.type,{
+				bubbles:true,cancelable:false
+			}));
+		},false);
+
 		Object.defineProperties(this, {
 			height: {
 				get: function(){ return element.clientHeight; },
 				set: function(h){
 					h = +h || element.clientHeight;
 					element.style.height = h + "px";
-					player && player.height(h, true);
 					return h;
 				}
 			},
@@ -110,7 +138,6 @@
 				set: function(w){
 					w = +w || element.clientWidth;
 					element.style.width = w + "px";
-					player && player.width(w, true);
 					return w;
 				}
 			}
@@ -126,7 +153,7 @@
 			set: function(time){
 				time = +time||0;
 				this.properties.currentTime = time;
-				this.player && this.player.currentTime(time);
+				this.player.postMessage({method: 'currentTime', arg: time}, '*');
 				return time;
 			}
 		},
@@ -135,7 +162,7 @@
 			set: function(muted){
 				muted = !! muted;
 				this.properties.muted = muted;
-				this.player && this.player.muted(muted);
+				this.player.postMessage({method: 'muted', arg: muted}, '*');
 				return muted;
 			}
 		},
@@ -144,7 +171,7 @@
 			set: function(volume){
 				volume = Math.max(+volume || 0, 0);
 				this.properties.volume = volume;
-				this.player && this.player.volume(volume);
+				this.player.postMessage({method: 'volume', arg: volume}, '*');
 				return volume;
 			}
 		},
@@ -156,7 +183,7 @@
 			set: function(rate){
 				rate = +rate || 1;
 				this.properties.playbackRate = rate;
-				this.player && this.player.playbackRate(rate);
+				this.player.postMessage({method: 'playbackRate', arg: rate}, '*');
 				return rate;
 			}
 		},
@@ -165,13 +192,13 @@
 		}
 	});
 
-	BrightcoveVideoPlayer.prototype.play = function() {
-		this.player && this.player.play();
+	BrightcoveVideoPlayer.prototype.play = function(){
+		this.player.postMessage({method: 'play'}, '*');
 		this.properties.paused = false;
 	};
 
-	BrightcoveVideoPlayer.prototype.pause = function() {
-		this.player && this.player.pause();
+	BrightcoveVideoPlayer.prototype.pause = function(){
+		this.player.postMessage({method: 'pause'}, '*');
 		this.properties.paused = true;
 	};
 
