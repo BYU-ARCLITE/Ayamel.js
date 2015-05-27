@@ -11,12 +11,6 @@
 	function frameCode(){
 		var loaded = false,
 			player = videojs(document.getElementById('vplayer')),
-			events = [
-				'play','pause','ended',
-				'timeupdate',
-				'durationchange',
-				'volumechange'
-			],
 			properties = {
 				duration: 0,
 				currentTime: 0,
@@ -33,7 +27,11 @@
 			c.parentElement.removeChild(c);
 			loaded = true;
 
-			events.forEach(function(ename){
+			[	'play','pause','ended',
+				'timeupdate',
+				'durationchange',
+				'volumechange'
+			].forEach(function(ename){
 				player.on(ename, function(){
 					properties.currentTime = player.currentTime();
 					properties.duration = player.duration();
@@ -99,26 +97,27 @@
 			startTime = args.startTime, endTime = args.endTime,
 			file = Ayamel.utils.findFile(args.resource, supportsFile),
 			videoId = file.streamUri.substr(13),
-			element = generateBrightcoveTemplate(videoId),
-			properties = {
-				duration: 0,
-				currentTime: startTime,
-				paused: true,
-				volume: 1,
-				muted: false,
-				playbackRate: 1
-			};
+			element = generateBrightcoveTemplate(videoId);
 
 		this.resource = args.resource;
 
 		this.element = element;
 		args.holder.appendChild(element);
 
-		this.player = element.firstChild.contentWindow;
-		this.properties = properties;
+		player = element.firstChild.contentWindow;
+		this.player = player;
+		this.properties = {
+			duration: 0,
+			currentTime: startTime,
+			paused: true,
+			volume: 1,
+			muted: false,
+			playbackRate: 1
+		};
 
-		this.player.addEventListener('message', function(e){
-			properties = e.data.properties;
+		window.addEventListener('message', function(e){
+			if(e.source !== player){ return; }
+			that.properties = e.data.properties;
 			element.dispatchEvent(new Event(e.data.type,{
 				bubbles:true,cancelable:false
 			}));
@@ -130,7 +129,6 @@
 				set: function(h){
 					h = +h || element.clientHeight;
 					element.style.height = h + "px";
-//					player && player.height(h, true);
 					return h;
 				}
 			},
@@ -139,7 +137,6 @@
 				set: function(w){
 					w = +w || element.clientWidth;
 					element.style.width = w + "px";
-//					player && player.width(w, true);
 					return w;
 				}
 			}
