@@ -79,14 +79,15 @@
 	function generateBrightcoveTemplate(videoId){
 		var box = Ayamel.utils.parseHTML('<div class="videoBox"><iframe style="width:100%;height:100%;overflow:hidden;" scrolling="no"/></div>');
 		box.firstChild.src = URL.createObjectURL(new Blob([
-			'<html><body style="margin:0;padding:0;">\n\
+			'<html><head><base href="'+location.href+'"></head>\n\
+			<body style="margin:0;padding:0;">\n\
 			<video id="vplayer" data-account="' + accountNum
 			+ '" data-player="' + playerId + '" data-video-id="' + videoId
 			+ '" data-embed="default" class="video-js"></video>\n\
 			<script src="http://players.brightcove.net/'
 			+ accountNum + '/'
-			+ playerId + '_default/index.min.js"></script>\n\
-			<script>('+frameCode.toString()+')();</script>\n\
+			+ playerId + '_default/index.min.js"><\/script>\n\
+			<script>('+frameCode.toString()+')();<\/script>\n\
 			</body></html>'
 		], {type: 'text/html'}));
 		return box;
