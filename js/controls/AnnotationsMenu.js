@@ -15,7 +15,7 @@
 		if(annsets.length === 0){
 			item = document.createElement('div');
 			item.classList.add("noOptions");
-			item.textContent = "No Captions Available.";
+			item.textContent = "No Annotations Available.";
 			menu.appendChild(item);
 		}else{
 			annsets.forEach(function(annset){
