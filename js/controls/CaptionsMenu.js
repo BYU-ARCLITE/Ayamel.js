@@ -10,8 +10,22 @@
 			</div>\
 		</div>';
 
-	function buildMenu(element, tracks){
+	function resizeMenu(menu, top){
+		var width, columns = 0;
+		do {
+			columns += 1;
+			menu.style.webkitColumnCount = columns;
+			menu.style.mozColumnCount = columns;
+			menu.style.columnCount = columns;
+		}while(menu.getBoundingClientRect().top <= top);
+		width = 200*columns;
+		menu.style.width = width + "px";
+		menu.style.marginLeft = (-width/2) + "px";
+	}
+
+	function buildMenu(playerElement, element, tracks){
 		var item, menu = element.querySelector('.menu');
+
 		if(tracks.length === 0){
 			item = document.createElement('div');
 			item.classList.add("noOptions");
@@ -35,7 +49,9 @@
 				menu.appendChild(item);
 			});
 		}
+
 		element.classList.add("active");
+		resizeMenu(menu, playerElement.getBoundingClientRect().top);
 	}
 
 	function hideMenu(element){
@@ -45,16 +61,18 @@
 		);
 	}
 
-	function refresh(element, tracks){
+	function refresh(playerElement, element, tracks){
 		if(!element.classList.contains("active")){ return; }
 		hideMenu(element);
-		buildMenu(element, tracks);
+		buildMenu(playerElement, element, tracks);
 	}
 
 	function CaptionsMenu(args) {
 		var that = this,
-			element = Ayamel.utils.parseHTML(template);
+			element = Ayamel.utils.parseHTML(template),
+			playerElement = args.player.element;
 
+		this.playerElement = playerElement;
 		this.element = element;
 		args.holder.appendChild(element);
 		this.tracks = [];
@@ -64,7 +82,7 @@
 			if(element.classList.contains("active")){
 				hideMenu(element);
 			}else{
-				buildMenu(element, that.tracks);
+				buildMenu(playerElement, element, that.tracks);
 			}
 		},false);
 		document.addEventListener('click', function(event){
@@ -83,19 +101,27 @@
 	CaptionsMenu.prototype.addTrack = function(track){
 		if(this.tracks.indexOf(track) > -1){ return; }
 		this.tracks.push(track);
-		refresh(this.element, this.tracks);
+		refresh(this.playerElement, this.element, this.tracks);
 	};
 
 	CaptionsMenu.prototype.removeTrack = function(track){
 		var idx = this.tracks.indexOf(track);
 		if(idx === -1){ return; }
 		this.tracks.splice(idx,1);
-		refresh(this.element, this.tracks);
+		refresh(this.playerElement, this.element, this.tracks);
 	};
 
 	CaptionsMenu.prototype.rebuild = function(tracks){
 		this.tracks = tracks.slice();
-		refresh(this.element, tracks);
+		refresh(this.playerElement, this.element, tracks);
+	};
+
+	CaptionsMenu.prototype.resize = function(){
+		if(!this.element.classList.contains("active")){ return; }
+		resizeMenu(
+			this.element.querySelector('.menu'),
+			this.playerElement.getBoundingClientRect().top
+		);
 	};
 
 	Ayamel.controls.captions = CaptionsMenu;

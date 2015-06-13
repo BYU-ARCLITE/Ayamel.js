@@ -92,7 +92,8 @@
 	}
 
 	ControlBar.prototype.resize = function(){
-		var el = this.element,
+		var key, component,
+			el = this.element,
 			left = el.querySelector(".left"),
 			right = el.querySelector(".right"),
 			scale = el.clientWidth / (left.clientWidth + right.clientWidth + 2);
@@ -103,6 +104,10 @@
 		}else{
 			left.style.removeProperty("transform");
 			right.style.removeProperty("transform");
+		}
+		for(key in this.components){
+			component = this.components[key];
+			if(typeof component.resize === 'function'){ component.resize(); }
 		}
 	};
 
