@@ -7,15 +7,17 @@
             player = args.player,
 			tabNames = args.tabs;
 
-		var tabs = generateTabs(tabNames);
-		this.tabs = tabs;
+        this.player = player;
 
         this.holder = holder;
+
+		var tabs = generateTabs(tabNames);
+		this.tabs = tabs;
 
         console.log(holder);
         console.log(element);
 
-		var element = render(tabs, player);
+		var element = render(tabs, player, this);
         console.log(element);
         this.element = element;
 
@@ -25,8 +27,13 @@
 	}
 
     function toggle(sidebar) {
-        element.setAttribute('display', 'none');
-        //sidebar.width = 0;
+        if(sidebar.width === '0px') {
+            sidebar.width = '';
+        }
+        else {
+            sidebar.width = 0;
+        }
+        sidebar.player.resetSize();
     }
 
 	function generateTabs(tabNames) {
@@ -39,14 +46,14 @@
 	    return result;
     }
 
-    function render(tabs, player) {
+    function render(tabs, player, sidebar) {
         var sidebarStr = '<div class="sidebar"></div>';
         var result = Ayamel.utils.parseHTML(sidebarStr);
     	var tabHeads = renderTabHeads(tabs);
         result.appendChild(tabHeads);
         var tabContents = renderTabContents(tabs);
         result.appendChild(tabContents);
-        var toggleTab = renderToggleTab(player);
+        var toggleTab = renderToggleTab(player, sidebar);
         result.appendChild(toggleTab);
         return result;
     }
@@ -72,12 +79,20 @@
         return result;
     }
 
-    function renderToggleTab(player) {
+    function renderToggleTab(player, sidebar) {
         var result = document.createElement('div');
         result.className = 'toggle-tab';
         result.addEventListener('click', function(e) {
-            player.toggleSidebar();
-        })
+            toggle(sidebar);
+        });
+        /*
+        result.addEventListener('mouseover', function(e) {
+            result.style.visibility = 'visible';
+        });
+        result.addEventListener('mouseout', function(e) {
+            result.style.visibility = 'hidden';
+        });
+*/
         return result;
     }
 
@@ -101,10 +116,6 @@
             }
         });
     }
-
-    Sidebar.prototype.toggle = function() {
-        toggle(this);
-    };
 
     Ayamel.classes.Sidebar = Sidebar;
 
