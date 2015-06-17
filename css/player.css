@@ -1,3 +1,8 @@
+#player_div {
+	width: 50%;
+	height: 50%;
+}
+
 .ayamelPlayer {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -15,8 +20,41 @@
 	border-radius: 8px 8px 0 0;
 }
 
-.ayamelPlayer .mediaPlayer {
+.ayamelPlayer .topPane {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
 	position: relative;
+	overflow: hidden;
+}
+
+.ayamelPlayer .topPane .mediaPlayer {
+	line-height: 100%;
+	height: 100%;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	display: inline-block;
+}
+
+.ayamelPlayer .topPane .sidebar {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+}
+
+.ayamelPlayer .topPane .sidebar .toggle-tab {
+	width: 20px;
+	height: 100px;
+	background-color: red;
+	position: absolute;
+	left: -20px;
+	top: 0;
+	opacity: 0;
+}
+
+.ayamelPlayer .topPane .sidebar .toggle-tab:hover {
+	opacity: 1;
 }
 
 .ayamelPlayer .progressBar {
