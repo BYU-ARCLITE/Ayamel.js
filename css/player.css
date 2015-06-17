@@ -33,6 +33,16 @@
 	padding: 0 0 0 0;
 	display: inline-block;
 	vertical-align: top;
+	position: relative;
+}
+
+.ayamelPlayer .topPane .sidebar .toggle-tab {
+	width: 20px;
+	height: 100px;
+	background-color: red;
+	position: absolute;
+	left: -20px;
+	top: 0;
 }
 
 .ayamelPlayer .progressBar {
