@@ -251,16 +251,6 @@
 			this.resetSize();
 		};
 
-		this.toggleSidebar = function() {
-			if(this.sidebar.width === '0px') {
-				this.sidebar.width = '';
-			}
-			else {
-				this.sidebar.width = 0;
-			}
-			this.resetSize();
-		}
-
 		Object.defineProperties(this, {
 			aspectRatio: {
 				get: function(){ return aspectRatio; },
