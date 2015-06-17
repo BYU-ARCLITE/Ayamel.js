@@ -72,6 +72,7 @@
 		//Create the sidebar
 		var sidebar = new Ayamel.classes.Sidebar({
 			holder: topPane,
+			player: that,
 			tabs: tabNames
 		});
 
@@ -249,6 +250,16 @@
 			maxHeight = +h || maxHeight;
 			this.resetSize();
 		};
+
+		this.toggleSidebar = function() {
+			if(this.sidebar.width === '0px') {
+				this.sidebar.width = '';
+			}
+			else {
+				this.sidebar.width = 0;
+			}
+			this.resetSize();
+		}
 
 		Object.defineProperties(this, {
 			aspectRatio: {

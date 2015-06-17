@@ -1,12 +1,11 @@
 (function(Ayamel) {
 	"use strict";
 
-	var templateStr = '';
-
 	function Sidebar(args) {
 		var that = this,
-			tabNames = args.tabs,
-            holder = args.holder;
+            holder = args.holder,
+            player = args.player,
+			tabNames = args.tabs;
 
 		var tabs = generateTabs(tabNames);
 		this.tabs = tabs;
@@ -16,12 +15,19 @@
         console.log(holder);
         console.log(element);
 
-		var element = render(tabs);
+		var element = render(tabs, player);
         console.log(element);
         this.element = element;
 
         holder.appendChild(element);
+
+        defineProperties(this);
 	}
+
+    function toggle(sidebar) {
+        element.setAttribute('display', 'none');
+        //sidebar.width = 0;
+    }
 
 	function generateTabs(tabNames) {
 	    var result = {};
@@ -33,13 +39,15 @@
 	    return result;
     }
 
-    function render(tabs) {
+    function render(tabs, player) {
         var sidebarStr = '<div class="sidebar"></div>';
         var result = Ayamel.utils.parseHTML(sidebarStr);
     	var tabHeads = renderTabHeads(tabs);
         result.appendChild(tabHeads);
         var tabContents = renderTabContents(tabs);
         result.appendChild(tabContents);
+        var toggleTab = renderToggleTab(player);
+        result.appendChild(toggleTab);
         return result;
     }
 
@@ -63,6 +71,40 @@
     	}
         return result;
     }
+
+    function renderToggleTab(player) {
+        var result = document.createElement('div');
+        result.className = 'toggle-tab';
+        result.addEventListener('click', function(e) {
+            player.toggleSidebar();
+        })
+        return result;
+    }
+
+    function defineProperties(sidebar) {
+        Object.defineProperties(sidebar, {
+            width: {
+                get: function() {
+                    return sidebar.element.style.width;
+                },
+                set: function(newWidth) {
+                    sidebar.element.style.width = newWidth;
+                }
+            },
+            height: {
+                get: function() {
+                    return sidebar.element.style.height;
+                },
+                set: function(newHeight) {
+                    sidebar.element.style.height = newHeight;
+                }
+            }
+        });
+    }
+
+    Sidebar.prototype.toggle = function() {
+        toggle(this);
+    };
 
     Ayamel.classes.Sidebar = Sidebar;
 
