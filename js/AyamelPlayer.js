@@ -9,6 +9,7 @@
 	}
 
 	function AyamelPlayer(args) {
+		window.a = this;
 		var that = this,
 			resource = args.resource,
 			element = document.createElement('div'),
@@ -17,6 +18,7 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
+			tabNames = args.tabs,
 			mediaPlayer, readyPromise;
 
 		element.className = "ayamelPlayer";
@@ -49,9 +51,13 @@
 			});
 		}
 
+		var topPane = document.createElement("div");
+		topPane.className = "topPane";
+		element.appendChild(topPane);
+
 		// Create the MediaPlayer
 		mediaPlayer = new Ayamel.classes.MediaPlayer({
-			holder: element,
+			holder: topPane,
 			resource: resource,
 			startTime: startTime,
 			endTime: endTime,
@@ -62,6 +68,14 @@
 		});
 
 		this.mediaPlayer = mediaPlayer;
+
+		//Create the sidebar
+		var sidebar = new Ayamel.classes.Sidebar({
+			holder: topPane,
+			tabs: tabNames
+		});
+
+		this.sidebar = sidebar;
 
 		readyPromise = mediaPlayer.promise.then(function(mediaPlayer){
 
@@ -368,7 +382,7 @@
 				resizeWidth = el.clientWidth;
 				Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
 				this.mediaPlayer.height = el.offsetHeight;
-				this.mediaPlayer.width = el.offsetWidth;
+				this.mediaPlayer.width = el.offsetWidth - this.sidebar.element.offsetWidth;
 			}while(el.clientWidth !== resizeWidth);
 			if(this.controlBar){ this.controlBar.resize(); }
 		}
