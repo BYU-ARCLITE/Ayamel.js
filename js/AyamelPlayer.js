@@ -7,6 +7,16 @@
 			return last * 60 + (+next||0);
 		}, 0);
 	}
+	
+	function cloneTabs(tabs) {
+		var result = [];
+		for(var i = 0; i < tabs.length; i++) {
+			var original = tabs[i];
+			var copy = original.clone();
+			result.push(copy);
+		}
+		return result;
+	}
 
 	function AyamelPlayer(args){
 		var that = this,
@@ -17,7 +27,9 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			tabNames = args.tabs,
+			tabs = args.tabs,
+			tabNames = args.tabNames,
+			selectedTab = args.selectedTab,
 			mediaPlayer, readyPromise;
 
 		element.className = "ayamelPlayer";
@@ -54,6 +66,22 @@
 		topPane.className = "topPane";
 		element.appendChild(topPane);
 
+		//Create the left sidebar
+
+		var leftTabs = cloneTabs(tabs);
+
+		var leftBar = new Ayamel.classes.Sidebar({
+			holder: topPane,
+			player: that,
+			side: 'left',
+			visible: false,
+			onToggle: function() {that.resetSize()},
+			tabs: leftTabs,
+			selected: selectedTab
+		});
+
+		this.leftBar = leftBar;
+
 		// Create the MediaPlayer
 		mediaPlayer = new Ayamel.classes.MediaPlayer({
 			holder: topPane,
@@ -68,14 +96,20 @@
 
 		this.mediaPlayer = mediaPlayer;
 
-		//Create the sidebar
-		var sidebar = new Ayamel.classes.Sidebar({
+		var rightTabs = cloneTabs(tabs);
+
+		//Create the right sidebar
+		var rightBar = new Ayamel.classes.Sidebar({
 			holder: topPane,
 			player: that,
-			tabs: ["Transcript", "Definitions", "Annotations"]
+			side: 'right',
+			visible: false,
+			onToggle: function() {that.resetSize()},
+			tabs: rightTabs,
+			selected: selectedTab
 		});
 
-		this.sidebar = sidebar;
+		this.rightBar = rightBar;
 
 		readyPromise = mediaPlayer.promise.then(function(mediaPlayer){
 
@@ -384,7 +418,22 @@
 				resizeWidth = el.clientWidth;
 				Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
 				this.mediaPlayer.height = el.offsetHeight;
-				this.mediaPlayer.width = el.offsetWidth - this.sidebar.element.offsetWidth;
+				var playerWidth = el.offsetWidth;
+				var leftWidth;
+				if(this.leftBar) {
+					leftWidth = this.leftBar.offsetWidth
+				}
+				else {
+					leftWidth = 0;
+				}
+				var rightWidth;
+				if(this.rightBar) {
+					rightWidth = this.rightBar.offsetWidth
+				}
+				else {
+					rightWidth = 0;
+				}
+				this.mediaPlayer.width = playerWidth - leftWidth - rightWidth - 1;
 			}while(el.clientWidth !== resizeWidth);
 			if(this.controlBar){ this.controlBar.resize(); }
 		}
