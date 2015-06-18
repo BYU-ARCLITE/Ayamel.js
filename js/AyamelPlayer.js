@@ -73,7 +73,7 @@
 		var sidebar = new Ayamel.classes.Sidebar({
 			holder: topPane,
 			player: that,
-			tabs: tabNames
+			tabs: ["Transcript", "Definitions", "Annotations"]
 		});
 
 		this.sidebar = sidebar;
