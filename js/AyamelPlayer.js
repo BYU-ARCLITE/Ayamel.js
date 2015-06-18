@@ -69,13 +69,15 @@
 		this.mediaPlayer = mediaPlayer;
 
 		//Create the sidebar
-		var sidebar = new Ayamel.classes.Sidebar({
+		var rightBar = new Ayamel.classes.Sidebar({
 			holder: topPane,
 			player: that,
+			side: 'right',
+			onToggle: function() {that.resetSize()},
 			tabs: ["Transcript", "Definitions", "Annotations"]
 		});
 
-		this.sidebar = sidebar;
+		this.rightBar = rightBar;
 
 		readyPromise = mediaPlayer.promise.then(function(mediaPlayer){
 
@@ -384,7 +386,7 @@
 				resizeWidth = el.clientWidth;
 				Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
 				this.mediaPlayer.height = el.offsetHeight;
-				this.mediaPlayer.width = el.offsetWidth - this.sidebar.element.offsetWidth;
+				this.mediaPlayer.width = el.offsetWidth - this.rightBar.offsetWidth;
 			}while(el.clientWidth !== resizeWidth);
 			if(this.controlBar){ this.controlBar.resize(); }
 		}
