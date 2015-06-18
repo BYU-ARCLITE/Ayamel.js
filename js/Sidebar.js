@@ -14,11 +14,7 @@
 		var tabs = generateTabs(tabNames);
 		this.tabs = tabs;
 
-        console.log(holder);
-        console.log(element);
-
 		var element = render(tabs, player, this);
-        console.log(element);
         this.element = element;
 
         holder.appendChild(element);
