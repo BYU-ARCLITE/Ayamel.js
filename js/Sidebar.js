@@ -1,37 +1,6 @@
 (function(Ayamel) {
 	"use strict";
 
-	function Sidebar(args) {
-		var that = this,
-            holder = args.holder,
-            player = args.player,
-			tabNames = args.tabs;
-
-        this.player = player;
-
-        this.holder = holder;
-
-		var tabs = generateTabs(tabNames);
-		this.tabs = tabs;
-
-		var element = render(tabs, player, this);
-        this.element = element;
-
-        holder.appendChild(element);
-
-        defineProperties(this);
-	}
-
-    function toggle(sidebar) {
-        if(sidebar.width === '0px') {
-            sidebar.width = '';
-        }
-        else {
-            sidebar.width = 0;
-        }
-        sidebar.player.resetSize();
-    }
-
 	function generateTabs(tabNames) {
 	    var result = {};
 	    for(var i = 0; i < tabNames.length; i++) {
@@ -42,14 +11,14 @@
 	    return result;
     }
 
-    function render(tabs, player, sidebar) {
+    function render(tabs, sidebar) {
         var sidebarStr = '<div class="sidebar"></div>';
         var result = Ayamel.utils.parseHTML(sidebarStr);
     	var tabHeads = renderTabHeads(tabs);
         result.appendChild(tabHeads);
         var tabContents = renderTabContents(tabs);
         result.appendChild(tabContents);
-        var toggleTab = renderToggleTab(player, sidebar);
+        var toggleTab = renderToggleTab(sidebar);
         result.appendChild(toggleTab);
         return result;
     }
@@ -75,43 +44,75 @@
         return result;
     }
 
-    function renderToggleTab(player, sidebar) {
+    function renderToggleTab(sidebar) {
         var result = document.createElement('div');
         result.className = 'toggle-tab';
         result.addEventListener('click', function(e) {
-            toggle(sidebar);
+            sidebar.toggle();
         });
-        /*
-        result.addEventListener('mouseover', function(e) {
-            result.style.visibility = 'visible';
-        });
-        result.addEventListener('mouseout', function(e) {
-            result.style.visibility = 'hidden';
-        });
-*/
         return result;
     }
 
-    function defineProperties(sidebar) {
-        Object.defineProperties(sidebar, {
-            width: {
+    function toggleCallback(toggleCallbacks) {
+        for(var i = 0; i < toggleCallbacks.length; i++) {
+            var callback = toggleCallbacks[i];
+            console.log(callback);
+            callback();
+        }
+    }
+
+    function Sidebar(args) {
+        var that = this,
+            holder = args.holder,
+            side = args.side || 'right',
+            onToggleInit = args.onToggle || undefined,
+            tabNames = args.tabs;
+
+        var toggleCallbacks = [];
+        if(typeof onToggleInit !== undefined) {
+            toggleCallbacks.push(onToggleInit);
+        }
+        var tabs = generateTabs(tabNames);
+
+        var element = render(tabs, this);
+        this.element = element;
+
+        this.toggle = function() {
+            if(element.style.width === '0px') {
+                element.style.width = '';
+            }
+            else {
+                element.style.width = 0;
+            }
+            toggleCallback(toggleCallbacks);
+        };
+
+        this.onToggle = function(callback) {
+            toggleCallbacks.push(callback);
+        };
+
+        Object.defineProperties(this, {
+            offsetWidth: {
                 get: function() {
-                    return sidebar.element.style.width;
-                },
-                set: function(newWidth) {
-                    sidebar.element.style.width = newWidth;
+                    return element.offsetWidth;
                 }
             },
-            height: {
+            offsetHeight: {
                 get: function() {
-                    return sidebar.element.style.height;
-                },
-                set: function(newHeight) {
-                    sidebar.element.style.height = newHeight;
+                    return element.offsetHeight;
                 }
             }
         });
+
+        holder.appendChild(element);
     }
+
+    Sidebar.prototype = {
+        selectTab: function(key) {
+            var tab = this.tabs[key];
+            tab.select();
+        }
+    };
 
     Ayamel.classes.Sidebar = Sidebar;
 
