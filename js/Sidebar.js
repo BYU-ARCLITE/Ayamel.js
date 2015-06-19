@@ -76,7 +76,8 @@
     function Sidebar(args) {
         var that = this,
             holder = args.holder,
-            side = args.side || 'right',
+            side = args.side,
+            visibleInit = args.visible,
             onToggleInit = args.onToggle || undefined,
             tabNames = args.tabs;
 
@@ -84,6 +85,9 @@
         if(typeof onToggleInit !== undefined) {
             toggleCallbacks.push(onToggleInit);
         }
+
+        var visible;
+
         var tabs = generateTabs(tabNames);
 
         var element = renderContainer(this, side);
@@ -92,14 +96,15 @@
         element.appendChild(content);
         this.element = element;
 
+        element.style.width = 0;
+        content.style.display = 'none';
+
         this.toggle = function() {
             if(element.style.width === '0px') {
-                element.style.width = '';
-                content.style.display = '';
+                this.visible = true;
             }
             else {
-                element.style.width = 0;
-                content.style.display = 'none';
+                this.visible = false;
             }
             toggleCallback(toggleCallbacks);
         };
@@ -118,8 +123,27 @@
                 get: function() {
                     return element.offsetHeight;
                 }
+            },
+            visible: {
+                get: function() {
+                    return visible;
+                },
+                set: function(trueOrFalse) {
+                    if(trueOrFalse === true) {
+                        element.style.width = '';
+                        content.style.display = '';
+                        visible = true;
+                    }
+                    else if(trueOrFalse === false) {
+                        element.style.width = 0;
+                        content.style.display = 'none';
+                        visible = false;
+                    }
+                }
             }
         });
+
+        this.visible = visibleInit;
 
         holder.appendChild(element);
     }
