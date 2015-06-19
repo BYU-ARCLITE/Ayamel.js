@@ -54,18 +54,19 @@
 		var topPane = document.createElement("div");
 		topPane.className = "topPane";
 		element.appendChild(topPane);
-/*
+
 		//Create the left sidebar
 		var leftBar = new Ayamel.classes.Sidebar({
 			holder: topPane,
 			player: that,
 			side: 'left',
+			visible: false,
 			onToggle: function() {that.resetSize()},
 			tabs: ["Transcript", "Definitions", "Annotations"]
 		});
 
 		this.leftBar = leftBar;
-*/
+
 		// Create the MediaPlayer
 		mediaPlayer = new Ayamel.classes.MediaPlayer({
 			holder: topPane,
@@ -85,6 +86,7 @@
 			holder: topPane,
 			player: that,
 			side: 'right',
+			visible: true,
 			onToggle: function() {that.resetSize()},
 			tabs: ["Transcript", "Definitions", "Annotations"]
 		});
