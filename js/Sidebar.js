@@ -68,7 +68,6 @@
     function toggleCallback(toggleCallbacks) {
         for(var i = 0; i < toggleCallbacks.length; i++) {
             var callback = toggleCallbacks[i];
-            console.log(callback);
             callback();
         }
     }
