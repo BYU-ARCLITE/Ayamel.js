@@ -47,10 +47,17 @@
 	width: 20px;
 	height: 100px;
 	background-color: red;
-	position: absolute;
-	left: -20px;
 	top: 0;
 	opacity: 0;
+	position: absolute;
+}
+
+.ayamelPlayer .topPane .rightBar .toggle-tab {
+	left: -20px;
+}
+
+.ayamelPlayer .topPane .leftBar .toggle-tab {
+	right: -20px;
 }
 
 .ayamelPlayer .topPane .sidebar .toggle-tab:hover {

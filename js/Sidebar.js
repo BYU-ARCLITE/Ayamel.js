@@ -11,15 +11,27 @@
 	    return result;
     }
 
+    function renderContainer(sidebar, side) {
+        var result = document.createElement('div');
+        result.className = 'sidebar';
+        if(side === 'left') {
+            result.className += ' leftBar';
+        }
+        else if(side === 'right') {
+            result.className += ' rightBar'
+        }
+        var toggleTab = renderToggleTab(sidebar);
+        result.appendChild(toggleTab);
+        return result;
+    }
+
     function render(tabs, sidebar) {
-        var sidebarStr = '<div class="sidebar"></div>';
-        var result = Ayamel.utils.parseHTML(sidebarStr);
+        var result = document.createElement('div');
+        result.className = 'sidebarContent';
     	var tabHeads = renderTabHeads(tabs);
         result.appendChild(tabHeads);
         var tabContents = renderTabContents(tabs);
         result.appendChild(tabContents);
-        var toggleTab = renderToggleTab(sidebar);
-        result.appendChild(toggleTab);
         return result;
     }
 
@@ -74,15 +86,20 @@
         }
         var tabs = generateTabs(tabNames);
 
-        var element = render(tabs, this);
+        var element = renderContainer(this, side);
+
+        var content = render(tabs, this);
+        element.appendChild(content);
         this.element = element;
 
         this.toggle = function() {
             if(element.style.width === '0px') {
                 element.style.width = '';
+                content.style.display = '';
             }
             else {
                 element.style.width = 0;
+                content.style.display = 'none';
             }
             toggleCallback(toggleCallbacks);
         };
