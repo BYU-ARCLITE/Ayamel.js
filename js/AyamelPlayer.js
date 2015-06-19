@@ -53,7 +53,18 @@
 		var topPane = document.createElement("div");
 		topPane.className = "topPane";
 		element.appendChild(topPane);
+/*
+		//Create the left sidebar
+		var leftBar = new Ayamel.classes.Sidebar({
+			holder: topPane,
+			player: that,
+			side: 'left',
+			onToggle: function() {that.resetSize()},
+			tabs: ["Transcript", "Definitions", "Annotations"]
+		});
 
+		this.leftBar = leftBar;
+*/
 		// Create the MediaPlayer
 		mediaPlayer = new Ayamel.classes.MediaPlayer({
 			holder: topPane,
@@ -68,7 +79,7 @@
 
 		this.mediaPlayer = mediaPlayer;
 
-		//Create the sidebar
+		//Create the right sidebar
 		var rightBar = new Ayamel.classes.Sidebar({
 			holder: topPane,
 			player: that,
@@ -386,7 +397,22 @@
 				resizeWidth = el.clientWidth;
 				Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
 				this.mediaPlayer.height = el.offsetHeight;
-				this.mediaPlayer.width = el.offsetWidth - this.rightBar.offsetWidth;
+				var playerWidth = el.offsetWidth;
+				var leftWidth;
+				if(this.leftBar) {
+					leftWidth = this.leftBar.offsetWidth
+				}
+				else {
+					leftWidth = 0;
+				}
+				var rightWidth;
+				if(this.rightBar) {
+					rightWidth = this.rightBar.offsetWidth
+				}
+				else {
+					rightWidth = 0;
+				}
+				this.mediaPlayer.width = playerWidth - leftWidth - rightWidth - 1;
 			}while(el.clientWidth !== resizeWidth);
 			if(this.controlBar){ this.controlBar.resize(); }
 		}
