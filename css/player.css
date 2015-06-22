@@ -7,6 +7,47 @@
 	user-select: none;
 }
 
+.ayamelPlayer .sidebar.invisible {
+	width: 0px;
+}
+
+.ayamelPlayer .sidebar .nav-tabs {
+	position: relative;
+	width: 304px;
+	transform-origin: 0 100%;
+}
+
+.ayamelPlayer .sidebar.invisible .nav-tabs {
+	visibility: visible;
+}
+
+.ayamelPlayer .sidebar.leftBar.invisible .nav-tabs {
+	transform: rotateZ(90deg) translateX(-42px);
+}
+
+.ayamelPlayer .sidebar.leftBar.visible .nav-tabs {
+	left: 100%;
+	transform: rotateZ(90deg) translateX(-42px) translateY(42px);
+}
+
+.ayamelPlayer .sidebar.rightBar.invisible .nav-tabs {
+	transform: rotateZ(90deg) translateX(-42px) translateY(42px);
+}
+
+.ayamelPlayer .sidebar.rightBar.visible .nav-tabs {
+	transform: rotateZ(90deg) translateX(-42px);
+}
+
+.ayamelPlayer .rightBar .nav-tabs {
+	border-top: 1px solid #ddd;
+	border-bottom: none;
+}
+
+.ayamelPlayer .rightBar .nav-tabs li {
+	transform-origin: 50% 50%;
+	transform: rotateZ(180deg);
+}
+
 .ayamelPlayer .playerTop {
 	min-height: 10px;
 	background: #333;

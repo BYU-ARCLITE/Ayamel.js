@@ -1,26 +1,11 @@
 (function(Ayamel) {
 	"use strict";
 
-    function renderContainer(sidebar, side) {
-        var result = document.createElement('div');
-        result.className = 'sidebar';
-        if(side === 'left') {
-            result.className += ' leftBar';
-        }
-        else if(side === 'right') {
-            result.className += ' rightBar'
-        }
-        var toggleTab = renderToggleTab(sidebar);
-        result.appendChild(toggleTab);
-        return result;
-    }
-
-    function render(tabs, sidebar) {
-        var result = document.createElement('div');
-        result.className = 'sidebarContent';
-    	var head = renderEmptyHead(tabs);
+    function render(tabs, side, visible) {
+        var result = renderEmptySidebar(side, visible);
+        var head = renderEmptyHead();
         result.appendChild(head);
-        var body = renderEmptyBody(tabs);
+        var body = renderEmptyBody();
         result.appendChild(body);
         for(var i = 0; i < tabs.length; i++) {
             var tab = tabs[i];
@@ -32,13 +17,31 @@
         return result;
     }
 
-    function renderEmptyHead(tabs) {
+    function renderEmptySidebar(side, visible) {
+        var result = document.createElement('div');
+        result.className = 'sidebar';
+        if(side === 'left') {
+            result.className += ' leftBar';
+        }
+        else if(side === 'right') {
+            result.className += ' rightBar'
+        }
+        if(visible === true) {
+            result.className += ' visible';
+        }
+        else if(visible === false) {
+            result.className += ' invisible';
+        }
+        return result;
+    }
+
+    function renderEmptyHead() {
         var headsStr = '<ul class="nav nav-tabs" id="videoTabs"></ul>';
         var result = Ayamel.utils.parseHTML(headsStr);
         return result;
     }
 
-    function renderEmptyBody(tabs) {
+    function renderEmptyBody() {
     	var contentsStr = '<div class="tab-content"></div>';
     	var result = Ayamel.utils.parseHTML(contentsStr);
         return result;
@@ -68,31 +71,36 @@
             onToggleInit = args.onToggle || undefined,
             tabNames = args.tabs;
 
+        var selectedTab = '';
         var toggleCallbacks = [];
+        var visible = visibleInit;
+
         if(typeof onToggleInit !== undefined) {
             toggleCallbacks.push(onToggleInit);
         }
 
-        var visible;
-
-        var tabs = Ayamel.TabGenerator.generateTabs(tabNames);
-        window.tabs = tabs;
-
-        var element = renderContainer(this, side);
-
-        var content = render(tabs, this);
-        element.appendChild(content);
-        this.element = element;
-
-        element.style.width = 0;
-        content.style.display = 'none';
+        var tabs = Ayamel.TabGenerator.generateTabs({
+            tabNames: tabNames,
+            onClickTab: function(name) {
+                if(name === selectedTab || !visible) {
+                    that.toggle();
+                }
+                selectedTab = name;
+            }
+        });
+        var element = render(tabs, side, visible);
+        holder.appendChild(element);
 
         this.toggle = function() {
-            if(element.style.width === '0px') {
-                this.visible = true;
+            if(visible) {
+                element.classList.remove('visible');
+                element.className += ' invisible';
+                visible = false;
             }
             else {
-                this.visible = false;
+                element.classList.remove('invisible');
+                element.classList.add('visible');
+                visible = true;
             }
             toggleCallback(toggleCallbacks);
         };
@@ -100,6 +108,11 @@
         this.onToggle = function(callback) {
             toggleCallbacks.push(callback);
         };
+
+        this.selectTab = function(key) {
+            var tab = this.tabs[key];
+            tab.select();
+        }
 
         Object.defineProperties(this, {
             offsetWidth: {
@@ -111,37 +124,9 @@
                 get: function() {
                     return element.offsetHeight;
                 }
-            },
-            visible: {
-                get: function() {
-                    return visible;
-                },
-                set: function(trueOrFalse) {
-                    if(trueOrFalse === true) {
-                        element.style.width = '';
-                        content.style.display = '';
-                        visible = true;
-                    }
-                    else if(trueOrFalse === false) {
-                        element.style.width = 0;
-                        content.style.display = 'none';
-                        visible = false;
-                    }
-                }
             }
         });
-
-        this.visible = visibleInit;
-
-        holder.appendChild(element);
     }
-
-    Sidebar.prototype = {
-        selectTab: function(key) {
-            var tab = this.tabs[key];
-            tab.select();
-        }
-    };
 
     Ayamel.classes.Sidebar = Sidebar;
 
