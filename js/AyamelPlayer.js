@@ -62,7 +62,8 @@
 			side: 'left',
 			visible: true,
 			onToggle: function() {that.resetSize()},
-			tabs: ["Transcript", "Definitions", "Annotations"]
+			tabs: ["Transcript", "Definitions", "Annotations"],
+			selected: "Definitions";
 		});
 
 		this.leftBar = leftBar;
@@ -89,7 +90,8 @@
 			side: 'right',
 			visible: true,
 			onToggle: function() {that.resetSize()},
-			tabs: ["Transcript", "Definitions", "Annotations"]
+			tabs: ["Transcript", "Definitions", "Annotations"],
+			selected: "Annotations"
 		});
 
 		this.rightBar = rightBar;
