@@ -67,18 +67,12 @@
         var that = this,
             holder = args.holder,
             side = args.side,
-            visibleInit = args.visible,
+            visible = args.visible || true,
             onToggleInit = args.onToggle || undefined,
-            tabNames = args.tabs;
+            tabNames = args.tabs,
+            selectedTab = args.selected || '';
 
-        var selectedTab = '';
         var toggleCallbacks = [];
-        var visible = visibleInit;
-
-        if(typeof onToggleInit !== undefined) {
-            toggleCallbacks.push(onToggleInit);
-        }
-
         var tabs = Ayamel.TabGenerator.generateTabs({
             tabNames: tabNames,
             onClickTab: function(name) {
@@ -89,7 +83,6 @@
             }
         });
         var element = render(tabs, side, visible);
-        holder.appendChild(element);
 
         this.toggle = function() {
             if(visible) {
@@ -126,6 +119,12 @@
                 }
             }
         });
+
+        holder.appendChild(element);
+        if(typeof onToggleInit !== undefined) {
+            toggleCallbacks.push(onToggleInit);
+        }
+
     }
 
     Ayamel.classes.Sidebar = Sidebar;
