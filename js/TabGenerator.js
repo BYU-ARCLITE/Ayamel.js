@@ -1,8 +1,12 @@
 (function(Ayamel) {
 	"use strict";
 
-	function generateTab(name) {
+	function generateTab(name, onClickTab) {
 		var head = renderHead(name);
+		var clickCallback = function(e) {
+			onClickTab(name);
+		};
+		head.addEventListener('click', clickCallback);
 		var body = renderBody(name);
 		var content = renderContent(name);
 		body.appendChild(content);
@@ -61,11 +65,13 @@
 	}
 
 	Ayamel.TabGenerator = {
-		generateTabs: function(tabNames) {
+		generateTabs: function(args) {
+			var tabNames = args.tabNames,
+				onClickTab = args.onClickTab;
 			var result = [];
 		    for(var i = 0; i < tabNames.length; i++) {
 		    	var tabName = tabNames[i];
-		    	var tab = generateTab(tabName);
+		    	var tab = generateTab(tabName, onClickTab);
 		    	result.push(tab);
 		    	result[tabName] = tab;
 		    }
