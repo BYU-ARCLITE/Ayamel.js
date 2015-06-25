@@ -83,7 +83,8 @@
 			<body style="margin:0;padding:0;">\n\
 			<video id="vplayer" data-account="' + accountNum
 			+ '" data-player="' + playerId + '" data-video-id="' + videoId
-			+ '" data-embed="default" class="video-js"></video>\n\
+			+ '" data-embed="default" data-setup=\'{"techOrder": ["html5", "hls", "flash"]}\'\
+			class="video-js"></video>\n\
 			<script src="//players.brightcove.net/'
 			+ accountNum + '/'
 			+ playerId + '_default/index.min.js"><\/script>\n\
