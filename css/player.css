@@ -7,45 +7,102 @@
 	user-select: none;
 }
 
-.ayamelPlayer .sidebar.invisible {
-	width: 0px;
+@keyframes sidebarAppear {
+	from {
+		width: 0;
+	}
+	to {
+		width: 304px;
+	}
 }
 
-.ayamelPlayer .sidebar .nav-tabs {
+@keyframes sidebarDisappear {
+	from {
+		width: 304px;
+	}
+	to {
+		width: 0;
+	}
+}
+
+.ayamelPlayer .sidebarNav {
+	padding: 0 0 0 0;
+}
+
+.ayamelPlayer .sidebarNav ul li {
+	display: inline;
+	margin: 0 15px 0 15px;
+}
+
+.ayamelPlayer .sidebarNav ul li.selected {
+	background-color: red;
+}
+
+.ayamelPlayer .sidebar .tabContent div.hidden {
+	display: none;
+}
+
+.ayamelPlayer .sidebar.invisible .tabContent {
+	display: none;
+}
+
+.ayamelPlayer .sidebar.invisible {
+	visibility: visible;
+	/*
+	animation-name: sidebarDisappear;
+	animation-duration: 1s;
+	*/
+	width: 0;
+}
+
+.ayamelPlayer .sidebar.visible {
+	/*
+	animation-name: sidebarAppear;
+	animation-duration: 1s;
+	*/
+	width: 304px;
+}
+
+.ayamelPlayer .sidebar .sidebarNav ul {
 	position: relative;
 	width: 304px;
 	transform-origin: 0 100%;
 }
 
-.ayamelPlayer .sidebar.invisible .nav-tabs {
-	visibility: visible;
+.ayamelPlayer .sidebar.leftBar.invisible .sidebarNav ul {
+	transform: rotateZ(90deg) translateX(-16px);
 }
 
-.ayamelPlayer .sidebar.leftBar.invisible .nav-tabs {
-	transform: rotateZ(90deg) translateX(-42px);
+.ayamelPlayer .sidebar.leftBar.visible .sidebarNav ul {
+	transform: rotateZ(90deg) translateX(-16px) translateY(-284px);
 }
 
-.ayamelPlayer .sidebar.leftBar.visible .nav-tabs {
-	left: 100%;
-	transform: rotateZ(90deg) translateX(-42px) translateY(42px);
+.ayamelPlayer .sidebar.rightBar.invisible .sidebarNav ul {
+	transform: rotateZ(90deg) translateX(-16px) translateY(21px);
 }
 
-.ayamelPlayer .sidebar.rightBar.invisible .nav-tabs {
-	transform: rotateZ(90deg) translateX(-42px) translateY(42px);
+.ayamelPlayer .sidebar.rightBar.visible .sidebarNav ul {
+	transform: rotateZ(90deg) translateX(-16px);
 }
 
-.ayamelPlayer .sidebar.rightBar.visible .nav-tabs {
-	transform: rotateZ(90deg) translateX(-42px);
-}
-
-.ayamelPlayer .rightBar .nav-tabs {
+.ayamelPlayer .rightBar .sidebarNav ul {
 	border-top: 1px solid #ddd;
 	border-bottom: none;
 }
 
-.ayamelPlayer .rightBar .nav-tabs li {
+.ayamelPlayer .leftBar .sidebarNav ul {
+	border-top: none;
+	border-bottom: 1px solid #ddd;
+}
+
+.ayamelPlayer .rightBar .sidebarNav li {
 	transform-origin: 50% 50%;
 	transform: rotateZ(180deg);
+}
+
+.ayamelPlayer .sidebar .tabContent {
+	transform-origin: 0 0;
+	transform: translateX(20px);
 }
 
 .ayamelPlayer .playerTop {
@@ -59,6 +116,7 @@
 .ayamelPlayer .topPane {
 	margin: 0 0 0 0;
 	padding: 0 0 0 0;
+	height: 100%;
 	position: relative;
 	overflow: hidden;
 }
@@ -91,7 +149,7 @@
 .ayamelPlayer .topPane .rightBar .toggle-tab {
 	left: -20px;
 }
-
+/*
 .ayamelPlayer .topPane .leftBar .toggle-tab {
 	right: -20px;
 }
@@ -99,7 +157,7 @@
 .ayamelPlayer .topPane .sidebar .toggle-tab:hover {
 	opacity: 1;
 }
-
+*/
 .ayamelPlayer .progressBar {
 	height: 20px;
 	background: #222;
