@@ -18,7 +18,9 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			tabNames = args.tabs,
+			tabs = args.tabs,
+			tabNames = args.tabNames,
+			selectedTab = args.selectedTab,
 			mediaPlayer, readyPromise;
 
 		element.className = "ayamelPlayer";
@@ -56,19 +58,18 @@
 		element.appendChild(topPane);
 
 		//Create the left sidebar
-		/*
+
 		var leftBar = new Ayamel.classes.Sidebar({
 			holder: topPane,
 			player: that,
 			side: 'left',
 			visible: true,
 			onToggle: function() {that.resetSize()},
-			tabs: ["Transcript", "Definitions", "Annotations"],
-			selected: "Definitions";
+			tabs: tabs,
+			selected: selectedTab
 		});
 
 		this.leftBar = leftBar;
-		*/
 
 		// Create the MediaPlayer
 		mediaPlayer = new Ayamel.classes.MediaPlayer({
@@ -91,8 +92,8 @@
 			side: 'right',
 			visible: true,
 			onToggle: function() {that.resetSize()},
-			tabs: ["Transcript", "Definitions", "Annotations"],
-			selected: "Annotations"
+			tabs: tabs,
+			selected: selectedTab
 		});
 
 		this.rightBar = rightBar;
