@@ -83,6 +83,7 @@
 			var controlBar = new Ayamel.classes.ControlBar({
 				holder: element,
 				components: args.components,
+				ayamelPlayer: that,
 				mediaPlayer: mediaPlayer
 			});
 			that.controlBar = controlBar;
@@ -330,6 +331,7 @@
 		set playbackRate(rate){ return this.mediaPlayer.playbackRate = rate; },
 		get volume(){ return this.mediaPlayer.volume; },
 		set volume(volume){ return this.mediaPlayer.volume = volume; },
+		get isFullScreen(){ return Ayamel.utils.FullScreen.fullScreenElement === this.element; },
 		addTextTrack: function(track){
 			this.mediaPlayer.addTextTrack(track);
 			if(this.controlBar.components.captions){
