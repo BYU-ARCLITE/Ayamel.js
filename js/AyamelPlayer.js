@@ -8,8 +8,7 @@
 		}, 0);
 	}
 
-	function AyamelPlayer(args) {
-		window.a = this;
+	function AyamelPlayer(args){
 		var that = this,
 			resource = args.resource,
 			element = document.createElement('div'),
