@@ -72,7 +72,7 @@
 		config.index += content.length;
 		return (matchers.length
 				?anString(matchers,config.filter,getmod(config),content,offset)
-				:config.filter(document.createTextNode(content)));
+				:config.filter(content));
 	}
 
 	//content could be an HTML string, a document, an element, or a text node,
