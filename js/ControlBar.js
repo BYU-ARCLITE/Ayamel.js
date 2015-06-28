@@ -22,7 +22,9 @@
 	}
 
 	function ControlBar(args) {
-		var controlLists = args.components || {left:["play", "volume", "captions", "annotations"], right:["rate", "fullScreen", "timeCode"]},
+		var ayamelPlayer = args.ayamelPlayer,
+			control_timeout = 0,
+			controlLists = args.components || {left:["play", "volume", "captions", "annotations"], right:["rate", "fullScreen", "timeCode"]},
 			components = {}, progressBar, timeCode,
 			currentTime = 0, duration = 0,
 			element = document.createElement('div');
@@ -57,6 +59,33 @@
 		if(controlLists.right instanceof Array){
 			controlLists.right.forEach(addComponent.bind(this, element.querySelector(".right"), args.mediaPlayer));
 		}
+
+		function showControls(){
+			if(control_timeout){
+				clearTimeout(control_timeout);
+				control_timeout = 0;
+			}
+			element.style.opacity = 1;
+		}
+
+		element.addEventListener('mouseenter', showControls, false);
+		ayamelPlayer.addEventListener('touchstart', showControls, false);
+		ayamelPlayer.addEventListener('exitfullscreen', showControls, false);
+
+		function hideControls(){
+			if(control_timeout){ clearTimeout(control_timeout); }
+			if(!ayamelPlayer.isFullScreen){
+				element.style.opacity = 1;
+				control_timeout = 0;
+				return;
+			}
+			control_timeout = setTimeout(function(){
+				element.style.opacity = 0;
+			}, 2000);
+		}
+
+		element.addEventListener('mouseleave', hideControls, false);
+		ayamelPlayer.addEventListener('touchend', hideControls, false);
 
 		timeCode = components.timeCode || {};
 		Object.defineProperties(this, {
