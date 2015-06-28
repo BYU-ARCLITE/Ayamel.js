@@ -170,6 +170,10 @@
 	-webkit-border-radius: 0 0 8px 8px;
 	-moz-border-radius: 0 0 8px 8px;
 	border-radius: 0 0 8px 8px;
+
+	-webkit-transition: opacity 0.5s;
+	-moz-transition: opacity 0.5s;
+	transition: opacity 0.5s;
 }
 
 .controlBar .widgets {
