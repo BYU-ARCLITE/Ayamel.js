@@ -24,19 +24,15 @@
     }
 
     function renderTab(tab, sidebar, headList, sidebarBody) {
-        var head = tab.head;
-        var callback = function() {
-
-        };
-        //head.addEventListener('click', callback);
-        tab.onClickTab(function() {
-            if(!sidebar.visible) {
+            tab.onClickTab(function() {
+                if(!sidebar.visible) {
                 sidebar.show();
             }
             if(sidebar.selectedTab !== tab) {
                 sidebar.selectTab(tab);
             }
         });
+        var head = tab.head;
         headList.appendChild(head);
         var tabBody = tab.body;
         sidebarBody.appendChild(tabBody);
@@ -46,8 +42,17 @@
     }
 
     function renderHideButton(sidebar) {
-        var result = document.createElement('div');
+        var result = document.createElement('span');
         result.className = 'hideButton';
+        result.classList.add('fa');
+        if(sidebar.side === 'right') {
+            result.classList.add('fa-chevron-right');
+            result.classList.add('icon-chevron-right');
+        }
+        else if(sidebar.side === 'left') {
+            result.classList.add('fa-chevron-left');
+            result.classList.add('icon-chevron-left');
+        }
         var callback = function() {
             sidebar.hide();
         }
