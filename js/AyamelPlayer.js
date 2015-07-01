@@ -7,6 +7,16 @@
 			return last * 60 + (+next||0);
 		}, 0);
 	}
+	
+	function cloneTabs(tabs) {
+		var result = [];
+		for(var i = 0; i < tabs.length; i++) {
+			var original = tabs[i];
+			var copy = original.clone();
+			result.push(copy);
+		}
+		return result;
+	}
 
 	function AyamelPlayer(args){
 		var that = this,
@@ -58,13 +68,15 @@
 
 		//Create the left sidebar
 
+		var leftTabs = cloneTabs(tabs);
+
 		var leftBar = new Ayamel.classes.Sidebar({
 			holder: topPane,
 			player: that,
 			side: 'left',
-			visible: true,
+			visible: false,
 			onToggle: function() {that.resetSize()},
-			tabs: tabs,
+			tabs: leftTabs,
 			selected: selectedTab
 		});
 
@@ -84,14 +96,16 @@
 
 		this.mediaPlayer = mediaPlayer;
 
+		var rightTabs = cloneTabs(tabs);
+
 		//Create the right sidebar
 		var rightBar = new Ayamel.classes.Sidebar({
 			holder: topPane,
 			player: that,
 			side: 'right',
-			visible: true,
+			visible: false,
 			onToggle: function() {that.resetSize()},
-			tabs: tabs,
+			tabs: rightTabs,
 			selected: selectedTab
 		});
 
