@@ -5,6 +5,7 @@
         var result = document.createElement('li');
         result.classList.add('tabHead');
         result.classList.add('unselected');
+        var headDiv = document.createElement('div');
         result.textContent = name;
         return result;
 	}
@@ -27,40 +28,36 @@
 		this.title = title;
 		this.content = content;
 		this.head = renderHead(title);
-		var clickCallback = function(e) {
+		this.onClickTab = onClickTab;
+		this.clickCallback = function(e) {
 			if(typeof onClickTab === 'function') {
 				onClickTab(name);
 			}
 		};
-		this.head.addEventListener('click', clickCallback);
+		this.head.addEventListener('click', this.clickCallback);
 		this.body = renderBody(title, content);
+	}
 
-		this.clone = function() {
-			return new SidebarTab({
-				title: title,
-				content: content.cloneNode(true),
-				onClickTab: onClickTab
-			});
-		};
-
-		this.select = function() {
+	SidebarTab.prototype = {
+		select: function() {
 			this.body.classList.remove('hidden');
 			this.body.classList.add('visible');
 			this.head.classList.remove('unselected');
 			this.head.classList.add('selected');
-		};
-
-		this.deselect = function() {
+		},
+		deselect: function() {
 			this.body.classList.remove('visible');
 			this.body.classList.add('hidden');
 			this.head.classList.remove('selected');
 			this.head.classList.add('unselected');
-		};
-
-	}
-
-	SidebarTab.prototype = {
-
+		},
+		clone: function() {
+			return new SidebarTab({
+				title: this.title,
+				content: this.content.cloneNode(true),
+				onClickTab: this.onClickTab
+			});
+		}
 	}
 
 	Ayamel.classes.SidebarTab = SidebarTab;
