@@ -11,33 +11,44 @@
         var hideButton = renderHideButton(sidebar);
         body.appendChild(hideButton);
         result.appendChild(body);
-        sidebar.tabs.forEach(function(tab) {
-            var tabHead = tab.head;
-            var callback = function(e) {
-                var myTab = tab;
-                if(!sidebar.visible) {
-                    sidebar.show();
-                }
-                if(sidebar.selectedTab !== tab) {
-                    sidebar.selectTab(myTab);
-                }
-            };
-            tabHead.addEventListener('click', callback);
-            headList.appendChild(tabHead);
-            var tabBody = tab.body;
-            body.appendChild(tabBody);
-            if(sidebar.selected === tab) {
+        renderTabs(sidebar, headList, body);
+        return result;
+    }
+
+    function renderTabs(sidebar, headList, body) {
+        var tabs = sidebar.tabs;
+        for(var i = 0; i < tabs.length; i++) {
+            var tab = tabs[i];
+            renderTab(tab, sidebar, headList, body);
+        }
+    }
+
+    function renderTab(tab, sidebar, headList, sidebarBody) {
+        var head = tab.head;
+        var callback = function() {
+
+        };
+        //head.addEventListener('click', callback);
+        tab.onClickTab(function() {
+            if(!sidebar.visible) {
+                sidebar.show();
+            }
+            if(sidebar.selectedTab !== tab) {
                 sidebar.selectTab(tab);
             }
         });
-        return result;
+        headList.appendChild(head);
+        var tabBody = tab.body;
+        sidebarBody.appendChild(tabBody);
+        if(sidebar.selected === tab) {
+            sidebar.selectTab(tab);
+        }
     }
 
     function renderHideButton(sidebar) {
         var result = document.createElement('div');
         result.className = 'hideButton';
-        var callback = function(e) {
-            console.log('clicked hide button');
+        var callback = function() {
             sidebar.hide();
         }
         result.addEventListener('click', callback);

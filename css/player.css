@@ -834,8 +834,6 @@
     opacity: 1;
 }
 
-.ayamelPlayer .sidebar {}
-
 .ayamelPlayer .sidebarNav ul li:hover {
     background-color: #fafafa;
 }

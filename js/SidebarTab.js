@@ -18,6 +18,22 @@
 		result.classList.add('hidden');
 		return result;
 	}
+
+	function initCallbacks(tab, onClickTabInit) {
+		var callbacks = [];
+		if(typeof onClickTabInit === 'function') {
+			callbacks.push(onClickTabInit);
+		}
+		tab.clickTabCallbacks = callbacks;
+		tab.onClickTabInit = onClickTabInit;
+		function clickTabCallback() {
+			for(var i = 0; i < callbacks.length; i++) {
+				var callback = callbacks[i];
+				callback();
+			}
+		}
+		tab.head.addEventListener('click', clickTabCallback);
+	}
 	
 	function SidebarTab(args) {
 		var	that = this,
@@ -28,14 +44,9 @@
 		this.title = title;
 		this.content = content;
 		this.head = renderHead(title);
-		this.onClickTab = onClickTab;
-		this.clickCallback = function(e) {
-			if(typeof onClickTab === 'function') {
-				onClickTab(name);
-			}
-		};
-		this.head.addEventListener('click', this.clickCallback);
 		this.body = renderBody(title, content);
+
+		initCallbacks(this, onClickTab);
 	}
 
 	SidebarTab.prototype = {
@@ -55,8 +66,11 @@
 			return new SidebarTab({
 				title: this.title,
 				content: this.content.cloneNode(true),
-				onClickTab: this.onClickTab
+				onClickTab: this.onClickTabInit
 			});
+		},
+		onClickTab: function(callback) {
+			this.clickTabCallbacks.push(callback);
 		}
 	}
 
