@@ -228,7 +228,7 @@
 			lastCaption: true,
 			play: true,
 			seek: true,
-			rate: false,
+			rate: true,
 			timeCode: true,
 			volume: true
 		},
@@ -239,7 +239,7 @@
 			lastCaption: true,
 			play: true,
 			seek: true,
-			rate: false,
+			rate: true,
 			timeCode: false,
 			volume: false
 		}
