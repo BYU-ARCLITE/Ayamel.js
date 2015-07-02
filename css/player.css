@@ -27,10 +27,10 @@
 }
 
 .ayamelPlayer .sidebar .hideButton {
-	width: 30px;
+	opacity: .5;
+	margin: 10px;
 	position: absolute;
 	height: 30px;
-	background-color: red;
 }
 
 .ayamelPlayer .sidebar.leftBar .hideButton {
@@ -38,8 +38,13 @@
 
 }
 
-.ayamelPlayer .sidebar.rightBar .hideButton {
+.ayamelPlayer .sidebar .hideButton:hover {
+    opacity: 1;
 	
+}
+
+.ayamelPlayer .sidebar.rightBar .hideButton:hover {
+    opacity: 1;
 }
 
 .ayamelPlayer .sidebarNav {
@@ -57,6 +62,9 @@
 	background-color: white;
 	margin: 0px 0px 0 0px;
 	cursor: default;
+}
+
+.ayamelPlayer .sidebarNav ul li:hover {
 }
 
 .ayamelPlayer .sidebarNav ul li.selected {
@@ -836,7 +844,6 @@
 }
 
 .ayamelPlayer .sidebarNav ul li:hover {
-    background-color: #fafafa;
 }
 
 .ayamelPlayer .rightBar .sidebarNav li {
