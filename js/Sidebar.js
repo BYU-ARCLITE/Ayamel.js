@@ -47,9 +47,11 @@
         result.classList.add('fa');
         if(sidebar.side === 'right') {
             result.classList.add('fa-chevron-right');
+            result.classList.add('icon-chevron-right');
         }
         else if(sidebar.side === 'left') {
             result.classList.add('fa-chevron-left');
+            result.classList.add('icon-chevron-left');
         }
         var callback = function() {
             sidebar.hide();
