@@ -51,6 +51,7 @@
 }
 
 .ayamelPlayer .topPane .sidebar {
+	height: 100%;
 	margin: 0 0 0 0;
 	padding: 0 0 0 0;
 	display: inline-block;
@@ -222,17 +223,18 @@
 }
 
 .ayamelPlayer .sidebar .tabContent {
-	overflow: auto;
+	height: 100%;
+	overflow: hidden;
 	overflow-wrap: break-word;
 	padding: 0 0 0 0;
 }
 
 .ayamelPlayer .sidebar .tabContent {
-	padding: 0 0 0 0;
 }
 
 .ayamelPlayer .leftBar .tabBody {
     margin: 50px 30px 50px 15px;
+    padding-bottom: 50px;
 }
 
 .ayamelPlayer .topPane .sidebar .toggle-tab {
@@ -861,4 +863,10 @@
 	height: 20px;
 	padding: 12px 10px;
 	margin: 2px 5px;
+}
+
+.ayamelPlayer .sidebar .tabBody {
+    padding: 0 0 0 0;
+    height: 90%;
+    overflow: auto;
 }
