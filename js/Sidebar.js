@@ -9,7 +9,9 @@
 		}else if(sidebar.side === 'right'){
 			result.classList.add('rightBar');
 		}
-		result.classList.add(sidebar.visible?'visible':'invisible');
+		if(sidebar.visible){
+			result.classList.add('visible');
+		}
 		return result;
 	}
 
@@ -31,23 +33,6 @@
 		return result;
 	}
 
-	function renderHideButton(sidebar){
-		var result = document.createElement('span');
-		result.className = 'hideButton';
-		result.classList.add('fa');
-
-		if(sidebar.side === 'right') {
-			result.classList.add('fa-chevron-right');
-			result.classList.add('icon-chevron-right');
-		}else if(sidebar.side === 'left') {
-			result.classList.add('fa-chevron-left');
-			result.classList.add('icon-chevron-left');
-		}
-
-		result.addEventListener('click', function(){ sidebar.hide(); });
-		return result;
-	}
-
 	function renderTabs(sidebar, headList, sidebarBody){
 		sidebar.tabs.forEach(function(tab){
 			headList.appendChild(tab.head);
@@ -62,11 +47,9 @@
 		var result = renderEmptySidebar(sidebar),
 			head = renderEmptyHead(),
 			headList = renderEmptyTabList(),
-			body = renderEmptyBody(),
-			hideButton = renderHideButton(sidebar);
+			body = renderEmptyBody();
 		result.appendChild(head);
 		head.appendChild(headList);
-		body.appendChild(hideButton);
 		result.appendChild(body);
 		renderTabs(sidebar, headList, body);
 		return result;
@@ -79,18 +62,20 @@
 			return new Ayamel.classes.SidebarTab({
 				title: tdata.title,
 				content: tdata.content,
+				player: args.player,
 				sidebar: that
 			});
 		});
 
 		this.player = args.player;
 		this.side = args.side;
-		this.visible = !!args.visible;
 
 		this.tabs = tabs;
-		this.selected = tabs.filter(function(_, i){
+		this.selectedTab = tabs.filter(function(_, i){
 			return args.tabs[i].selected;
-		})[0] || tabs[0];
+		})[0] || null;
+
+		this.visible = !!this.selectedTab;
 
 		this.element = render(this);
 		args.holder.appendChild(this.element);
@@ -98,25 +83,25 @@
 
 	Sidebar.prototype = {
 		selectTab: function(tab){
-			if(this.selectedTab){
-				if(this.selectedTab === tab){ return; }
-				this.selectedTab.deselect();
-			}
-			tab.select();
+			var oldTab = this.selectedTab;
+			if(oldTab === tab){ return; }
 			this.selectedTab = tab;
+			if(oldTab){ oldTab.deselect(); }
+		},
+		deselectTab: function(tab){
+			if(this.selectedTab !== tab){ return; }
+			this.hide();
 		},
 		hide: function(){
 			if(!this.visible){ return; }
 			this.visible = false;
 			this.element.classList.remove('visible');
-			this.element.className += ' invisible';
 			this.deselectAll();
 			this.player.resetSize();
 		},
 		show: function(){
 			if(this.visible){ return; }
 			this.visible = true;
-			this.element.classList.remove('invisible');
 			this.element.classList.add('visible');
 			this.player.resetSize();
 		},
