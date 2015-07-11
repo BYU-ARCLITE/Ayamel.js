@@ -7,16 +7,6 @@
 			return last * 60 + (+next||0);
 		}, 0);
 	}
-	
-	function cloneTabs(tabs) {
-		var result = [];
-		for(var i = 0; i < tabs.length; i++) {
-			var original = tabs[i];
-			var copy = original.clone();
-			result.push(copy);
-		}
-		return result;
-	}
 
 	function AyamelPlayer(args){
 		var that = this,
@@ -27,9 +17,7 @@
 			aspectRatio = +args.aspectRatio || Ayamel.aspectRatios.hdVideo,
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
-			tabs = args.tabs,
-			tabNames = args.tabNames,
-			selectedTab = args.selectedTab,
+			tabs = (args.tabs instanceof Array) ? {right: args.tabs} : (args.tabs || {}),
 			mediaPlayer, readyPromise;
 
 		element.className = "ayamelPlayer";
@@ -66,22 +54,6 @@
 		topPane.className = "topPane";
 		element.appendChild(topPane);
 
-		//Create the left sidebar
-
-		var leftTabs = cloneTabs(tabs);
-
-		var leftBar = new Ayamel.classes.Sidebar({
-			holder: topPane,
-			player: that,
-			side: 'left',
-			visible: false,
-			onToggle: function() {that.resetSize()},
-			tabs: leftTabs,
-			selected: selectedTab
-		});
-
-		this.leftBar = leftBar;
-
 		// Create the MediaPlayer
 		mediaPlayer = new Ayamel.classes.MediaPlayer({
 			holder: topPane,
@@ -96,20 +68,29 @@
 
 		this.mediaPlayer = mediaPlayer;
 
-		var rightTabs = cloneTabs(tabs);
+		this.rightBar = null;
+		if(tabs.right instanceof Array){
+			//Create the right sidebar
+			this.rightBar = new Ayamel.classes.Sidebar({
+				holder: topPane,
+				player: this,
+				side: 'right',
+				visible: false,
+				tabs: tabs.right
+			});
+		}
 
-		//Create the right sidebar
-		var rightBar = new Ayamel.classes.Sidebar({
-			holder: topPane,
-			player: that,
-			side: 'right',
-			visible: false,
-			onToggle: function() {that.resetSize()},
-			tabs: rightTabs,
-			selected: selectedTab
-		});
-
-		this.rightBar = rightBar;
+		this.leftBar = null;
+		if(tabs.left instanceof Array){
+			//Create the left sidebar
+			this.leftBar = new Ayamel.classes.Sidebar({
+				holder: topPane,
+				player: this,
+				side: 'left',
+				visible: false,
+				tabs: tabs.left
+			});
+		}
 
 		readyPromise = mediaPlayer.promise.then(function(mediaPlayer){
 
