@@ -87,6 +87,7 @@
 			if(oldTab === tab){ return; }
 			this.selectedTab = tab;
 			if(oldTab){ oldTab.deselect(); }
+			else{ this.show(); }
 		},
 		deselectTab: function(tab){
 			if(this.selectedTab !== tab){ return; }
