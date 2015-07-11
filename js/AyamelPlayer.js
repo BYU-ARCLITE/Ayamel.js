@@ -75,7 +75,6 @@
 				holder: topPane,
 				player: this,
 				side: 'right',
-				visible: false,
 				tabs: tabs.right
 			});
 		}
@@ -87,7 +86,6 @@
 				holder: topPane,
 				player: this,
 				side: 'left',
-				visible: false,
 				tabs: tabs.left
 			});
 		}
