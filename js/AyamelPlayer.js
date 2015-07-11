@@ -389,6 +389,7 @@
 		},
 		resetSize: function(){
 			var resizeWidth,
+				rwidth, lwidth,
 				el = this.element,
 				ar = this.aspectRatio,
 				mw = this.maxWidth,
@@ -397,24 +398,12 @@
 				resizeWidth = el.clientWidth;
 				Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
 				this.mediaPlayer.height = el.offsetHeight;
-				var playerWidth = el.offsetWidth;
-				var leftWidth;
-				if(this.leftBar) {
-					leftWidth = this.leftBar.offsetWidth
-				}
-				else {
-					leftWidth = 0;
-				}
-				var rightWidth;
-				if(this.rightBar) {
-					rightWidth = this.rightBar.offsetWidth
-				}
-				else {
-					rightWidth = 0;
-				}
-				this.mediaPlayer.width = playerWidth - leftWidth - rightWidth - 1;
+				lwidth = this.leftBar ? this.leftBar.offsetWidth : 0;
+				rwidth = this.rightBar ? this.rightBar.offsetWidth : 0;
+				this.mediaPlayer.width = resizeWidth - lwidth - rwidth - 1;
 			}while(el.clientWidth !== resizeWidth);
 			if(this.controlBar){ this.controlBar.resize(); }
+			this.mediaPlayer.rebuildCaptions(true);
 		}
 	};
 

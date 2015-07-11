@@ -35,6 +35,7 @@
 	margin: 0 0 0 0;
 	padding: 0 0 0 0;
 	display: inline-block;
+	position: relative;
 }
 
 .ayamelPlayer .topPane .sidebar {

@@ -361,9 +361,9 @@
 			if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
 			this.captionRenderer.addTextTrack(track);
 		},
-		rebuildCaptions: function(){
+		rebuildCaptions: function(force){
 			if(!this.captionRenderer){ return; }
-			this.captionRenderer.rebuildCaptions();
+			this.captionRenderer.rebuildCaptions(!!force);
 		},
 		cueJump: function(dir){
 			if(!this.captionRenderer){ return; }
