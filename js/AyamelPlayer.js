@@ -404,6 +404,11 @@
 			}while(el.clientWidth !== resizeWidth);
 			if(this.controlBar){ this.controlBar.resize(); }
 			this.mediaPlayer.rebuildCaptions(true);
+		},
+		destroy: function(){
+			var el = this.element;
+			this.mediaPlayer.destroy();
+			if(el.parentElement){ el.parentElement.removeChild(el); }
 		}
 	};
 

@@ -379,6 +379,11 @@
 		get textTracks(){
 			return this.captionRenderer?this.captionRenderer.tracks:[];
 		},
+		destroy: function(){
+			var el = this.element;
+			this.plugin.pause();
+			if(el.parentElement){ el.parentElement.removeChild(el); }
+		},
 
 		enterFullScreen: function(h,w){ this.plugin.enterFullScreen(h,w); },
 		exitFullScreen: function(){ this.plugin.exitFullScreen(); },
