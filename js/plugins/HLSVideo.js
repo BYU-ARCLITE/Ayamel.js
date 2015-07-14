@@ -1,7 +1,7 @@
 (function(Ayamel) {
 	"use strict";
 
-	var template = "<div class='videoBox'><canvas style='pointer-events:none;'></canvas></div>";
+	var template = "<div class='videoBox'><canvas style='pointer-events:none;width:100%;height:100%;'></canvas></div>";
 
 	var events = {
 		abort: 'error',                     // Data loading was aborted
