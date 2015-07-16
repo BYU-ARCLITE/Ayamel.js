@@ -111,8 +111,10 @@
 				return Ayamel.utils.loadCaptionTrack(transres)
 				.then(function(obj){
 					return {track: obj.track, mime: obj.mime, resource: transres};
-				});
-			}));
+				},function(err){ return null; });
+			})).then(function(objs){
+				return objs.filter(function(obj){ return obj !== null; });
+			});
 		});
 	}
 
