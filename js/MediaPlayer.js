@@ -1,6 +1,33 @@
 (function(Ayamel) {
 	"use strict";
 
+	var features = {
+		captions: function(player, pluginSupport){
+			return pluginSupport;
+		},
+		annotations: function(player, pluginSupport){
+			return pluginSupport;
+		},
+		fullScreen: function(player, pluginSupport){
+			return pluginSupport;
+		},
+		play: function(player, pluginSupport){
+			return pluginSupport || player.duration > 0;
+		},
+		seek: function(player, pluginSupport){
+			return pluginSupport;
+		},
+		rate: function(player, pluginSupport){
+			return pluginSupport;
+		},
+		timeCode: function(player, pluginSupport){
+			return pluginSupport || player.duration > 0;
+		},
+		volume: function(player, pluginSupport){
+			return pluginSupport;
+		}
+	};
+
 	function pluginLoop(i,len,plugins,args){
 		var module;
 		for(;i < len; i++){
@@ -296,13 +323,15 @@
 				set: function(time){ return this.plugin.currentTime = time + startTime; }
 			}
 		});
-
 	}
 
 	MediaPlayer.prototype = {
 		supports: function(feature){
 			var device = Ayamel.utils.mobile.isMobile ? "mobile" : "desktop";
-			return !!this.plugin.features[device][feature];
+			if(features.hasOwnProperty(feature)){
+				return features[feature](this, !!this.plugin.features[device][feature]);
+			}
+			return false;
 		},
 		addEventListener: function(event, callback, capture){
 			this.element.addEventListener(event, callback, !!capture);
