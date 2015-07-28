@@ -76,29 +76,6 @@
 		};
 	}
 
-	function loadAnnotations(resource, config){
-		var test = null;
-		if(config.whitelist instanceof Array){
-			test = function(relation){ return config.whitelist.indexOf(relation.subjectId) > -1; };
-		}else if(config.blacklist instanceof Array){
-			test = function(relation){ return config.blacklist.indexOf(relation.subjectId) === -1; };
-		}
-		return resource.getAnnotations(test).then(function(rlist){
-			return Promise.all(rlist.map(function(annres){
-				return Ayamel.utils.HTTP({url: annres.content.files[0].downloadUri})
-				.then(function(manifest){
-					return new Ayamel.Annotator.AnnSet(
-						annres.title,
-						annres.languages.iso639_3[0],
-						JSON.parse(manifest)
-					);
-				}).then(null,function(err){ return null; });
-			}));
-		}).then(function(list){
-			return list.filter(function(m){ return m !== null; });
-		});
-	}
-
 	function loadCaptions(resource, config){
 		var test = null;
 		if(config.whitelist instanceof Array){
@@ -124,8 +101,10 @@
 			annotator, indexMap,
 			captionsElement, captionRenderer;
 
+		//TODO: Load annotations from subtitle resources,
+		//and push this annotator down to the plugin level
 		if(player.supports('annotations')){
-			annotator = new Ayamel.Annotator({
+			annotator = Ayamel.Annotator.loadFor(resource, {
 				parsers: annotations.parsers,
 				classList: annotations.classList,
 				style: annotations.style,
@@ -137,16 +116,13 @@
 				}
 			});
 			player.annotator = annotator;
-			//TODO: Load annotations from subtitle resources,
-			//and push this annotator down to the plugin level
-			loadAnnotations(resource, annotations).then(function(list){
-				var element = player.element;
-				annotator.annotations = list;
-				list.forEach(function(annset){
-					element.dispatchEvent(new CustomEvent('addannset', {
-						bubbles:true, detail: {annset: annset}
-					}));
-				});
+			annotator.addEventListener('addannset', function(e){
+				player.element.dispatchEvent(new CustomEvent('addannset', {
+					bubbles:true, detail: {annset: e.detail}
+				}));
+			}, false);
+			annotator.addEventListener('refresh', function(){
+				player.rebuildCaptions(true);
 			});
 		}
 
@@ -334,24 +310,13 @@
 		removeEventListener: function(event, callback, capture){
 			this.element.removeEventListener(event, callback, !!capture);
 		},
-		refreshAnnotations: function(){
-			if(!this.annotator){ return; }
-			this.annotator.refresh();
-			if(this.captionRenderer){ this.captionRenderer.rebuildCaptions(true); }
-		},
 		removeAnnSet: function(annset){
 			if(!this.annotator){ return; }
-			var removed = this.annotator.removeSet(annset);
-			if(removed && this.captionRenderer && annset.mode === "showing"){
-				this.captionRenderer.rebuildCaptions(true);
-			}
+			this.annotator.removeSet(annset);
 		},
 		addAnnSet: function(annset){
 			if(!this.annotator){ return; }
-			var added = this.annotator.addSet(annset);
-			if(added && this.captionRenderer && annset.mode === "showing"){
-				this.captionRenderer.rebuildCaptions(true);
-			}
+			this.annotator.addSet(annset);
 		},
 		removeTextTrack: function(track){
 			if(!this.captionRenderer){ return; }

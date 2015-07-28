@@ -62,30 +62,6 @@
 		return TimedText.isSupported(file.mime);
 	}
 
-	//TODO: Dedeuplicate this with MediaPlayer.js
-	function loadAnnotations(resource, config){
-		var test = null;
-		if(config.whitelist instanceof Array){
-			test = function(relation){ return config.whitelist.indexOf(relation.subjectId) > -1; };
-		}else if(config.blacklist instanceof Array){
-			test = function(relation){ return config.blacklist.indexOf(relation.subjectId) === -1; };
-		}
-		return resource.getAnnotations(test).then(function(rlist){
-			return Promise.all(rlist.map(function(annres){
-				return Ayamel.utils.HTTP({url: annres.content.files[0].downloadUri})
-				.then(function(manifest){
-					return new Ayamel.Annotator.AnnSet(
-						resource.title,
-						resource.languages.iso639_3[0],
-						JSON.parse(manifest)
-					);
-				}).then(null,function(err){ return null; });
-			}));
-		}).then(function(list){
-			return list.filter(function(m){ return m !== null; });
-		});
-	}
-
 	function TextTranscriptPlayer(args){
 		var that = this, timer, track, annotator,
 			resource = args.resource,
@@ -104,7 +80,7 @@
 		args.holder.appendChild(element);
 
 		if(annotations){
-			annotator = new Ayamel.Annotator({
+			annotator = Ayamel.Annotator.loadFor(resource, {
 				parsers: annotations.parsers,
 				classList: annotations.classList,
 				style: annotations.style,
@@ -115,15 +91,12 @@
 					}));
 				}
 			});
-			loadAnnotations(resource, annotations).then(function(list){
-				var element = player.element;
-				annotator.annotations = list;
-				list.forEach(function(annset){
-					element.dispatchEvent(new CustomEvent('addannset', {
-						bubbles:true, detail: {annset: annset}
-					}));
-				});
-			});
+
+			annotator.addEventListener('addannset', function(e){
+				element.dispatchEvent(new CustomEvent('addannset', {
+					bubbles:true, detail: {annset: e.detail}
+				}));
+			}, false);
 		}
 
 		// Load the source
