@@ -206,14 +206,6 @@
 				mediaPlayer.rebuildCaptions();
 			});
 
-			// Rebuild captions when annotation sets are enabled or disabled.
-			controlBar.addEventListener("enableannset", function(){
-				mediaPlayer.refreshAnnotations();
-			});
-			controlBar.addEventListener("disableannset", function(){
-				mediaPlayer.refreshAnnotations();
-			});
-
 			// Turn soundtracks on and off.
 			controlBar.addEventListener("enableaudio", function(e){
 				mediaPlayer.enableAudio(e.detail);

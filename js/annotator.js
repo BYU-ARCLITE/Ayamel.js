@@ -91,7 +91,7 @@
 				//Some jiggering is necessary to get around
 				//the lack of innerHTML on doc fragments
 				pspan.innerHTML = "";
-				pspan.appendChild(content.cloneNode(true))
+				pspan.appendChild(content.cloneNode(true));
 				text = pspan.innerHTML;
 				root = content.cloneNode(true);
 			}
@@ -164,6 +164,7 @@
 							?config.annotations:[];
 		}
 
+		this.element = document.createElement('div');
 		this.classList = (config.classList instanceof Array)?config.classList:[];
 		this.style = (config.style instanceof Object)?config.style:{};
 
@@ -173,18 +174,37 @@
 		this.matchers = getMatchers(annotations, parsers);
 		this.index = +config.index||0;
 
+		this._refresher = this.refresh.bind(this);
+
 		Object.defineProperties(this,{
 			annotations: {
 				enumerable: true,
 				get: function(){ return annotations; },
 				set: function(a){
+					var that = this, r = false, o, n;
 					if(a instanceof Array){
 						this.matchers = getMatchers(a, parsers);
+						n = a.filter(function(annset){ return annotations.indexOf(annset) > -1; });
+						o = annotations.filter(function(annset){ return a.indexOf(annset) > -1; });
 						return annotations = a;
 					}else{
 						this.matchers = [];
-						return annotations = [];
+						o = annotations;
+						n = [];
+						return annotations = n;
 					}
+					if(n.length === 0 && o.length === 0){ return; }
+					n.forEach(function(annset){
+						if(annset.mode === "showing"){ r = true; }
+						annset.addEventListener('modechange', that._refresher, false);
+						that.element.dispatchEvent(new CustomEvent('addannset', { detail: annset }));
+					});
+					o.forEach(function(annset){
+						if(annset.mode === "showing"){ r = true; }
+						annset.removeEventListener('modechange', that._refresher, false);
+						that.element.dispatchEvent(new CustomEvent('removeannset', { detail: annset }));
+					});
+					if(r){ this.refresh(); }
 				}
 			},
 			parsers: {
@@ -207,23 +227,36 @@
 		return anText(this, content);
 	};
 
-	Annotator.addSet = function(annset){
+	Annotator.prototype.addSet = function(annset){
 		if(this.annotations.indexOf(annset) > -1){ return false; }
 		this.annotations.push(annset);
+		this.element.dispatchEvent(new CustomEvent('addannset', { detail: annset }));
 		if(annset.mode === "showing"){ this.refresh(); }
+		annset.addEventListener('modechange', this._refresher, false);
 		return true;
 	};
 
-	Annotator.removeSet = function(annset){
+	Annotator.prototype.removeSet = function(annset){
 		var idx = this.annotations.indexOf(annset);
 		if(idx === -1){ return false; }
 		this.annotations.splice(idx,1);
+		this.element.dispatchEvent(new CustomEvent('removeannset', { detail: annset }));
 		if(annset.mode === "showing"){ this.refresh(); }
+		annset.removeEventListener('modechange', this._refresher, false);
 		return true;
+	}
+
+	Annotator.prototype.addEventListener = function(event, cb, capture){
+		this.element.addEventListener(event, cb, !!capture);
+	};
+
+	Annotator.prototype.removeEventListener = function(event, cb, capture){
+		this.element.removeEventListener(event, cb, !!capture);
 	}
 
 	Annotator.prototype.refresh = function(){
 		this.matchers = getMatchers(this.annotations, this.parsers);
+		this.element.dispatchEvent(new CustomEvent('refresh'));
 	};
 
 	/****************************************
@@ -299,10 +332,59 @@
 	};
 
 	Annotator.AnnSet = function(label, language, glosses){
+		var mode = "disabled";
+		this.element = document.createElement('div');
 		this.label = ""+label;
 		this.language = ""+language;
 		this.glosses = glosses;
-		this.mode = "disabled";
+		Object.defineProperties(this, {
+			label: {value: ""+label, enumerable: true},
+			language: {value: ""+language, enumerable: true},
+			glosses: {value: glosses, enumerable: true},
+			mode: {
+				get: function(){ return mode; },
+				set: function(str){
+					if(mode === str){ return mode; }
+					mode = str;
+					this.element.dispatchEvent(new CustomEvent('modechange'));
+					return mode;
+				},
+				enumerable: true
+			}
+		});
+	};
+
+	Annotator.AnnSet.prototype.addEventListener = function(event, cb, capture){
+		this.element.addEventListener(event, cb, !!capture);
+	};
+
+	Annotator.AnnSet.prototype.removeEventListener = function(event, cb, capture){
+		this.element.removeEventListener(event, cb, !!capture);
+	}
+
+	Annotator.loadFor = function(resource, config){
+		var annotator = new Annotator(config);
+
+		resource.getAnnotations(
+			(config.whitelist instanceof Array)?
+				function(relation){ return config.whitelist.indexOf(relation.subjectId) > -1; }:
+			(config.blacklist instanceof Array)?
+				function(relation){ return config.blacklist.indexOf(relation.subjectId) === -1; }:
+			null
+		).then(function(rlist){
+			rlist.map(function(annres){
+				return Ayamel.utils.HTTP({url: annres.content.files[0].downloadUri})
+				.then(function(manifest){
+					return new Ayamel.Annotator.AnnSet(
+						annres.title,
+						annres.languages.iso639_3[0],
+						JSON.parse(manifest)
+					);
+				}).then(function(annset){ annotator.addSet(annset); });
+			});
+		});
+
+		return annotator;
 	};
 
 	Ayamel.Annotator = Annotator;
