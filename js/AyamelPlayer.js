@@ -169,7 +169,10 @@
 
 			// Change the volume when the volume controls are adjusted
 			controlBar.addEventListener("volumechange", function(event){
-				try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
+				var isFirefox = typeof InstallTrigger !== 'undefined';
+				if (isFirefox) {
+					try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility	
+				}
 				mediaPlayer.volume = event.detail.volume;
 				controlBar.volume = mediaPlayer.volume;
 			});
@@ -183,12 +186,20 @@
 
 			// Mute/unmute the media when the mute button is pressed
 			controlBar.addEventListener("mute", function(){
-				try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
+				// http://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+				// seems to work
+				var isFirefox = typeof InstallTrigger !== 'undefined';
+				if (isFirefox) {
+					try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility	
+				}
 				mediaPlayer.muted = true;
 				controlBar.muted = mediaPlayer.muted;
 			});
 			controlBar.addEventListener("unmute", function(){
-				try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility
+				var isFirefox = typeof InstallTrigger !== 'undefined';
+				if (isFirefox) {
+					try{ event.stopPropagation(); }catch(ignore){} // Firefox Compatibility	
+				}
 				mediaPlayer.muted = false;
 				controlBar.muted = mediaPlayer.muted;
 			});
