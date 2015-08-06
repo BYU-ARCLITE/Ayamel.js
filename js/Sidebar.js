@@ -60,6 +60,13 @@
 		this.tabs.forEach(function(t){ t.deselect(); });
 	}
 
+	function showSidebar(sidebar){
+		if(sidebar.visible){ return; }
+		sidebar.visible = true;
+		sidebar.element.classList.add('visible');
+		sidebar.player.resetSize();
+	}
+
 	function Sidebar(args) {
 		var tabs, that = this;
 
@@ -89,11 +96,12 @@
 	}
 
 	Sidebar.prototype = {
-		show: function(){
-			if(this.visible){ return; }
-			this.visible = true;
-			this.element.classList.add('visible');
-			this.player.resetSize();
+		show: function(tab){
+			if(typeof tab === 'undefined'){
+				showSidebar(this);
+			} else {
+				this.selectTab(tab);
+			}
 		},
 		hide: function(){
 			if(!this.visible){ return; }
@@ -107,7 +115,7 @@
 			if(oldTab === tab){ return; }
 			this.selectedTab = tab;
 			if(oldTab){ oldTab.deselect(); }
-			else{ this.show(); }
+			else{ showSidebar(this); }
 		},
 		restore: function(){
 			if(this.baseVisible){
