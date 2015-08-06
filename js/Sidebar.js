@@ -38,7 +38,7 @@
 			headList.appendChild(tab.head);
 			sidebarBody.appendChild(tab.body);
 			if(sidebar.selected === tab){
-				sidebar.selectTab(tab);
+				sidebar._userSelectTab(tab);
 			}
 		});
 	}
@@ -74,14 +74,29 @@
 		this.selectedTab = tabs.filter(function(_, i){
 			return args.tabs[i].selected;
 		})[0] || null;
+		this.baseTab = this.selectedTab;
 
 		this.visible = !!this.selectedTab;
+		this.baseVisible = this.visible;
 
 		this.element = render(this);
 		args.holder.appendChild(this.element);
 	}
 
 	Sidebar.prototype = {
+		show: function(){
+			if(this.visible){ return; }
+			this.visible = true;
+			this.element.classList.add('visible');
+			this.player.resetSize();
+		},
+		hide: function(){
+			if(!this.visible){ return; }
+			this.visible = false;
+			this.element.classList.remove('visible');
+			this._deselectAll();
+			this.player.resetSize();
+		},
 		selectTab: function(tab){
 			var oldTab = this.selectedTab;
 			if(oldTab === tab){ return; }
@@ -89,28 +104,30 @@
 			if(oldTab){ oldTab.deselect(); }
 			else{ this.show(); }
 		},
-		deselectTab: function(tab){
+		restore: function(){
+			if(this.baseVisible){
+				this.selectTab(this.baseTab);
+			} else {
+				this.hide();
+			}
+		},
+		_userShow: function(){
+			this.baseVisible = true;
+			this.show();
+		},
+		_userHide: function(){
+			this.baseVisible = false;
+			this.hide();
+		},
+		_userSelectTab: function(tab) {
+			this.baseTab = tab;
+			this.selectTab(tab);
+		},
+		_deselectTab: function(tab){
 			if(this.selectedTab !== tab){ return; }
 			this.hide();
 		},
-		hide: function(){
-			if(!this.visible){ return; }
-			this.visible = false;
-			this.element.classList.remove('visible');
-			this.deselectAll();
-			this.player.resetSize();
-		},
-		show: function(){
-			if(this.visible){ return; }
-			this.visible = true;
-			this.element.classList.add('visible');
-			this.player.resetSize();
-		},
-		toggle: function() {
-			if(this.visible){ this.hide(); }
-			else{ this.show(); }
-		},
-		deselectAll: function() {
+		_deselectAll: function() {
 			this.selectedTab = null;
 			this.tabs.forEach(function(t){ t.deselect(); });
 		},

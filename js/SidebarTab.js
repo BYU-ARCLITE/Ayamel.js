@@ -35,10 +35,10 @@
 
 		this.head.addEventListener('click', function(){
 			if(that.body.classList.contains('visible')){
-				sidebar.hide();
+				sidebar._userHide();
 			}else{
 				that.select();
-				sidebar.show();
+				sidebar._userShow();
 			}
 		});
 	}
@@ -48,14 +48,14 @@
 			if(this.body.classList.contains('visible')){ return; }
 			this.body.classList.add('visible');
 			this.head.classList.add('selected');
-			this.sidebar.selectTab(this);
+			this.sidebar._userSelectTab(this);
 			this.body.dispatchEvent(new CustomEvent("select", {bubbles: true}));
 		},
 		deselect: function(){
 			if(!this.body.classList.contains('visible')){ return; }
 			this.body.classList.remove('visible');
 			this.head.classList.remove('selected');
-			this.sidebar.deselectTab(this);
+			this.sidebar._deselectTab(this);
 			this.body.dispatchEvent(new CustomEvent("deselect", {bubbles: true}));
 		},
 		addEventListener: function(event, cb, capture){
