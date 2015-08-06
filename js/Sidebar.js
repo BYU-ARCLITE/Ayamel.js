@@ -56,8 +56,8 @@
 	}
 
 	function deselectAll(sidebar){
-		this.selectedTab = null;
-		this.tabs.forEach(function(t){ t.deselect(); });
+		sidebar.selectedTab = null;
+		sidebar.tabs.forEach(function(t){ t.deselect(); });
 	}
 
 	function showSidebar(sidebar){
