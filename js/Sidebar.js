@@ -55,6 +55,11 @@
 		return result;
 	}
 
+	function deselectAll(sidebar){
+		this.selectedTab = null;
+		this.tabs.forEach(function(t){ t.deselect(); });
+	}
+
 	function Sidebar(args) {
 		var tabs, that = this;
 
@@ -94,7 +99,7 @@
 			if(!this.visible){ return; }
 			this.visible = false;
 			this.element.classList.remove('visible');
-			this._deselectAll();
+			deselectAll(this);
 			this.player.resetSize();
 		},
 		selectTab: function(tab){
@@ -126,10 +131,6 @@
 		_deselectTab: function(tab){
 			if(this.selectedTab !== tab){ return; }
 			this.hide();
-		},
-		_deselectAll: function() {
-			this.selectedTab = null;
-			this.tabs.forEach(function(t){ t.deselect(); });
 		},
 		get offsetWidth(){
 			return this.visible?this.element.offsetWidth:0;
