@@ -49,6 +49,7 @@
 
 .ayamelPlayer .sidebar {
 	visibility: visible;
+	background-color: white;
 	width: 0;
 }
 
