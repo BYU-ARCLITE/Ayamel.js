@@ -8,6 +8,38 @@
 		}, 0);
 	}
 
+	function cue_handler(player, type, e){
+		var cue = e.target,
+			text = cue.text,
+			data;
+
+		if(cue.track.kind !== "metadata"){ return; }
+		if(text.substr(0,13) !== "[AyamelEvent]"){ return; }
+		try{ data = JSON.parse(text.substr(13))[type]; }
+		catch(_){ return; }
+		if(typeof data !== "object"){ return; }
+		if(data.events instanceof Array){
+			data.events.forEach(function(e){
+				player.element.dispatchEvent(new CustomEvent(e.name, {bubbles: e.bubbles, detail: e.detail}));
+			});
+		}
+		//TODO: Implement player commands
+	}
+
+	function registerCueHandlers(enter, exit, e){
+		e.detail.track.cues.forEach(function(cue){
+			cue.addEventListener('enter', enter, false);
+			cue.addEventListener('exit', exit, false);
+		})
+	}
+
+	function removeCueHandlers(enter, exit, e){
+		e.detail.track.cues.forEach(function(cue){
+			cue.removeEventListener('enter', enter, false);
+			cue.removeEventListener('exit', exit, false);
+		})
+	}
+
 	function AyamelPlayer(args){
 		var that = this,
 			resource = args.resource,
@@ -18,7 +50,7 @@
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
 			tabs = (args.tabs instanceof Array) ? {right: args.tabs} : (args.tabs || {}),
-			mediaPlayer, readyPromise;
+			mediaPlayer, readyPromise, cue_enter, cue_exit;
 
 		element.className = "ayamelPlayer";
 		this.element = element;
@@ -90,6 +122,13 @@
 			});
 		}
 
+		// set up event track handling
+		cue_enter = cue_handler.bind(null, this, 'enter');
+		cue_exit = cue_handler.bind(null, this, 'exit');
+		this.addEventListener('addtexttrack', registerCueHandlers.bind(null,cue_enter,cue_exit), false);
+		this.addEventListener('removetexttrack', removeCueHandlers.bind(null,cue_enter,cue_exit), false);
+
+		// finish set up when media player has loaded
 		readyPromise = mediaPlayer.promise.then(function(mediaPlayer){
 
 			// Create the ControlBar

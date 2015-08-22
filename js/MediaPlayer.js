@@ -175,7 +175,7 @@
 				var element = player.element;
 				objs.forEach(function(obj){
 					var offset = 0;
-					captionRenderer.addTextTrack(obj.track);
+					if(captionRenderer.addTextTrack(obj.track) === null){ return; }
 					obj.track.cues.forEach(function(cue){
 						indexMap.set(cue, offset);
 						offset += cue.getCueAsHTML().textContent.length;
@@ -349,13 +349,17 @@
 		},
 		removeTextTrack: function(track){
 			if(!this.captionRenderer){ return; }
-			if(this.captionRenderer.tracks.indexOf(track) === -1){ return; }
-			this.captionRenderer.removeTextTrack(track);
+			if(this.captionRenderer.addTextTrack(track) === null){ return; }
+			this.element.dispatchEvent(new CustomEvent('removetexttrack', {
+				bubbles: true, detail: obj
+			}));
 		},
 		addTextTrack: function(track){
 			if(!this.captionRenderer){ return; }
-			if(this.captionRenderer.tracks.indexOf(track) !== -1){ return; }
-			this.captionRenderer.addTextTrack(track);
+			if(this.captionRenderer.addTextTrack(track) === null){ return; }
+			this.element.dispatchEvent(new CustomEvent('addtexttrack', {
+				bubbles: true, detail: obj
+			}));
 		},
 		rebuildCaptions: function(force){
 			if(!this.captionRenderer){ return; }
