@@ -79,6 +79,7 @@
 							playsinline: 1,
 							rel: 0,
 							showinfo: 0,
+							fs: 0
 						},
 						events: {
 							onReady: function(event){
