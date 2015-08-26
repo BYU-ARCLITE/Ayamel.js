@@ -609,26 +609,36 @@
 	-webkit-border-radius: 0;
 	-moz-border-radius: 0;
 	border-radius: 0;
+	position: fixed;
+	bottom: 0;
 }
 .ayamelPlayer:-moz-full-screen .controlBar {
 	-webkit-border-radius: 0;
 	-moz-border-radius: 0;
 	border-radius: 0;
+	position: fixed;
+	bottom: 0;
 }
 .ayamelPlayer:-o-full-screen .controlBar {
 	-webkit-border-radius: 0;
 	-moz-border-radius: 0;
 	border-radius: 0;
+	position: fixed;
+	bottom: 0;
 }
 .ayamelPlayer:-ms-full-screen .controlBar {
 	-webkit-border-radius: 0;
 	-moz-border-radius: 0;
 	border-radius: 0;
+	position: fixed;
+	bottom: 0;
 }
 .ayamelPlayer:full-screen .controlBar {
 	-webkit-border-radius: 0;
 	-moz-border-radius: 0;
 	border-radius: 0;
+	position: fixed;
+	bottom: 0;
 }
 
 .ayamelPlayer.pseudoFullScreen {
