@@ -9,6 +9,7 @@
 	}
 
 	function AyamelPlayer(args){
+		window.a = this;
 		var that = this,
 			resource = args.resource,
 			element = document.createElement('div'),
@@ -18,7 +19,12 @@
 			maxWidth = +args.maxWidth || (1/0),
 			maxHeight = +args.maxHeight || (1/0),
 			tabs = (args.tabs instanceof Array) ? {right: args.tabs} : (args.tabs || {}),
+<<<<<<< HEAD
+			tabNames = args.tabs,
 			mediaPlayer, readyPromise;
+=======
+			mediaPlayer, readyPromise, cue_enter, cue_exit;
+>>>>>>> b05426c... Removed old code of mine from merge
 
 		element.className = "ayamelPlayer";
 		this.element = element;
@@ -152,7 +158,12 @@
 
 			// When the user is done scrubbing, seek to that position
 			controlBar.addEventListener("scrubend", function(event){
+				var oldTime = mediaPlayer.currentTime;
 				mediaPlayer.currentTime = event.detail.progress * mediaPlayer.duration;
+				that.element.dispatchEvent(new CustomEvent('timejump', {
+					bubbles:true,
+					detail: { oldtime: oldTime, newtime: mediaPlayer.currentTime }
+				}));
 			});
 
 			// Play the media when the play button is pressed

@@ -1,3 +1,8 @@
+#player_div {
+	width: 50%;
+	height: 50%;
+}
+
 .ayamelPlayer {
 	font-family: 'Source Sans Pro', sans-serif;
 	-webkit-touch-callout: none;
@@ -437,7 +442,7 @@
 .ayamelPlayer .captions .icon {
 	position: relative;
 	height:100%;
-	widht: 100%;
+	width: 100%;
 	background: url("../images/captions.png") center no-repeat;
 	background-size: 15px;
 }
