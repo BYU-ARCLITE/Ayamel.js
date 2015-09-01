@@ -11,6 +11,9 @@
 		fullScreen: function(player, pluginSupport){
 			return pluginSupport;
 		},
+		lastCaption: function(player, pluginSupport){
+			return pluginSupport;
+		},
 		play: function(player, pluginSupport){
 			return pluginSupport || player.duration > 0;
 		},
