@@ -54,6 +54,7 @@
 }
 
 .ayamelPlayer .sidebar.visible {
+	height: 100%;
 	width: 30%;
 }
 
@@ -165,7 +166,8 @@
 
 .ayamelPlayer .sidebar .tabBody.visible {
 	padding: 0 0 0 0;
-	height: 90%;
+	margin: 0 0 0 0;
+	height: 100%;
 	overflow: auto;
 	display: initial;
 }
