@@ -10,17 +10,20 @@
 			</div>\
 		</div>';
 
-	function resizeMenu(menu, top){
-		var width, columns = 0;
-		do {
-			columns += 1;
-			menu.style.webkitColumnCount = columns;
-			menu.style.mozColumnCount = columns;
-			menu.style.columnCount = columns;
-		}while(menu.getBoundingClientRect().top <= top);
-		width = 200*columns;
+	function resizeMenu(menu, top, columns){
+		var width = 200*columns;
+		menu.style.webkitColumnCount = columns;
+		menu.style.mozColumnCount = columns;
+		menu.style.columnCount = columns;
+
 		menu.style.width = width + "px";
 		menu.style.marginLeft = (-width/2) + "px";
+
+		if(menu.getBoundingClientRect().top <= top){
+			setTimeout(function(){ resizeMenu(menu, top, columns+1); }, 0);
+		}else{
+			menu.style.visibility = "visible";
+		}
 	}
 
 	function buildMenu(playerElement, element, tracks){
@@ -51,7 +54,8 @@
 		}
 
 		element.classList.add("active");
-		resizeMenu(menu, playerElement.getBoundingClientRect().top);
+		menu.style.visibility = "hidden";
+		resizeMenu(menu, playerElement.getBoundingClientRect().top, 1);
 	}
 
 	function hideMenu(element){
