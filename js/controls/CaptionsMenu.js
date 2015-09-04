@@ -15,9 +15,9 @@
 		do {
 			columns += 1;
 			menu.style.webkitColumnCount = columns;
-			menu.style.mozColumnCount = columns;
+			menu.style.MozColumnCount = columns;
 			menu.style.columnCount = columns;
-		}while(menu.getBoundingClientRect().top <= top);
+		}while(menu.getBoundingClientRect().top < top);
 		width = 200*columns;
 		menu.style.width = width + "px";
 		menu.style.marginLeft = (-width/2) + "px";
