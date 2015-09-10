@@ -423,6 +423,12 @@
 		refreshAnnotations: function(){
 			this.mediaPlayer.refreshAnnotations();
 		},
+		rebuildCaptions: function(){
+			this.mediaPlayer.rebuildCaptions();
+		},
+		refreshLayout: function(){
+			this.mediaPlayer.refreshLayout();
+		},
 		addEventListener: function(event, callback, capture){
 			this.element.addEventListener(event, callback, !!capture);
 		},

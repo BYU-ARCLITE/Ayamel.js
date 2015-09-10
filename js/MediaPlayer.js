@@ -368,6 +368,10 @@
 			if(!this.captionRenderer){ return; }
 			this.captionRenderer.rebuildCaptions(!!force);
 		},
+		refreshLayout: function(force){
+			if(!this.captionRenderer){ return; }
+			this.captionRenderer.refreshLayout();
+		},
 		cueJump: function(dir){
 			if(!this.captionRenderer){ return; }
 			var tracks = this.captionRenderer.tracks.filter(function(track){
