@@ -354,14 +354,14 @@
 			if(!this.captionRenderer){ return; }
 			if(this.captionRenderer.addTextTrack(track) === null){ return; }
 			this.element.dispatchEvent(new CustomEvent('removetexttrack', {
-				bubbles: true, detail: obj
+				bubbles: true, detail: track
 			}));
 		},
 		addTextTrack: function(track){
 			if(!this.captionRenderer){ return; }
 			if(this.captionRenderer.addTextTrack(track) === null){ return; }
 			this.element.dispatchEvent(new CustomEvent('addtexttrack', {
-				bubbles: true, detail: obj
+				bubbles: true, detail: track
 			}));
 		},
 		rebuildCaptions: function(force){
