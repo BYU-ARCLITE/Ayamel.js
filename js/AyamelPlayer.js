@@ -191,7 +191,12 @@
 
 			// When the user is done scrubbing, seek to that position
 			controlBar.addEventListener("scrubend", function(event){
+				var oldTime = mediaPlayer.currentTime;
 				mediaPlayer.currentTime = event.detail.progress * mediaPlayer.duration;
+				that.element.dispatchEvent(new CustomEvent('timejump', {
+					bubbles:true,
+					detail: { oldtime: oldTime, newtime: mediaPlayer.currentTime }
+				}));
 			});
 
 			// Play the media when the play button is pressed
