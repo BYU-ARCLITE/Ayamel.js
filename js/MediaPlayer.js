@@ -115,7 +115,15 @@
 		}
 		return resource.getTranscripts(test).then(function(tlist){
 			return Promise.all(tlist.map(function(transres){
-				return Ayamel.utils.loadCaptionTrack(transres)
+				// This is kind of a hack. We should properly have different
+				// pathways for retrieving each distinct kind of text track
+				var kind = resource.relations.filter(function(relation){
+					return relation.type == "transcript_of" &&
+						relation.subjectId == transres.id;
+				},this).map(function(relation){
+					return relation.attributes.kind || "subtitles";
+				})[0];
+				return Ayamel.utils.loadCaptionTrack(transres, kind)
 				.then(function(obj){
 					return {track: obj.track, mime: obj.mime, resource: transres};
 				},function(err){ return null; });

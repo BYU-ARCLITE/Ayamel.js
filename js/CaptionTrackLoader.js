@@ -8,7 +8,7 @@
 (function (Ayamel, TimedText) {
 	"use strict";
 
-	Ayamel.utils.loadCaptionTrack = function(resource){
+	Ayamel.utils.loadCaptionTrack = function(resource, kind){
 		var supportedFiles, file;
 		if(!TimedText){ throw new Error("TimedText library not loaded."); }
 		if(resource instanceof TextTrack){
@@ -23,7 +23,7 @@
 			file = supportedFiles[0];
 			return new Promise(function(resolve, reject){
 				TextTrack.get({
-					kind: (file.attributes && file.attributes.kind) || "subtitles",
+					kind: kind || "subtitles",
 					label: resource.title || "Untitled",
 					lang: resource.languages.iso639_3[0] || "eng",
 					src: file.downloadUri,
