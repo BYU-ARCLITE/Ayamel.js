@@ -185,8 +185,10 @@
 			loadCaptions(resource, args.captions).then(function(objs){
 				var element = player.element;
 				objs.forEach(function(obj){
-					var offset = 0;
-					if(captionRenderer.addTextTrack(obj.track) === null){ return; }
+					var offset = 0, track = obj.track;
+					if(captionRenderer.addTextTrack(track) === null){ return; }
+					//Not sure if this is the best place for this check, but it works
+					if(track.kind === "metadata"){ track.mode = "hidden"; }
 					obj.track.cues.forEach(function(cue){
 						indexMap.set(cue, offset);
 						offset += cue.getCueAsHTML().textContent.length;
