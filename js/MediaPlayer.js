@@ -367,11 +367,11 @@
 				bubbles: true, detail: track
 			}));
 		},
-		addTextTrack: function(track){
+		addTextTrack: function(track, mime, resource){
 			if(!this.captionRenderer){ return; }
 			if(this.captionRenderer.addTextTrack(track) === null){ return; }
 			this.element.dispatchEvent(new CustomEvent('addtexttrack', {
-				bubbles: true, detail: track
+				bubbles: true, detail: {track: track, mime: mime || "", resource: resource || null}
 			}));
 		},
 		rebuildCaptions: function(force){
