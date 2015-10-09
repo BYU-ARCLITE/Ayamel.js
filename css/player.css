@@ -305,7 +305,7 @@
 }
 
 .ayamelPlayer .controlBar {
-	width: 100%;
+	width: 99.99%;	/*Width cannot be set to 100%. Otherwise controlBar on Ayamel Player is too wide.*/
 	background: #333;
 	position: relative;
 	cursor: default;
