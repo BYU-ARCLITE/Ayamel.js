@@ -311,7 +311,42 @@
 			this.resetSize();
 		};
 
+		this.setSize = function(w, h){
+			w = +w || maxWidth;
+			h = +h || maxHeight;
+			if(maxWidth < w){ maxWidth = w; }
+			if(maxHeight < h){ maxHeight = h; }
+			aspectRatio = w/h;
+			this.element.style.width = w+"px";
+			this.element.style.height = h+"px";
+			this.resetSize();
+		};
+
 		Object.defineProperties(this, {
+			width: {
+				get: function(){ return this.element.clientWidth; },
+				set: function(px){
+					px = +px;
+					if(!px){ return this.width; }
+					if(maxWidth < px){ maxWidth = px; }
+					aspectRatio = px / this.height;
+					this.element.style.width = px+"px";
+					this.resetSize();
+					return this.width;
+				}
+			},
+			height: {
+				get: function(){ return this.element.clientHeight; },
+				set: function(px){
+					px = +px;
+					if(!px){ return this.height; }
+					if(maxHeight < px){ maxHeight = px; }
+					aspectRatio = this.width / px;
+					this.element.style.height = px+"px";
+					this.resetSize();
+					return this.height;
+				}
+			},
 			aspectRatio: {
 				get: function(){ return aspectRatio; },
 				set: function(r){
@@ -347,8 +382,6 @@
 	}
 
 	AyamelPlayer.prototype = {
-		get width(){ return this.element.clientWidth; },
-		get height(){ return this.element.clientHeight; },
 		get textTracks(){ return this.mediaPlayer.textTracks; },
 		get targetLang(){
 			return this.translator ? this.translator.targetLang : "eng";
