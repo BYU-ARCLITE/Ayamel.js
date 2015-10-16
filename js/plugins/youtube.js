@@ -213,7 +213,8 @@
 				get: function(){ return element.clientWidth; },
 				set: function(w){
 					w = +w || element.clientWidth;
-					element.style.width = w + "px";
+					element.style.width = w+1 + "px";
+					// the above "w+1" is the hacky fix for fixing the width of the youtube player's off-by-1px issue.
 					return w;
 				}
 			}
