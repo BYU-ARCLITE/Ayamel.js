@@ -83,27 +83,17 @@
 
 		if(content.cloneNode){
 			if(content.nodeType === Node.TEXT_NODE){
-				text = content.nodeValue;
 				root = document.createDocumentFragment();
 				root.appendChild(content.cloneNode(true));
 			}else{
-				//Documents and elements can be root nodes
-				//Some jiggering is necessary to get around
-				//the lack of innerHTML on doc fragments
-				pspan.innerHTML = "";
-				pspan.appendChild(content.cloneNode(true));
-				text = pspan.innerHTML;
 				root = content.cloneNode(true);
 			}
 		}else{
-			text = content;
-			pspan.innerHTML = text;
+			pspan.innerHTML = content;
 			root = document.createDocumentFragment();
 			[].forEach.call(pspan.childNodes,root.appendChild.bind(root));
 		}
 
-		matchers = config.matchers.filter(function(m){ return m.test(text); });
-		len = matchers.length;
 		nodes = [root];
 		while(n = nodes.shift()) switch(n.nodeType){
 			case Node.DOCUMENT_FRAGMENT_NODE:
@@ -111,8 +101,10 @@
 				Array.prototype.push.apply(nodes,n.childNodes);
 				continue;
 			case Node.TEXT_NODE:
-				n.parentNode.replaceChild(len?anString(matchers,filter,modnode,n.nodeValue,config.index):filter(n.nodeValue),n);
-				config.index += n.nodeValue.length;
+				text = n.nodeValue;
+				matchers = config.matchers.filter(function(m){ return m.test(text); });
+				n.parentNode.replaceChild(matchers.length?anString(matchers,filter,modnode,text,config.index):filter(text),n);
+				config.index += text.length;
 		}
 		return root;
 	}
