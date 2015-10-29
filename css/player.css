@@ -1,15 +1,8 @@
-#player_div {
-	width: 50%;
-	height: 50%;
-}
-
 .ayamelPlayer {
 	font-family: 'Source Sans Pro', sans-serif;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
-	-khtml-user-select: none;
 	-moz-user-select: none;
-	-ms-user-select: none;
 	user-select: none;
 }
 
@@ -36,6 +29,7 @@
 	padding: 0 0 0 0;
 	display: inline-block;
 	position: relative;
+	background: black;
 }
 
 .ayamelPlayer .topPane .sidebar {

@@ -17,13 +17,105 @@
 		if(text.substr(0,13) !== "[AyamelEvent]"){ return; }
 		try{ data = JSON.parse(text.substr(13))[type]; }
 		catch(_){ return; }
-		if(typeof data !== "object"){ return; }
-		if(data.events instanceof Array){
+		if(typeof data === "object" && data.events instanceof Array){ 
 			data.events.forEach(function(e){
 				player.element.dispatchEvent(new CustomEvent(e.name, {bubbles: e.bubbles, detail: e.detail}));
 			});
 		}
-		//TODO: Implement player commands
+		
+		var mutatorFlag = false;
+		var cueMutations = {};
+
+		// Cue handling
+		if(type === "enter"){
+			// ENTER
+			if(typeof data !== "object"){ return; }
+
+			if(data.actions instanceof Array){
+				data.actions.forEach(function(i){
+					switch(i.type){
+					case "pause":
+						player.pause();
+						break;
+
+					case "skip":
+						player.currentTime = cue.endTime;
+						break;
+
+					case "setvolume":
+						mutatorFlag = true; 
+						cueMutations.volume = true;
+												
+						var oldVolume = player.volume;
+						player.volume = i.value;
+						player.cachedValues.volume = oldVolume;
+						break;
+
+					case "setrate":
+						mutatorFlag = true;
+						cueMutations.playbackRate = true;
+
+						var oldRate = player.playbackRate;
+						player.playbackRate = i.value;
+						player.cachedValues.playbackRate = oldRate;
+						break;
+
+					case "mute":
+						mutatorFlag = true;
+						cueMutations.muted = true;
+
+						var oldMute = player.muted;
+						player.muted = i.value;
+						player.cachedValues.muted = oldMute;
+						break;
+
+					case "blank":
+						mutatorFlag = true;
+						cueMutations.blank = true;
+						player.cachedValues.blank = player.mediaPlayer.blank;
+						player.mediaPlayer.blank = true;
+						break;
+
+					case "blur":
+						mutatorFlag = true;
+						cueMutations.blur = true;
+						player.cachedValues.blur = player.mediaPlayer.blur;
+						player.mediaPlayer.blur = i.value;
+						break;
+					}
+				});
+				
+				// Add mutating cues to mutatorCues
+				if(mutatorFlag){
+					player.mutatorCues.set(cue, cueMutations);
+				}
+
+			}	
+		}
+		// EXIT
+		else{
+			if(typeof data === "object" && data.actions instanceof Array){
+				data.actions.forEach(function(i){
+					switch(i.type){
+					case "pause":
+						player.pause();
+						break;
+					}
+				});
+			}
+		
+			// Restore values from cache
+			if(player.mutatorCues.has(cue))
+			{
+				cueMutations = player.mutatorCues.get(cue);
+				player.mutatorCues.delete(cue);
+
+				["volume", "playbackRate", "muted", "blank", "blur"].forEach(function(p){
+					if(!cueMutations[p]) { return; }
+					player.mediaPlayer[p] = player.cachedValues[p];
+				});
+			}
+		}
 	}
 
 	function registerCueHandlers(enter, exit, e){
@@ -123,6 +215,15 @@
 		}
 
 		// set up event track handling
+		this.cachedValues = {
+			volume 			: this.volume,
+			playbackRate	: this.playbackRate,
+			muted 			: this.muted,
+			blur			: 0,
+			blank			: false
+		};
+		this.mutatorCues = new Map();
+
 		cue_enter = cue_handler.bind(null, this, 'enter');
 		cue_exit = cue_handler.bind(null, this, 'exit');
 		this.addEventListener('addtexttrack', registerCueHandlers.bind(null,cue_enter,cue_exit), false);
@@ -412,18 +513,22 @@
 		set muted(muted){
 			var m = this.mediaPlayer.muted;
 			this.mediaPlayer.muted = muted;
-			if(this.mediaPlayer.muted !== m){
-				this.element.dispatchEvent(new CustomEvent(
-					m?'unmute':'mute', {bubbles:true}
-				));
-			}
+			this.cachedValues.muted = this.mediaPlayer.muted;
 			return this.mediaPlayer.muted;
 		},
 		get paused(){ return this.mediaPlayer.paused; },
 		get playbackRate(){ return this.mediaPlayer.playbackRate; },
-		set playbackRate(rate){ return this.mediaPlayer.playbackRate = rate; },
+		set playbackRate(rate){ 
+			this.mediaPlayer.playbackRate = rate;
+			this.cachedValues.playbackRate = this.mediaPlayer.playbackRate;
+			return this.mediaPlayer.playbackRate; 
+		},
 		get volume(){ return this.mediaPlayer.volume; },
-		set volume(volume){ return this.mediaPlayer.volume = volume; },
+		set volume(volume){ 
+			this.mediaPlayer.volume = volume; 
+			this.cachedValues.volume = this.mediaPlayer.volume; 
+			return this.mediaPlayer.volume; 
+		},
 		get isFullScreen(){ return Ayamel.utils.FullScreen.fullScreenElement === this.element; },
 		addTextTrack: function(track, mime, resource){
 			this.mediaPlayer.addTextTrack(track, mime, resource);

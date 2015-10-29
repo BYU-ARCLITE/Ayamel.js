@@ -27,7 +27,8 @@
 	function YouTubePlayer(args){
 		var that = this,
 			startTime = args.startTime, endTime = args.endTime,
-			videoTime = startTime, videoIsMuted = false, ready = 0,
+			videoTime = startTime, ready = 0,
+			videoIsMuted = false, videoVolume = 1,
 			element = Ayamel.utils.parseHTML(template);
 
 		// Create the element
@@ -155,7 +156,27 @@
 					if(!this.readyState){ return false; }
 					videoIsMuted = !!muted;
 					this.video[videoIsMuted?'mute':'unMute']();
+					
+					// Firing "volumechange" event because youtubePlayer doesn't.
+					element.dispatchEvent(new Event("volumechange",{bubbles:true,cancelable:false}));
+
 					return videoIsMuted;
+				}
+			},
+			volume: {
+				get: function(){
+					return videoVolume;
+					//return this.video ? this.video.getVolume() / 100 : 1;
+				},
+				set: function(volume){
+					if(!this.readyState){ return 1; }
+					videoVolume = (+volume||0);
+					this.video.setVolume(videoVolume * 100);
+					
+					// Firing "volumechange" event because youtubePlayer doesn't.
+					element.dispatchEvent(new Event("volumechange",{bubbles:true,cancelable:false}));
+
+					return videoVolume;
 				}
 			},
 			paused: {
@@ -189,17 +210,6 @@
 			},
 			readyState: {
 				get: function(){ return ready; }
-			},
-			volume: {
-				get: function(){
-					return this.video ? this.video.getVolume() / 100 : 1;
-				},
-				set: function(volume){
-					if(!this.readyState){ return 1; }
-					volume = (+volume||0);
-					this.video.setVolume(volume * 100);
-					return volume;
-				}
 			},
 			height: {
 				get: function(){ return element.clientHeight; },

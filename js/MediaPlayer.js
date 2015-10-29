@@ -31,6 +31,10 @@
 		}
 	};
 
+	var teststyle = document.body.style,
+		filterp =	teststyle.hasOwnProperty('webkitFilter')?'webkitFilter':
+					teststyle.hasOwnProperty('filter')?'filter':"";
+
 	function pluginLoop(i,len,plugins,args){
 		var module;
 		for(;i < len; i++){
@@ -292,6 +296,8 @@
 			startTime = args.startTime,
 			endTime = args.endTime,
 			translator = args.translator,
+			blur = 0, simblur = false,
+			blank = false,
 			element, indexMap;
 
 		// Attempt to load the resource
@@ -334,6 +340,39 @@
 			currentTime: {
 				get: function(){ return this.plugin.currentTime - startTime; },
 				set: function(time){ return this.plugin.currentTime = time + startTime; }
+			},
+			blur: {
+				get: function(){ return blur; },
+				set: function(px){
+					var filter;
+					px = +px | 0; //cast to integer
+					if(px === blur){ return blur; }
+					if(!filterp){ //fall back to blanking
+						if(px){
+							simblur = true;
+							this.plugin.element.style.opacity = "0";
+						}else{
+							simblur = false;
+							if(!blank){ this.plugin.element.style.opacity = "1"; }
+						}
+					}else{
+						filter = this.plugin.element.style[filterp];
+						filter = filter.replace(/blur\(.*?\)/g, "");
+						if(px){ filter += "blur("+px+"px)"; }
+						this.plugin.element.style[filterp] = filter;
+					}
+					return blur = px;
+				}
+			},
+			blank: {
+				get: function(){ return blank; },
+				set: function(b){
+					b = !!b;
+					if(b === blank){ return blank; }
+					blank = b;
+					if(!simblur){ this.plugin.element.style.opacity = b?"0":"1"; }
+					return blank;
+				}
 			}
 		});
 	}
@@ -418,7 +457,16 @@
 		enableAudio: function(track){ this.soundManager.activate(track); },
 		disableAudio: function(track){ this.soundManager.deactivate(track); },
 		get muted(){ return this.soundManager.muted; },
-		set muted(muted){ return this.soundManager.muted = muted; },
+		set muted(muted){
+			var m = this.soundManager.muted;
+			this.soundManager.muted = muted;
+			if(this.soundManager.muted !== m){
+				this.element.dispatchEvent(new CustomEvent(
+					m?'unmute':'mute', {bubbles:true}
+				));
+			}
+			return this.soundManager.muted; 
+		},
 		get volume(){ return this.soundManager.volume; },
 		set volume(volume){ return this.soundManager.volume = volume; }
 	};
