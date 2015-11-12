@@ -21,17 +21,13 @@
 			srcLang = params.srcLang,
 			destLang = params.destLang || this.targetLang;
 
-		// Because translation engines look for two-letter codes, make sure that's what we are dealing with
-		if(srcLang.length === 3){ srcLang = Ayamel.utils.downgradeLangCode(srcLang); }
-		if(destLang.length === 3){ destLang = Ayamel.utils.downgradeLangCode(destLang); }
-
 		// Don't translate if it's empty
 		if(!text || typeof text !== 'string'){
 			return Promise.reject({
 				text: text,
 				message: "Empty Text",
-				srcLang: Ayamel.utils.upgradeLangCode(srcLang),
-				destLang: Ayamel.utils.upgradeLangCode(destLang),
+				srcLang: srcLang,
+				destLang: destLang,
 				data: params.data
 			});
 		}
@@ -41,8 +37,8 @@
 			cancelable: true,
 			detail: {
 				text: text,
-				srcLang: Ayamel.utils.upgradeLangCode(srcLang),
-				destLang: Ayamel.utils.upgradeLangCode(destLang),
+				srcLang: srcLang,
+				destLang: destLang,
 				data: params.data
 			}
 		}));
@@ -53,8 +49,8 @@
 			function err(msg){
 				var data = {
 					text: text, message: msg,
-					srcLang: Ayamel.utils.upgradeLangCode(srcLang),
-					destLang: Ayamel.utils.upgradeLangCode(destLang),
+					srcLang: srcLang,
+					destLang: destLang,
 					data: params.data
 				};
 				that.e.dispatchEvent(new CustomEvent("error",{detail:data, bubbles:true}));
@@ -67,8 +63,8 @@
 						text: text,
 						translations: resp.entries,
 						engine: resp.source,
-						srcLang: Ayamel.utils.upgradeLangCode(srcLang),
-						destLang: Ayamel.utils.upgradeLangCode(destLang),
+						srcLang: srcLang,
+						destLang: destLang,
 						data: params.data
 					};
 				if (data.translations === void 0) {  // Make sure we actually received translations
