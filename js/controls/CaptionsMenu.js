@@ -96,9 +96,14 @@
 		args.player.addEventListener('addtexttrack',function(e){
 			that.addTrack(e.detail.track);
 		},false);
+
+		args.player.addEventListener('removetexttrack',function(e){
+			that.removeTrack(e.detail.track);
+		},false);
 	}
 
 	CaptionsMenu.prototype.addTrack = function(track){
+		if(track.kind !== "subtitles" && track.kind !== "captions"){ return; }
 		if(this.tracks.indexOf(track) > -1){ return; }
 		this.tracks.push(track);
 		refresh(this.playerElement, this.element, this.tracks);

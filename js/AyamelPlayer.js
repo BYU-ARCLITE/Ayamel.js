@@ -532,15 +532,9 @@
 		get isFullScreen(){ return Ayamel.utils.FullScreen.fullScreenElement === this.element; },
 		addTextTrack: function(track, mime, resource){
 			this.mediaPlayer.addTextTrack(track, mime, resource);
-			if(this.controlBar.components.captions){
-				this.controlBar.components.captions.addTrack(track);
-			}
 		},
 		removeTextTrack: function(track){
 			this.mediaPlayer.removeTextTrack(track);
-			if(this.controlBar.components.captions){
-				this.controlBar.components.captions.removeTrack(track);
-			}
 		},
 		refreshCaptionMenu: function(){
 			if(!this.controlBar.components.captions){ return; }
