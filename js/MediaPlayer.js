@@ -441,8 +441,20 @@
 			if(el.parentElement){ el.parentElement.removeChild(el); }
 		},
 
-		enterFullScreen: function(h,w){ this.plugin.enterFullScreen(h,w); },
-		exitFullScreen: function(){ this.plugin.exitFullScreen(); },
+		enterFullScreen: function(h,w){
+			if(this.captionsElement){
+				this.captionsElement.style.height = h+"px";
+				this.captionRenderer.rebuildCaptions(true);
+			}
+			this.plugin.enterFullScreen(h,w);
+		},
+		exitFullScreen: function(){
+			this.plugin.exitFullScreen();
+			if(this.captionsElement){
+				this.captionsElement.style.height = "100%";
+				this.captionRenderer.rebuildCaptions(true);
+			}
+		},
 		play: function(){ this.plugin.play(); },
 		pause: function(){ this.plugin.pause(); },
 		get paused(){ return this.plugin.paused; },
