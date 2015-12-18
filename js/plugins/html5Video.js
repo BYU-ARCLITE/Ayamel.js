@@ -23,7 +23,9 @@
 	};
 
 	function supportsFile(file){
-		return supports.indexOf(testVideo.canPlayType(file.mime)) >= 0;
+		// Not sure how all browsers will deal with Apple's special mime types, so we'll normalize them
+		var mime = file.mime.replace("x-m4v", "mp4");
+		return supports.indexOf(testVideo.canPlayType(mime)) >= 0;
 	}
 
 	function Html5VideoPlayer(args){

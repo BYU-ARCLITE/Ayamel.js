@@ -24,7 +24,9 @@
 	};
 
 	function supportsFile(file){
-		return supports.indexOf(testAudio.canPlayType(file.mime)) >= 0;
+		// Not sure how all browsers will deal with Apple's special mime types, so we'll normalize them
+		var mime = file.mime.replace("x-m4a", "mp4");
+		return supports.indexOf(testAudio.canPlayType(mime)) >= 0;
 	}
 
 	function Html5AudioPlayer(args){

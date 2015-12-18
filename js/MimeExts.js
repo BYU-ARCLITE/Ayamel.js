@@ -207,6 +207,8 @@
 		'm2v':"video/mpeg",
 		'm3u':"audio/x-mpegurl",
 		'm3u8':"application/x-mpegURL",
+		'm4a':"audio/mp4",
+		'm4v':"video/mp4",
 		'm':"text/x-m",
 		'man':"application/x-troff-man",
 		'manifest':"text/cache-manifest",
