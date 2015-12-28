@@ -9,9 +9,25 @@
 		];
 
 	function supportsFile(file){
+		// First, test to see if this is an RTMP file
+		if (file.streamUri && file.streamUri.substr(0,7) === "rtmp://"){ 
+			return true;
+		}
+
+		// Else, fall back on the old flashVideo code
 		var mime = file.mime.split(";")[0];
 		return supportedMimeTypes.indexOf(mime) >= 0;
 	}
+
+	/*function getURL(resource){
+		var file = Ayamel.utils.findFile(resource, supportsFile);
+
+		if(file.streamUri && file.streamUri.substr(0,7) === "rtmp://"){
+			return file.streamUri;
+		}
+
+		return file.downloadUri;
+	}*/
 
 	function FlashVideoPlayer(args){
 		var flowId = "flowVideoHolder"+(counter++).toString(36),
@@ -19,7 +35,9 @@
 			swfPath = Ayamel.path + "js/plugins/flowplayer/flowplayer-3.2.16.swf",
 			element = Ayamel.utils.parseHTML(template),
 			startTime = args.startTime, endTime = args.endTime,
-			width, height, player;
+			width, height, player,
+			file = Ayamel.utils.findFile(args.resource, supportsFile),
+			isRTMP = file.streamUri && file.streamUri.substr(0,7) === "rtmp://";
 
 		this.resource = args.resource;
 
@@ -53,17 +71,19 @@
 		// Create the player
 		player = flowplayer(flowId, {
 			src: swfPath,
-			wmode: "opaque"
+			wmode: "opaque",
 		}, {
 			canvas: {
 				backgroundColor: "#000000",
 				backgroundGradient: "none"
 			},
 			clip: {
-				url: Ayamel.utils.findFile(args.resource, supportsFile).downloadUri,
+				// if using RTMP, use streamURI; else, use downloadURI as url
+				url: (isRTMP) ? void 0: file.downloadUri,
 				autoPlay: false,
 				autoBuffering: true,
 				scaling: "fit",
+				provider: (isRTMP) ? 'hddn': void 0,
 
 				// Set up clip events
 				onFinish: function(){
@@ -97,7 +117,15 @@
 			},
 			play: null,
 			plugins: {
-				controls: null
+				controls: null,
+
+				// here is our rtmp plugin configuration
+		        hddn: (isRTMP) ? {
+		            url: Ayamel.path + "js/plugins/flowplayer/flowplayer.rtmp-3.2.13.swf",
+		            
+		            // netConnectionUrl defines where the streams are found
+		            netConnectionUrl: file.streamUri
+		        } : void 0
 			}
 		});
 
