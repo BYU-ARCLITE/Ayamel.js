@@ -240,6 +240,7 @@
 		'mp4':"video/mp4",
 		'mpa':"audio/mpeg",
 		'mpc':"application/x-project",
+		'mpd':"application/dash+xml",
 		'mpe':"video/mpeg",
 		'mpeg':"video/mpeg",
 		'mpg':"video/mpeg",
