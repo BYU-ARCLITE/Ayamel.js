@@ -44,11 +44,12 @@
 		var file = Ayamel.utils.findFile(args.resource, supportsFile);
 		var url = file.streamUri || file.downloadUri;
 		var context = Dash.di.DashContext();
-    	var player = MediaPlayer(context);
-    	player.startup();
-    	player.attachView(video);
-    	player.attachSource(url);
-    	this.player = player;
+		var player = MediaPlayer(context);
+		player.startup();
+		player.attachView(video);
+		player.attachSource(url);
+		player.debug.setLogToBrowserConsole(false);
+		this.player = player;
 
 		// Set up event propagation
 		Object.keys(events).forEach(function(eventName){
@@ -72,8 +73,8 @@
 			},
 			currentTime: {
 				get: function(){ return player.time(); },
-				set: function(time){ 
-					player.seek(+time||0); 
+				set: function(time){
+					player.seek(+time||0);
 					return player.time();
 				}
 			},
