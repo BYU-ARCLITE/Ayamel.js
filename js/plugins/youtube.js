@@ -88,7 +88,13 @@
 								element.dispatchEvent(new Event("durationchange",{bubbles:true,cancelable:false}));
 							},
 							onStateChange: function(event){
+								var player = event.target;
 								if(loaded){
+									// There is no way to detect whether or not YT captions are loaded,
+									// and onApiChange does not fire reliably to indicate their activation,
+									// so we just attempt to remove them on every state transition
+									player.unloadModule('cc');
+									player.unloadModule('captions');
 									switch(event.data){
 									case 0: element.dispatchEvent(new Event("ended",{bubbles:true,cancelable:false}));
 										playing = false;
@@ -108,7 +114,7 @@
 								//If it's not loaded, then it will autoplay when you seek, so we need it to autoplay
 								//when it loads, but then immediately pause it. Then we can resume normal behavior.
 								else if(event.data === 1){
-									event.target.pauseVideo();
+									player.pauseVideo();
 								}else if(event.data === 2){
 									loaded = true;
 								}
