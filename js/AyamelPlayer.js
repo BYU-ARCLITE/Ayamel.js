@@ -579,7 +579,15 @@
 				ar = this.aspectRatio,
 				mw = this.maxWidth,
 				mh = this.maxHeight;
-			do{ // Resize until it fills the most space avaliable
+			if(this.isFullScreen){
+				resizeWidth = screen.availWidth;
+				el.style.height = screen.availHeight + 'px';
+				el.style.width = resizeWidth + 'px';
+				this.mediaPlayer.height = el.offsetHeight;
+				lwidth = this.leftBar ? this.leftBar.offsetWidth : 0;
+				rwidth = this.rightBar ? this.rightBar.offsetWidth : 0;
+				this.mediaPlayer.width = resizeWidth - lwidth - rwidth - 1;
+			}else do{ // Iteratively resize until it fills the most space avaliable
 				resizeWidth = el.clientWidth;
 				Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
 				this.mediaPlayer.height = el.offsetHeight;
