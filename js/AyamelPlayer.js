@@ -574,7 +574,7 @@
 		},
 		resetSize: function(){
 			var resizeWidth,
-				rwidth, lwidth,
+				rwidth, lwidth, ch,
 				el = this.element,
 				ar = this.aspectRatio,
 				mw = this.maxWidth,
@@ -589,13 +589,14 @@
 				this.mediaPlayer.width = resizeWidth - lwidth - rwidth - 1;
 			}else do{ // Iteratively resize until it fills the most space avaliable
 				resizeWidth = el.clientWidth;
-				Ayamel.utils.fitAspectRatio(el, ar, mw, mh);
+				ch = this.controlBar?this.controlBar.height:0;
+				Ayamel.utils.fitAspectRatio(el, ar, mw, mh - ch);
 				this.mediaPlayer.height = el.offsetHeight;
 				lwidth = this.leftBar ? this.leftBar.offsetWidth : 0;
 				rwidth = this.rightBar ? this.rightBar.offsetWidth : 0;
 				this.mediaPlayer.width = resizeWidth - lwidth - rwidth - 1;
+				if(this.controlBar){ this.controlBar.resize(); }
 			}while(el.clientWidth !== resizeWidth);
-			if(this.controlBar){ this.controlBar.resize(); }
 			this.mediaPlayer.rebuildCaptions(true);
 		},
 		destroy: function(){
