@@ -56,12 +56,11 @@
 	}
 
 	function deselectAll(sidebar){
-		sidebar.selectedTab = null;
-		sidebar.tabs.forEach(function(t){ t.deselect(); });
+		sidebar.tabs.forEach(function(t){ t._deselect(); });
 	}
 
 	function showSidebar(sidebar){
-		if(sidebar.visible){ return; }
+		if(sidebar.visible || !sidebar.selectedTab){ return; }
 		sidebar.visible = true;
 		sidebar.element.classList.add('visible');
 		sidebar.player.resetSize();
@@ -86,10 +85,11 @@
 		this.selectedTab = tabs.filter(function(_, i){
 			return args.tabs[i].selected;
 		})[0] || null;
-		this.baseTab = this.selectedTab;
+
 
 		this.visible = !!this.selectedTab;
 		this.baseVisible = this.visible;
+		this.baseTab = this.selectedTab;
 
 		this.element = render(this);
 		args.holder.appendChild(this.element);
@@ -97,11 +97,12 @@
 
 	Sidebar.prototype = {
 		show: function(tab){
-			if(typeof tab === 'undefined'){
-				showSidebar(this);
-			} else {
-				this.selectTab(tab);
+			// if a tab is not provided, try to re-open the last
+			// selected tab, or fall back to the top of the list.
+			if(!(tab instanceof Ayamel.classes.SidebarTab)){
+				tab = this.selectedTab || this.tabs[0];
 			}
+			if(tab){ tab.select(); }
 		},
 		hide: function(){
 			if(!this.visible){ return; }
@@ -110,35 +111,20 @@
 			deselectAll(this);
 			this.player.resetSize();
 		},
-		selectTab: function(tab){
+		_selectTab: function(tab){
 			var oldTab = this.selectedTab;
-			if(oldTab === tab){ return; }
-			this.selectedTab = tab;
-			if(oldTab){ oldTab.deselect(); }
-			else{ showSidebar(this); }
+			if(oldTab !== tab){
+				if(oldTab){ oldTab._deselect(); }
+				this.selectedTab = tab;
+			}
+			showSidebar(this);
 		},
 		restore: function(){
 			if(this.baseVisible){
-				this.selectTab(this.baseTab);
-			} else {
+				this.show(this.baseTab);
+			}else{
 				this.hide();
 			}
-		},
-		_userShow: function(){
-			this.baseVisible = true;
-			this.show();
-		},
-		_userHide: function(){
-			this.baseVisible = false;
-			this.hide();
-		},
-		_userSelectTab: function(tab) {
-			this.baseTab = tab;
-			this.selectTab(tab);
-		},
-		_deselectTab: function(tab){
-			if(this.selectedTab !== tab){ return; }
-			this.hide();
 		},
 		get offsetWidth(){
 			return this.visible?this.element.offsetWidth:0;

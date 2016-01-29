@@ -35,10 +35,12 @@
 
 		this.head.addEventListener('click', function(){
 			if(that.body.classList.contains('visible')){
-				sidebar._userHide();
+				sidebar.baseVisible = false;
+				sidebar.hide();
 			}else{
+				sidebar.baseTab = that;
+				sidebar.baseVisible = true;
 				that.select();
-				sidebar._userShow();
 			}
 		});
 	}
@@ -48,14 +50,17 @@
 			if(this.body.classList.contains('visible')){ return; }
 			this.body.classList.add('visible');
 			this.head.classList.add('selected');
-			this.sidebar._userSelectTab(this);
+			this.sidebar._selectTab(this);
 			this.body.dispatchEvent(new CustomEvent("select", {bubbles: true}));
 		},
 		deselect: function(){
 			if(!this.body.classList.contains('visible')){ return; }
+			this.sidebar.hide();
+			this._deselect();
+		},
+		_deselect: function(){
 			this.body.classList.remove('visible');
 			this.head.classList.remove('selected');
-			this.sidebar._deselectTab(this);
 			this.body.dispatchEvent(new CustomEvent("deselect", {bubbles: true}));
 		},
 		addEventListener: function(event, cb, capture){

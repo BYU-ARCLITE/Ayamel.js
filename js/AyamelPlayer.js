@@ -563,14 +563,12 @@
 		rebuildCaptions: function(){
 			this.mediaPlayer.rebuildCaptions();
 		},
+		restoreTabs: function(){
+			if(this.rightBar){ this.rightBar.restore(); }
+			if(this.lefttBar){ this.leftBar.restore(); }
+		},
 		refreshLayout: function(){
 			this.mediaPlayer.refreshLayout();
-		},
-		addEventListener: function(event, callback, capture){
-			this.element.addEventListener(event, callback, !!capture);
-		},
-		removeEventListener: function(event, callback, capture){
-			this.element.removeEventListener(event, callback, !!capture);
 		},
 		resetSize: function(){
 			var resizeWidth,
@@ -598,6 +596,12 @@
 				if(this.controlBar){ this.controlBar.resize(); }
 			}while(el.clientWidth !== resizeWidth);
 			this.mediaPlayer.rebuildCaptions(true);
+		},
+		addEventListener: function(event, callback, capture){
+			this.element.addEventListener(event, callback, !!capture);
+		},
+		removeEventListener: function(event, callback, capture){
+			this.element.removeEventListener(event, callback, !!capture);
 		},
 		destroy: function(){
 			var el = this.element;
