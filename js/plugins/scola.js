@@ -23,11 +23,35 @@
 	};
 
 	function supportsFile(file){
-		return (file.mimeType === 'application/dash+xml') &&
-			((file.streamUri || file.downloadUri).indexOf("http") === 0);
+		return file.streamUri && file.streamUri.substr(0, 8) === 'scola://';
 	}
 
-	function dashVideoPlayer(args){
+	function getSignedUrl(args){
+		if(!window.SCOLAEndpoint){
+			throw new Error("No Endpoint Configured for SCOLA plugin");
+		}
+
+		return new Promise(function(resolve, reject){
+			var data = new FormData(),
+			    xhr = new XMLHttpRequest(),
+				file = Ayamel.utils.findFile(args.resource, supportsFile);
+
+			data.append("url", file.streamUri.replace(/^scola:/,"https:"));
+			xhr.open("POST", window.SCOLAEndpoint,true);
+			xhr.addEventListener("load", function(){
+				if(xhr.status < 200 || xhr.status > 299){
+					reject(new Error("Error requesting signed URL"));
+				}
+				resolve(xhr.responseText);
+			});
+			xhr.addEventListener("error", function(){
+				reject(new Error("Error requesting signed URL"));
+			});
+			xhr.send(data);
+		});
+	}
+
+	function scolaPlayer(args, url){
 		var startTime = args.startTime, endTime = args.endTime,
 			element = Ayamel.utils.parseHTML(template),
 			video = element.querySelector("video");
@@ -42,10 +66,9 @@
 		this.video = video;
 
 		// Load the source
-		var file = Ayamel.utils.findFile(args.resource, supportsFile);
-		var url = file.streamUri || file.downloadUri;
 		var context = Dash.di.DashContext();
 		var player = MediaPlayer(context);
+
 		player.startup();
 		player.attachView(video);
 		player.attachSource(url);
@@ -119,32 +142,32 @@
 		});
 	}
 
-	dashVideoPlayer.prototype.play = function(){
+	scolaPlayer.prototype.play = function(){
 		this.video.play();
 	};
 
-	dashVideoPlayer.prototype.pause = function(){
+	scolaPlayer.prototype.pause = function(){
 		this.video.pause();
 	};
 
-	dashVideoPlayer.prototype.enterFullScreen = function(availableHeight){
+	scolaPlayer.prototype.enterFullScreen = function(availableHeight){
 		this.normalHeight = this.element.clientHeight;
 		this.element.style.height = availableHeight + 'px';
 	};
 
-	dashVideoPlayer.prototype.exitFullScreen = function(){
+	scolaPlayer.prototype.exitFullScreen = function(){
 		this.element.style.height = this.normalHeight + 'px';
 	};
 
-	dashVideoPlayer.prototype.addEventListener = function(name, handler, capture){
+	scolaPlayer.prototype.addEventListener = function(name, handler, capture){
 		this.element.addEventListener(name, handler, !!capture);
 	};
 
-	dashVideoPlayer.prototype.removeEventListener = function(name, handler, capture){
+	scolaPlayer.prototype.removeEventListener = function(name, handler, capture){
 		this.element.removeEventListener(name, handler, !!capture);
 	};
 
-	dashVideoPlayer.prototype.features = {
+	scolaPlayer.prototype.features = {
 		desktop: {
 			captions: true,
 			annotations: true,
@@ -169,9 +192,11 @@
 		}
 	};
 
-	Ayamel.mediaPlugins.video.dash = {
+	Ayamel.mediaPlugins.video.scola = {
 		install: function(args){
-			return new dashVideoPlayer(args);
+			return getSignedUrl(args).then(function(url){
+				return new scolaPlayer(args, url);
+			});
 		},
 		supports: function(args){
 			return args.resource.type === "video" &&

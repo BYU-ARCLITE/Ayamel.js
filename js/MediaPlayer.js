@@ -40,9 +40,14 @@
 		for(;i < len; i++){
 			module = plugins[i];
 			if(!module.supports(args)){ continue; }
-			//Promise.resolve allows install to return either a plugin,
-			//or a promise for a plugin
-			return Promise.resolve(module.install(args)).then(null,function(){
+
+			// module.install can return either a plugin,
+			// or a promise for a plugin, but we don't use
+			// Promise.resolve() in case an exception is
+			// thrown in module.install
+			return new Promise(function(resolve){
+				resolve(module.install(args));
+			}).catch(function(){
 				return pluginLoop(i+1,len,plugins,args);
 			});
 		}
