@@ -1,22 +1,17 @@
 .ayamelPlayer {
 	font-family: 'Source Sans Pro', sans-serif;
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-moz-user-select: none;
 	user-select: none;
 }
 
 .ayamelPlayer .playerTop {
 	min-height: 10px;
 	background: #333;
-	-webkit-border-radius: 8px 8px 0 0;
-	-moz-border-radius: 8px 8px 0 0;
 	border-radius: 8px 8px 0 0;
 }
 
 .ayamelPlayer .topPane {
-	margin: 0 0 0 0;
-	padding: 0 0 0 0;
+	margin: 0;
+	padding: 0;
 	height: 100%;
 	position: relative;
 	overflow: hidden;
@@ -25,173 +20,100 @@
 .ayamelPlayer .topPane .mediaPlayer {
 	line-height: 100%;
 	height: 100%;
-	margin: 0 0 0 0;
-	padding: 0 0 0 0;
+	margin: 0;
+	padding: 0;
 	display: inline-block;
 	position: relative;
 	background: black;
 }
 
-.ayamelPlayer .topPane .sidebar {
+.ayamelPlayer .sidebar {
+	position: absolute;
 	height: 100%;
-	margin: 0 0 0 0;
-	padding: 0 0 0 0;
+	width: 0;
+	margin: 0;
+	padding: 0;
 	display: inline-block;
 	vertical-align: top;
-	position: absolute;
-}
-
-.ayamelPlayer .sidebar {
-	visibility: visible;
 	background-color: white;
-	width: 0;
 }
 
 .ayamelPlayer .sidebar.visible {
-	height: 100%;
 	width: 30%;
 }
 
 .ayamelPlayer .sidebarNav {
 	height: 0px;
 	position: absolute;
-	padding: 0 0 0 0;
+	padding: 0;
 }
 
-.ayamelPlayer .sidebarNav ul li {
-	padding: 15px 15px 15px 15px;
+.ayamelPlayer .sidebarHeads {
+	position: relative;
+	transform-origin: 0 100%;
+	margin: 0;
+	white-space: nowrap;
+}
+
+.ayamelPlayer .tabHead {
 	border: 1px solid lightgrey;
+	padding: 1px 5px;
 	opacity: 0.5;
 	color: #4d4d4d;
 	display: inline;
 	background-color: white;
-	margin: 0px 0px 0 0px;
+	margin: 0;
 	cursor: default;
-	-webkit-transition: opacity .5s;
-	-moz-transition: opacity .5s;
-	-o-transition: opacity .5s;
 	transition: opacity .5s;
 }
 
-.ayamelPlayer  .sidebarNav:hover ul li, .ayamelPlayer .sidebarNav ul li.selected  {
+.ayamelPlayer .tabHead:hover, .ayamelPlayer .tabHead.selected  {
 	opacity: 1;
 }
 
-.ayamelPlayer .sidebar .sidebarNav ul {
-	position: relative;
-	width: 304px;
-	-webkit-transform-origin: 0 100%;
-	-moz-transform-origin: 0 100%;
-	-ms-transform-origin: 0 100%;
-	-o-transform-origin: 0 100%;
-	transform-origin: 0 100%;
-	margin: 50px 0 0 0;
+.ayamelPlayer .leftBar .sidebarHeads {
+	transform: rotateZ(-90deg) translateY(-20px);
 }
 
-.ayamelPlayer .sidebar.leftBar .sidebarNav ul {
-	-webkit-transform: rotateZ(90deg) translateX(-16px);
-	-moz-transform: rotateZ(90deg) translateX(-16px);
-	-ms-transform: rotateZ(90deg) translateX(-16px);
-	-o-transform: rotateZ(90deg) translateX(-16px);
-	transform: rotateZ(90deg) translateX(-16px);
+.ayamelPlayer .rightBar .sidebarHeads {
+	transform: rotateZ(90deg) translateY(20px);
 }
 
-.ayamelPlayer .sidebar.leftBar.visible .sidebarNav ul {
-	-webkit-transform: rotateZ(90deg) translateX(-16px) translateY(-303px);
-	-moz-transform: rotateZ(90deg) translateX(-16px) translateY(-303px);
-	-ms-transform: rotateZ(90deg) translateX(-16px) translateY(-303px);
-	-o-transform: rotateZ(90deg) translateX(-16px) translateY(-303px);
-	transform: rotateZ(90deg) translateX(-16px) translateY(-303px);
-}
-
-.ayamelPlayer .sidebar.rightBar .sidebarNav ul {
-	-webkit-transform: rotateZ(90deg) translateX(-16px) translateY(21px);
-	-moz-transform: rotateZ(90deg) translateX(-16px) translateY(21px);
-	-ms-transform: rotateZ(90deg) translateX(-16px) translateY(21px);
-	-o-transform: rotateZ(90deg) translateX(-16px) translateY(21px);
-	transform: rotateZ(90deg) translateX(-16px) translateY(21px);
-}
-
-.ayamelPlayer .sidebar.rightBar.visible .sidebarNav ul {
-	-webkit-transform: rotateZ(90deg) translateX(-16px) translateY(20px);
-	-moz-transform: rotateZ(90deg) translateX(-16px) translateY(20px);
-	-ms-transform: rotateZ(90deg) translateX(-16px) translateY(20px);
-	-o-transform: rotateZ(90deg) translateX(-16px) translateY(20px);
-	transform: rotateZ(90deg) translateX(-16px) translateY(20px);
-}
-
-.ayamelPlayer .rightBar .sidebarNav li {
-	padding: 1px 15px;
+.ayamelPlayer .rightBar .tabHead {
 	border-radius: 0 0 5px 5px;
-	-webkit-transform-origin: 50% 50%;
-	-moz-transform-origin: 50% 50%;
-	-ms-transform-origin: 50% 50%;
-	-o-transform-origin: 50% 50%;
-	transform-origin: 50% 50%;
-	-webkit-transform: rotateZ(180deg);
-	-moz-transform: rotateZ(180deg);
-	-ms-transform: rotateZ(180deg);
-	-o-transform: rotateZ(180deg);
-	transform: rotateZ(180deg);
 }
 
-.ayamelPlayer .rightBar .sidebarNav li.selected {
+.ayamelPlayer .leftBar .tabHead {
+	border-radius: 5px 5px 0 0;
+}
+
+.ayamelPlayer .rightBar .tabHead.selected {
 	border-top: none;
 }
 
-.ayamelPlayer .leftBar .sidebarNav ul li {
-	border-radius: 5px 5px 0 0;
-	padding: 0px 15px;
-}
-
-.ayamelPlayer .leftBar .sidebarNav ul li.selected {
+.ayamelPlayer .leftBar .tabHead.selected {
 	border-bottom: none;
 }
 
-.ayamelPlayer .sidebar.invisible .tabContent {
-	display: none;
-}
-
-.ayamelPlayer .sidebar .tabBody {
+.ayamelPlayer .tabBody {
 	height: 90%;
 	overflow: auto;
 	display: none;
-}
-
-.ayamelPlayer .sidebar .tabBody.visible {
 	padding: 0 0 0 0;
 	margin: 0 0 0 0;
+}
+
+.ayamelPlayer .tabBody.visible {
 	height: 100%;
 	overflow: auto;
 	display: initial;
 }
 
-.ayamelPlayer .leftBar .tabBody {
-	margin: 50px 30px 50px 15px;
-}
-
-.ayamelPlayer .rightBar .tabBody {
-	margin: 50px 15px 50px 30px;
-}
-
-.ayamelPlayer .sidebar .tabContent {
+.ayamelPlayer .tabContent {
 	height: 100%;
 	overflow: hidden;
 	overflow-wrap: break-word;
 	padding: 2px;
-}
-
-.ayamelPlayer .sidebar .toggle-tab {
-	width: 20px;
-	height: 100px;
-	background-color: red;
-	top: 0;
-	opacity: 0;
-	position: absolute;
-}
-
-.ayamelPlayer .sidebar.rightBar .toggle-tab {
-	left: -20px;
 }
 
 .ayamelPlayer .progressBar {
