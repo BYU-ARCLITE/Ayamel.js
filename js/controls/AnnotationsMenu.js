@@ -31,6 +31,7 @@
 						active?"disableannset":"enableannset",
 						{bubbles:true,cancelable:true,detail:{annset:annset}}
 					));
+					if(annsets.length === 1){ hideMenu(element); }
 				});
 				menu.appendChild(item);
 			});

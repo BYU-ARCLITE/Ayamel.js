@@ -45,6 +45,7 @@
 						active?"disabletrack":"enabletrack",
 						{bubbles:true,cancelable:true,detail:{track:track}}
 					));
+					if(tracks.length === 1){ hideMenu(element); }
 				});
 				menu.appendChild(item);
 			});
