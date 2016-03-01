@@ -155,6 +155,8 @@
 				parsers: annotations.parsers,
 				classList: annotations.classList,
 				style: annotations.style,
+				whitelist: annotations.whitelist,
+				blacklist: annotations.blacklist,
 				handler: function(data, lang, text, index){
 					player.element.dispatchEvent(new CustomEvent("annotation", {
 						bubbles: true,
