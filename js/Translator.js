@@ -44,8 +44,16 @@
 		}));
 
 		return new Promise(function(resolve, reject){
-			var xhr = new XMLHttpRequest();
-			
+			var xhr = new XMLHttpRequest(),
+				data = new FormData();
+
+			xhr.responseType = "json";
+
+			data.append("srcLang",srcLang);
+			data.append("dstLang",destLang);
+			data.append("text",text);
+			data.append("codeFormat","iso639_3");
+
 			function err(msg){
 				var data = {
 					text: text, message: msg,
@@ -58,24 +66,16 @@
 			}
 
 			xhr.addEventListener('load',function(){
-				var resp = JSON.parse(xhr.responseText),
-					data = {
-						text: text,
-						translations: resp.entries,
-						engine: resp.source,
-						srcLang: srcLang,
-						destLang: destLang,
-						data: params.data
-					};
-				if (data.translations === void 0) {  // Make sure we actually received translations
-					err("No Data"); 
+				var resp = xhr.response;
+				if (!(resp && resp.success)) {
+					err((resp && resp.message) || "No Data"); 
 				} else {
 					that.e.dispatchEvent(new CustomEvent("translation", {
 						bubbles: true,
 						cancelable: true,
-						detail: data
+						detail: resp.result
 					}));
-					resolve(data);
+					resolve(resp.result);
 				}
 			},false);
 
@@ -89,11 +89,8 @@
 			}, false);
 
 			xhr.open("POST", that.endpoint+"/lookup", true);
-			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhr.setRequestHeader("Authorization", that.key);
-			xhr.send("srcLang="+encodeURIComponent(srcLang)+
-					"&destLang="+encodeURIComponent(destLang)+
-					"&word="+encodeURIComponent(text));
+			xhr.send(data);
 		});
 	};
 
