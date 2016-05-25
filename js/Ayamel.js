@@ -1,10 +1,3 @@
-/**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/30/13
- * Time: 10:48 AM
- * To change this template use File | Settings | File Templates.
- */
 var Ayamel = (function() {
 	"use strict";
 
@@ -107,6 +100,22 @@ var Ayamel = (function() {
 					xhr.open(method,url,true);
 					xhr.send(args.body||null);
 				});
+			},
+
+			extractPlainText: function(el){
+				var node, tlist = [],
+                    walker = document.createTreeWalker(
+						el, NodeFilter.SHOW_TEXT, 
+						null, false
+					);
+
+				while(node = walker.nextNode()){
+					if(!node.isElementContentWhitespace){
+						tlist.push(node.nodeValue.trim());
+					}
+				}
+				
+				return tlist.join(" ");
 			},
 
 			parseHTML: function(text){

@@ -105,7 +105,7 @@
 						cue.track.language,
 						'caption-cue'
 					),//destLang is left to default
-					text: detail.fragment.textContent.trim(),
+					text: Ayamel.utils.extractPlainText(detail.fragment),
 					data: {
 						cue: cue,
 						sourceType: "caption"
