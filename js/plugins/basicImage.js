@@ -19,7 +19,7 @@
 		args.holder.appendChild(element);
 
 		img.addEventListener('load', resize, false);
-		img.src = Ayamel.utils.findFile(args.resource, supportsFile);
+		img.src = Ayamel.utils.findFile(args.resource, supportsFile).downloadUri;
 
 		function resize(){
 			//Manual lightboxing
