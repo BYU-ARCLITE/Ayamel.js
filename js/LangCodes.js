@@ -7655,7 +7655,7 @@
 	"yub":{part2b:"",part2t:"",part1:"",scope:"I",type:"E",name:{"eng":"Yugambal"}},
 	"yuc":{part2b:"",part2t:"",part1:"",scope:"I",type:"L",name:{"eng":"Yuchi"}},
 	"yud":{part2b:"jrb",part2t:"jrb",part1:"ar",scope:"I",type:"L",name:{"eng":"Judeo-Tripolitanian Arabic"}},
-	"yue":{part2b:"",part2t:"",part1:"",scope:"I",type:"L",name:{"eng":"Yue Chinese"}},
+	"yue":{part2b:"",part2t:"",part1:"",scope:"I",type:"L",name:{"eng":"Cantonese (Yue Chinese)"}},
 	"yuf":{part2b:"",part2t:"",part1:"",scope:"I",type:"L",name:{"eng":"Havasupai-Walapai-Yavapai"}},
 	"yug":{part2b:"",part2t:"",part1:"",scope:"I",type:"E",name:{"eng":"Yug"}},
 	"yui":{part2b:"",part2t:"",part1:"",scope:"I",type:"L",name:{"eng":"Yurutí"}},
