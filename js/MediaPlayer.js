@@ -31,9 +31,17 @@
 		}
 	};
 
-	var teststyle = document.body.style,
+	//Used in blur implementation
+	var filterp = false;
+
+	function check_filter(){
+		var teststyle = document.body.style;
 		filterp =	teststyle.hasOwnProperty('webkitFilter')?'webkitFilter':
 					teststyle.hasOwnProperty('filter')?'filter':"";
+	}
+
+	if(document.body){ check_filter(); }
+	else{ window.addEventListener("load",check_filter,false); }
 
 	function pluginLoop(i,len,plugins,args){
 		var module;
@@ -314,7 +322,7 @@
 
 		this.plugin = new PluginShell();
 		this.soundManager = new SoundShell();
-		
+
 		this.annotator = null;
 		this.captionsElement = null;
 		this.captionRenderer = null;
@@ -484,7 +492,7 @@
 					m?'unmute':'mute', {bubbles:true}
 				));
 			}
-			return this.soundManager.muted; 
+			return this.soundManager.muted;
 		},
 		get volume(){ return this.soundManager.volume; },
 		set volume(volume){ return this.soundManager.volume = volume; }
