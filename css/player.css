@@ -72,11 +72,11 @@
 }
 
 .ayamelPlayer .leftBar .sidebarHeads {
-	transform: rotateZ(-90deg) translateY(-20px);
+	transform: rotateZ(-90deg) translateY(-20px) translateX(-20px);
 }
 
 .ayamelPlayer .rightBar .sidebarHeads {
-	transform: rotateZ(90deg) translateY(20px);
+	transform: rotateZ(90deg) translateY(20px) translateX(-20px);
 }
 
 .ayamelPlayer .rightBar .tabHead {

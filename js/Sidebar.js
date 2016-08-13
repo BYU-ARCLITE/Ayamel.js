@@ -38,7 +38,7 @@
 			headList.appendChild(tab.head);
 			sidebarBody.appendChild(tab.body);
 			if(sidebar.selected === tab){
-				sidebar._userSelectTab(tab);
+				sidebar._selectTab(tab);
 			}
 		});
 	}
@@ -52,6 +52,8 @@
 		head.appendChild(headList);
 		result.appendChild(body);
 		renderTabs(sidebar, headList, body);
+		sidebar.headList = headList;
+		sidebar.resize();
 		return result;
 	}
 
@@ -91,6 +93,7 @@
 		this.baseVisible = this.visible;
 		this.baseTab = this.selectedTab;
 
+		this.headList = null;
 		this.element = render(this);
 		args.holder.appendChild(this.element);
 	}
@@ -111,13 +114,14 @@
 			deselectAll(this);
 			this.player.resetSize();
 		},
-		_selectTab: function(tab){
-			var oldTab = this.selectedTab;
-			if(oldTab !== tab){
-				if(oldTab){ oldTab._deselect(); }
-				this.selectedTab = tab;
+		resize: function(){
+			var scale = this.player.height / this.headList.clientWidth;
+			this.headList.style.transform = "";
+			if(scale < 1){
+				this.headList.style.transform = "scale("+scale+") rotateZ(90deg) translateY(20px) translateX("+(-20/scale)+"px)";
+			}else{
+				this.headList.style.transform = "rotateZ(90deg) translateY(20px) translateX(-20px)";
 			}
-			showSidebar(this);
 		},
 		restore: function(){
 			if(this.baseVisible){
@@ -125,6 +129,14 @@
 			}else{
 				this.hide();
 			}
+		},
+		_selectTab: function(tab){
+			var oldTab = this.selectedTab;
+			if(oldTab !== tab){
+				if(oldTab){ oldTab._deselect(); }
+				this.selectedTab = tab;
+			}
+			showSidebar(this);
 		},
 		get offsetWidth(){
 			return this.visible?this.element.offsetWidth:0;

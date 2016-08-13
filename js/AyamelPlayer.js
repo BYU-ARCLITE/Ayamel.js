@@ -596,6 +596,8 @@
 				if(this.controlBar){ this.controlBar.resize(); }
 			}while(el.clientWidth !== resizeWidth);
 			this.mediaPlayer.rebuildCaptions(true);
+			if(this.leftBar){ this.leftBar.resize(); }
+			if(this.rightBar){ this.rightBar.resize(); }
 		},
 		addEventListener: function(event, callback, capture){
 			this.element.addEventListener(event, callback, !!capture);
