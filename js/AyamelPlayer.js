@@ -8,7 +8,7 @@
 		}, 0);
 	}
 
-	function cue_handler(player, type, e){
+	function cueHandler(player, type, e){
 		var cue = e.target,
 			text = cue.text,
 			data;
@@ -224,8 +224,8 @@
 		};
 		this.mutatorCues = new Map();
 
-		cue_enter = cue_handler.bind(null, this, 'enter');
-		cue_exit = cue_handler.bind(null, this, 'exit');
+		cue_enter = cueHandler.bind(null, this, 'enter');
+		cue_exit = cueHandler.bind(null, this, 'exit');
 		this.addEventListener('addtexttrack', registerCueHandlers.bind(null,cue_enter,cue_exit), false);
 		this.addEventListener('removetexttrack', removeCueHandlers.bind(null,cue_enter,cue_exit), false);
 
