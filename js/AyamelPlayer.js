@@ -65,7 +65,8 @@
 						cueMutations.muted = true;
 
 						var oldMute = player.muted;
-						player.muted = i.value;
+						// player.muted = i.value;
+						player.muted = true;
 						player.cachedValues.muted = oldMute;
 						break;
 
