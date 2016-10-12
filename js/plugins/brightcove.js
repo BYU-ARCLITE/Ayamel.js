@@ -8,90 +8,34 @@
 		return file.streamUri && file.streamUri.substr(0,13) === "brightcove://";
 	}
 
-	function frameCode(){
-		var loaded = false,
-			player = videojs(document.getElementById('vplayer')),
-			properties = {
-				duration: 0,
-				currentTime: 0,
-				paused: true,
-				volume: 1,
-				muted: false,
-				playbackRate: 1
+	/*
+	 * https://www.nczonline.net/blog/2009/07/28/the-best-way-to-load-external-javascript/
+	 */
+	function loadScript(url,callback) {
+		var script = document.createElement("script")
+		script.type = "text/javascript";
+
+		if (script.readyState){  //IE
+			script.onreadystatechange = function(){
+				if (script.readyState == "loaded" ||
+						script.readyState == "complete"){
+					script.onreadystatechange = null;
+					callback();
+				}
 			};
+		} else {  //Others
+			script.onload = function(){
+				callback();
+			};
+		}
 
-		player.ready(function(){
-			var c = document.querySelector('.vjs-control-bar');
-			c.parentElement.removeChild(c);
-			c = document.querySelector('.vjs-big-play-button');
-			c.parentElement.removeChild(c);
-			loaded = true;
-
-			[	'play','pause','ended',
-				'timeupdate',
-				'durationchange',
-				'volumechange'
-			].forEach(function(ename){
-				player.on(ename, function(){
-					properties.currentTime = player.currentTime();
-					properties.duration = player.duration();
-					properties.paused = player.paused();
-					properties.volume = player.volume();
-					properties.muted = player.muted();
-					properties.playbackRate = player.playbackRate();
-					parent.postMessage({type: ename, properties: properties}, '*');
-				});
-			});
-
-			player.height(window.innerHeight, true);
-			player.width(window.innerWidth, true);
-			player.currentTime(properties.currentTime);
-			player.volume(properties.volume);
-			player.muted(properties.muted);
-			player.playbackRate(properties.playbackRate);
-			if(!properties.paused){ player.play(); }
-		});
-
-		addEventListener('resize', function(){
-			player.height(window.innerHeight, true);
-			player.width(window.innerWidth, true);
-		}, false);
-
-		addEventListener('message',function(e){
-			if(e.source !== parent){ return; }
-			switch(e.data.method){
-			case 'play':
-				if(loaded){ player.play(); }
-				else{ properties.paused = false; }
-				break;
-			case 'pause':
-				if(loaded){ player.pause(); }
-				else{ properties.paused = true; }
-				break;
-			default:
-				if(loaded){ player[e.data.method](e.data.arg); }
-				else{ properties[e.data.method] = e.data.arg; }
-				break;
-			}
-		},false);
+		script.src = url;
+		document.getElementsByTagName("head")[0].appendChild(script);
 	}
 
 	function generateBrightcoveTemplate(videoId){
-		var box = Ayamel.utils.parseHTML('<div class="videoBox"><iframe style="width:100%;height:100%;overflow:hidden;" scrolling="no"/></div>');
-		box.firstChild.src = URL.createObjectURL(new Blob([
-			'<html><head><base href="'+location.href+'"></head>\n\
-			<body style="margin:0;padding:0;">\n\
-			<video id="vplayer" data-account="' + accountNum
-			+ '" data-player="' + playerId + '" data-video-id="' + videoId
-			+ '" data-embed="default" data-setup=\'{"techOrder": ["html5", "hls", "flash"]}\'\
-			class="video-js"></video>\n\
-			<script src="//players.brightcove.net/'
-			+ accountNum + '/'
-			+ playerId + '_default/index.min.js"><\/script>\n\
-			<script>('+frameCode.toString()+')();<\/script>\n\
-			</body></html>'
-		], {type: 'text/html'}));
-		return box;
+		return Ayamel.utils.parseHTML('<video id="vplayer" data-video-id="' + videoId + '"  data-account="' + accountNum +
+			'" data-player="' + playerId + '" data-embed="default" class="video-js" controls></video>');
 	}
 
 	function BrightcoveVideoPlayer(args) {
@@ -106,8 +50,9 @@
 		this.element = element;
 		args.holder.appendChild(element);
 
-		player = element.firstChild.contentWindow;
+		player = element;
 		this.player = player;
+		this.loaded = false;
 		this.properties = {
 			duration: 0,
 			currentTime: startTime,
@@ -117,14 +62,48 @@
 			playbackRate: 1
 		};
 
-		window.addEventListener('message', function(e){
-			if(e.source !== player){ return; }
-			that.properties = e.data.properties;
-			element.dispatchEvent(new Event(e.data.type,{
-				bubbles:true,cancelable:false
-			}));
-		},false);
+		var brightcoveScript = "//players.brightcove.net/" + accountNum + "/" + playerId + "_default/index.min.js";
+		loadScript(brightcoveScript, function(elem){
+			var c = document.querySelector('.vjs-control-bar');
+			c.parentElement.removeChild(c);
+			c = document.querySelector('.vjs-big-play-button');
+			c.parentElement.removeChild(c);
+			that.loaded = true;
+			bc('vplayer');
+			player = videojs('vplayer');
+			that.player = player;
+			[	'play','pause','ended',
+				'timeupdate',
+				'durationchange',
+				'volumechange'
+			].forEach(function(ename){
+				player.on(ename, function(){
+					that.properties.currentTime = player.currentTime();
+					that.properties.duration = player.duration();
+					that.properties.paused = player.paused();
+					that.properties.volume = player.volume();
+					that.properties.muted = player.muted();
+					that.properties.playbackRate = player.playbackRate();
+					args.holder.dispatchEvent(new Event(ename,{
+						bubbles:true,cancelable:false
+					}));
+				});
+			});
 
+			player.addEventListener('resize', function(){
+				player.height(window.innerHeight, true);
+				player.width(window.innerWidth, true);
+			}, false);
+
+			player.height(window.innerHeight, true);
+			player.width(window.innerWidth, true);
+			player.currentTime(that.properties.currentTime);
+			player.volume(that.properties.volume);
+			player.muted(that.properties.muted);
+			player.playbackRate(that.properties.playbackRate);
+			if(!that.properties.paused){ player.play(); }
+		});
+		
 		Object.defineProperties(this, {
 			height: {
 				get: function(){ return element.clientHeight; },
@@ -154,7 +133,8 @@
 			set: function(time){
 				time = +time||0;
 				this.properties.currentTime = time;
-				this.player.postMessage({method: 'currentTime', arg: time}, '*');
+				if (this.loaded)
+					this.player.currentTime(time);
 				return time;
 			}
 		},
@@ -163,7 +143,8 @@
 			set: function(muted){
 				muted = !! muted;
 				this.properties.muted = muted;
-				this.player.postMessage({method: 'muted', arg: muted}, '*');
+				if (this.loaded)
+					this.player.muted(muted);
 				return muted;
 			}
 		},
@@ -172,7 +153,8 @@
 			set: function(volume){
 				volume = Math.max(+volume || 0, 0);
 				this.properties.volume = volume;
-				this.player.postMessage({method: 'volume', arg: volume}, '*');
+				if (this.loaded)
+					this.player.volume(volume);
 				return volume;
 			}
 		},
@@ -184,7 +166,8 @@
 			set: function(rate){
 				rate = +rate || 1;
 				this.properties.playbackRate = rate;
-				this.player.postMessage({method: 'playbackRate', arg: rate}, '*');
+				if (this.loaded)
+					this.player.playbackRate(rate);
 				return rate;
 			}
 		},
@@ -194,12 +177,14 @@
 	});
 
 	BrightcoveVideoPlayer.prototype.play = function(){
-		this.player.postMessage({method: 'play'}, '*');
+		if (this.loaded)
+			this.player.play();
 		this.properties.paused = false;
 	};
 
 	BrightcoveVideoPlayer.prototype.pause = function(){
-		this.player.postMessage({method: 'pause'}, '*');
+		if (this.loaded)
+			this.player.pause();
 		this.properties.paused = true;
 	};
 
