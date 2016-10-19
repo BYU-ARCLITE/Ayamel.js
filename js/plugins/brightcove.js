@@ -39,7 +39,7 @@
 	}
 
 	function generateBrightcoveTemplate(videoId, tagId){
-		return Ayamel.utils.parseHTML('<div><video id="' + tagId + '" data-video-id="' + videoId + '"  data-account="' + accountNum +
+		return Ayamel.utils.parseHTML('<div><video style="width:100%;height:100%;overflow:hidden;" id="' + tagId + '" data-video-id="' + videoId + '"  data-account="' + accountNum +
 			'" data-player="' + playerId + '" data-embed="default" class="video-js"></video></div>');
 	}
 
@@ -96,6 +96,7 @@
 				});
 			});
 
+			
 			player.height(element.innerHeight, true);
 			player.width(element.innerWidth, true);
 			player.currentTime(that.properties.currentTime);
